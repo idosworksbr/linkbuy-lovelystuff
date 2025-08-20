@@ -3,7 +3,11 @@ import { useState } from "react";
 import { Plus, Edit, Trash2, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DashboardLayout from "@/components/DashboardLayout";
+import ProductForm from "@/components/ProductForm";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 // Mock data - em produção viria de uma API
 const mockProducts = [
@@ -32,9 +36,60 @@ const mockProducts = [
 
 const Dashboard = () => {
   const [products, setProducts] = useState(mockProducts);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleDeleteProduct = (id: number) => {
     setProducts(products.filter(p => p.id !== id));
+    toast({
+      title: "Produto removido",
+      description: "O produto foi removido do seu catálogo.",
+    });
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+  };
+
+  const handleUpdateProduct = async (data: any) => {
+    setIsLoading(true);
+    
+    try {
+      // Simular atualização do produto
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const updatedProducts = products.map(p => 
+        p.id === editingProduct.id 
+          ? { ...p, ...data, price: parseFloat(data.price) }
+          : p
+      );
+      
+      setProducts(updatedProducts);
+      setEditingProduct(null);
+      
+      toast({
+        title: "Produto atualizado!",
+        description: "As alterações foram salvas com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: "Ocorreu um erro ao atualizar o produto. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProduct(null);
+  };
+
+  const handleAddProduct = () => {
+    navigate("/dashboard/add-product");
   };
 
   return (
@@ -49,7 +104,7 @@ const Dashboard = () => {
             </p>
           </div>
           
-          <Button className="btn-hero">
+          <Button className="btn-hero" onClick={handleAddProduct}>
             <Plus className="h-4 w-4 mr-2" />
             Adicionar Produto
           </Button>
@@ -98,7 +153,11 @@ const Dashboard = () => {
                     
                     {/* Action buttons on hover */}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <Button size="sm" variant="secondary">
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => handleEditProduct(product)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button 
@@ -132,13 +191,27 @@ const Dashboard = () => {
               <CardDescription className="mb-4">
                 Comece adicionando seu primeiro produto ao catálogo
               </CardDescription>
-              <Button className="btn-hero">
+              <Button className="btn-hero" onClick={handleAddProduct}>
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Primeiro Produto
               </Button>
             </CardContent>
           </Card>
         )}
+
+        {/* Edit Product Dialog */}
+        <Dialog open={!!editingProduct} onOpenChange={handleCancelEdit}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+            {editingProduct && (
+              <ProductForm
+                product={editingProduct}
+                onSubmit={handleUpdateProduct}
+                onCancel={handleCancelEdit}
+                isLoading={isLoading}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
