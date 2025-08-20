@@ -12,6 +12,11 @@ export interface Profile {
   store_description: string | null;
   profile_photo_url: string | null;
   background_color: string;
+  whatsapp_number: number | null;
+  custom_whatsapp_message: string;
+  instagram_url: string | null;
+  catalog_theme: 'light' | 'dark' | 'beige';
+  catalog_layout: 'overlay' | 'bottom';
   created_at: string;
   updated_at: string;
 }

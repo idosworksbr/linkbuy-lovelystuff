@@ -1,11 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
@@ -22,10 +23,14 @@ const Settings = () => {
     store_url: '',
     store_description: '',
     background_color: '#ffffff',
-    profile_photo_url: ''
+    profile_photo_url: '',
+    whatsapp_number: '',
+    custom_whatsapp_message: 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
+    instagram_url: '',
+    catalog_theme: 'light' as 'light' | 'dark' | 'beige',
+    catalog_layout: 'overlay' as 'overlay' | 'bottom'
   });
 
-  // Atualizar formData quando o profile carregar
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -34,7 +39,12 @@ const Settings = () => {
         store_url: profile.store_url || '',
         store_description: profile.store_description || '',
         background_color: profile.background_color || '#ffffff',
-        profile_photo_url: profile.profile_photo_url || ''
+        profile_photo_url: profile.profile_photo_url || '',
+        whatsapp_number: profile.whatsapp_number?.toString() || '',
+        custom_whatsapp_message: profile.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
+        instagram_url: profile.instagram_url || '',
+        catalog_theme: profile.catalog_theme || 'light',
+        catalog_layout: profile.catalog_layout || 'overlay'
       });
     }
   }, [profile]);
@@ -47,7 +57,6 @@ const Settings = () => {
   };
 
   const handleStoreUrlChange = (value: string) => {
-    // Limpar e formatar a URL da loja
     const formattedUrl = value
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, '')
@@ -57,10 +66,14 @@ const Settings = () => {
     handleInputChange('store_url', formattedUrl);
   };
 
+  const handleWhatsAppNumberChange = (value: string) => {
+    const numbersOnly = value.replace(/\D/g, '');
+    handleInputChange('whatsapp_number', numbersOnly);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validações básicas
     if (!formData.name.trim()) {
       toast({
         title: "Nome obrigatório",
@@ -91,7 +104,11 @@ const Settings = () => {
     setIsLoading(true);
 
     try {
-      await updateProfile(formData);
+      const updateData = {
+        ...formData,
+        whatsapp_number: formData.whatsapp_number ? parseInt(formData.whatsapp_number) : null
+      };
+      await updateProfile(updateData);
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {
@@ -127,7 +144,6 @@ const Settings = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold">Configurações</h1>
           <p className="text-muted-foreground">
@@ -254,6 +270,70 @@ const Settings = () => {
 
           <Separator />
 
+          {/* Configurações de Contato */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                Configurações de Contato
+              </CardTitle>
+              <CardDescription>
+                Configure como os clientes podem entrar em contato
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp_number">Número do WhatsApp</Label>
+                <div className="flex items-center gap-2">
+                  <Smartphone className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="whatsapp_number"
+                    value={formData.whatsapp_number}
+                    onChange={(e) => handleWhatsAppNumberChange(e.target.value)}
+                    placeholder="5511999999999"
+                    type="tel"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Digite apenas números. Exemplo: 5511999999999 (código do país + DDD + número)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="custom_whatsapp_message">Mensagem Personalizada do WhatsApp</Label>
+                <Textarea
+                  id="custom_whatsapp_message"
+                  value={formData.custom_whatsapp_message}
+                  onChange={(e) => handleInputChange('custom_whatsapp_message', e.target.value)}
+                  placeholder="Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos."
+                  rows={3}
+                  maxLength={300}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Mensagem que será enviada quando clicarem no botão "Mensagem" do catálogo. {formData.custom_whatsapp_message.length}/300 caracteres
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="instagram_url">URL do Instagram</Label>
+                <div className="flex items-center gap-2">
+                  <Instagram className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="instagram_url"
+                    value={formData.instagram_url}
+                    onChange={(e) => handleInputChange('instagram_url', e.target.value)}
+                    placeholder="https://instagram.com/seuusuario"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Link do seu perfil no Instagram (usado no botão "Seguir" do catálogo)
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Separator />
+
           {/* Personalização Visual */}
           <Card>
             <CardHeader>
@@ -266,6 +346,36 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="catalog_theme">Tema do Catálogo</Label>
+                <Select value={formData.catalog_theme} onValueChange={(value: 'light' | 'dark' | 'beige') => handleInputChange('catalog_theme', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tema" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Claro (Branco e Cinza)</SelectItem>
+                    <SelectItem value="dark">Escuro</SelectItem>
+                    <SelectItem value="beige">Bege</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="catalog_layout">Layout dos Produtos</Label>
+                <Select value={formData.catalog_layout} onValueChange={(value: 'overlay' | 'bottom') => handleInputChange('catalog_layout', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o layout" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="overlay">Título/Preço sobre a imagem (atual)</SelectItem>
+                    <SelectItem value="bottom">Título/Preço abaixo da imagem</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  No layout "bottom", o nome será preto com sombra e o preço verde escuro com sombra para melhor contraste
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="background_color">Cor de Fundo do Catálogo</Label>
                 <div className="flex items-center gap-2">
@@ -285,7 +395,7 @@ const Settings = () => {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Escolha a cor de fundo que será usada no seu catálogo público
+                  Cor de fundo externa do catálogo (apenas para tema claro)
                 </p>
               </div>
             </CardContent>

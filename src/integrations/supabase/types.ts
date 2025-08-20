@@ -50,36 +50,51 @@ export type Database = {
       profiles: {
         Row: {
           background_color: string | null
+          catalog_layout: string | null
+          catalog_theme: string | null
           created_at: string
+          custom_whatsapp_message: string | null
           id: string
+          instagram_url: string | null
           name: string
           profile_photo_url: string | null
           store_description: string | null
           store_name: string
           store_url: string
           updated_at: string
+          whatsapp_number: number | null
         }
         Insert: {
           background_color?: string | null
+          catalog_layout?: string | null
+          catalog_theme?: string | null
           created_at?: string
+          custom_whatsapp_message?: string | null
           id: string
+          instagram_url?: string | null
           name: string
           profile_photo_url?: string | null
           store_description?: string | null
           store_name: string
           store_url: string
           updated_at?: string
+          whatsapp_number?: number | null
         }
         Update: {
           background_color?: string | null
+          catalog_layout?: string | null
+          catalog_theme?: string | null
           created_at?: string
+          custom_whatsapp_message?: string | null
           id?: string
+          instagram_url?: string | null
           name?: string
           profile_photo_url?: string | null
           store_description?: string | null
           store_name?: string
           store_url?: string
           updated_at?: string
+          whatsapp_number?: number | null
         }
         Relationships: []
       }

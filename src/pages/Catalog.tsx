@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink } from "lucide-react";
+import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useThemeClasses } from "@/components/CatalogTheme";
 
 interface StoreProfile {
   id: string;
@@ -12,6 +13,11 @@ interface StoreProfile {
   profile_photo_url: string | null;
   background_color: string;
   store_url: string;
+  whatsapp_number: number | null;
+  custom_whatsapp_message: string;
+  instagram_url: string | null;
+  catalog_theme: 'light' | 'dark' | 'beige';
+  catalog_layout: 'overlay' | 'bottom';
   created_at: string;
 }
 
@@ -40,6 +46,10 @@ const Catalog = () => {
   const [catalogData, setCatalogData] = useState<CatalogData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const theme = catalogData?.store.catalog_theme || 'light';
+  const layout = catalogData?.store.catalog_layout || 'overlay';
+  const themeClasses = useThemeClasses(theme);
 
   useEffect(() => {
     const fetchCatalogData = async () => {
@@ -81,7 +91,6 @@ const Catalog = () => {
         
         setCatalogData(data);
         
-        // Exibir toast de sucesso
         toast({
           title: "Catálogo carregado!",
           description: `${data.meta.total_products} produtos encontrados`,
@@ -108,10 +117,31 @@ const Catalog = () => {
   const handleWhatsAppContact = () => {
     if (!catalogData?.store) return;
     
-    const message = encodeURIComponent(
-      `Olá! Vim pelo seu catálogo LinkBuy "${catalogData.store.store_name}" e gostaria de saber mais sobre seus produtos.`
-    );
-    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
+    const phoneNumber = catalogData.store.whatsapp_number;
+    if (!phoneNumber) {
+      toast({
+        title: "WhatsApp não disponível",
+        description: "Esta loja não configurou um número de WhatsApp.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+  };
+
+  const handleInstagramFollow = () => {
+    if (!catalogData?.store.instagram_url) {
+      toast({
+        title: "Instagram não disponível",
+        description: "Esta loja não configurou um perfil do Instagram.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    window.open(catalogData.store.instagram_url, '_blank');
   };
 
   const handleProductClick = (product: Product) => {
@@ -124,11 +154,11 @@ const Catalog = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={`min-h-screen ${themeClasses.container} flex items-center justify-center`}>
         <div className="text-center max-w-sm mx-auto p-6">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-700 font-medium mb-2">Carregando catálogo...</p>
-          <p className="text-sm text-gray-500">Loja: <span className="font-mono font-semibold">{storeUrl}</span></p>
+          <p className={`${themeClasses.text} font-medium mb-2`}>Carregando catálogo...</p>
+          <p className={`text-sm ${themeClasses.textMuted}`}>Loja: <span className="font-mono font-semibold">{storeUrl}</span></p>
         </div>
       </div>
     );
@@ -136,20 +166,20 @@ const Catalog = () => {
 
   if (error || !catalogData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-sm border">
+      <div className={`min-h-screen ${themeClasses.container} flex items-center justify-center`}>
+        <div className={`text-center max-w-md mx-auto p-6 ${themeClasses.card} rounded-lg shadow-sm border`}>
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <ExternalLink className="h-8 w-8 text-red-500" />
           </div>
           
-          <h1 className="text-2xl font-bold text-gray-800 mb-3">Loja não encontrada</h1>
+          <h1 className={`text-2xl font-bold ${themeClasses.text} mb-3`}>Loja não encontrada</h1>
           
-          <p className="text-gray-600 mb-4 leading-relaxed">
+          <p className={`${themeClasses.textMuted} mb-4 leading-relaxed`}>
             {error || "A loja que você está procurando não existe ou foi removida."}
           </p>
           
-          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm text-gray-500 mb-2">Detalhes técnicos:</p>
+          <div className={`${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-700' : 'bg-amber-50'} rounded-lg p-4 mb-6 text-left`}>
+            <p className={`text-sm ${themeClasses.textMuted} mb-2`}>Detalhes técnicos:</p>
             <div className="space-y-1 text-sm">
               <p><span className="font-medium">URL buscada:</span> <span className="font-mono bg-gray-200 px-2 py-1 rounded">{storeUrl}</span></p>
               <p><span className="font-medium">Sugestão:</span> Verifique se a URL está correta</p>
@@ -160,14 +190,14 @@ const Catalog = () => {
             <Button 
               onClick={handleGoBack}
               variant="outline"
-              className="flex-1"
+              className={`flex-1 ${themeClasses.buttonOutline}`}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
             <Button 
               onClick={() => window.location.reload()}
-              className="flex-1"
+              className={`flex-1 ${themeClasses.button}`}
             >
               Tentar novamente
             </Button>
@@ -178,12 +208,17 @@ const Catalog = () => {
   }
 
   const { store, products, meta } = catalogData;
+  
+  // Aplicar cor de fundo apenas para tema claro
+  const containerStyle = theme === 'light' && store.background_color 
+    ? { backgroundColor: store.background_color } 
+    : {};
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: store.background_color }}>
-      <div className="max-w-md mx-auto bg-white min-h-screen shadow-lg">
+    <div className={`min-h-screen ${theme !== 'light' ? themeClasses.container : ''}`} style={containerStyle}>
+      <div className={`max-w-md mx-auto ${themeClasses.card} min-h-screen shadow-lg`}>
         {/* Header Profile Section */}
-        <div className="px-4 pt-8 pb-6 border-b border-gray-100">
+        <div className={`px-4 pt-8 pb-6 border-b ${themeClasses.header}`}>
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-200 flex-shrink-0">
               {store.profile_photo_url ? (
@@ -200,21 +235,21 @@ const Catalog = () => {
             </div>
             
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-semibold mb-2 truncate">{store.store_name}</h1>
+              <h1 className={`text-xl font-semibold mb-2 truncate ${themeClasses.text}`}>{store.store_name}</h1>
               
               {/* Stats Row */}
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
-                  <div className="font-semibold text-gray-900">{meta.total_products}</div>
-                  <div className="text-gray-500">Produtos</div>
+                  <div className={`font-semibold ${themeClasses.text}`}>{meta.total_products}</div>
+                  <div className={themeClasses.textMuted}>Produtos</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-gray-900">1.2k</div>
-                  <div className="text-gray-500">Seguidores</div>
+                  <div className={`font-semibold ${themeClasses.text}`}>1.2k</div>
+                  <div className={themeClasses.textMuted}>Seguidores</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-gray-900">180</div>
-                  <div className="text-gray-500">Seguindo</div>
+                  <div className={`font-semibold ${themeClasses.text}`}>180</div>
+                  <div className={themeClasses.textMuted}>Seguindo</div>
                 </div>
               </div>
             </div>
@@ -222,35 +257,38 @@ const Catalog = () => {
 
           {/* Description */}
           {store.store_description && (
-            <p className="text-sm text-gray-700 mb-4 leading-relaxed">{store.store_description}</p>
+            <p className={`text-sm ${themeClasses.textMuted} mb-4 leading-relaxed`}>{store.store_description}</p>
           )}
 
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Button 
-              onClick={handleWhatsAppContact}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg h-9 text-sm font-medium transition-colors"
+              onClick={handleInstagramFollow}
+              className={`flex-1 ${themeClasses.button} rounded-lg h-9 text-sm font-medium transition-colors`}
+              disabled={!store.instagram_url}
             >
-              <MessageCircle className="h-4 w-4 mr-2" />
+              <Instagram className="h-4 w-4 mr-2" />
               Seguir
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 border-gray-300 text-gray-700 rounded-lg h-9 text-sm font-medium hover:bg-gray-50 transition-colors"
+              className={`flex-1 ${themeClasses.buttonOutline} rounded-lg h-9 text-sm font-medium transition-colors`}
               onClick={handleWhatsAppContact}
+              disabled={!store.whatsapp_number}
             >
+              <MessageCircle className="h-4 w-4 mr-2" />
               Mensagem
             </Button>
           </div>
         </div>
 
         {/* Grid Icon */}
-        <div className="flex justify-center py-3 bg-gray-50">
-          <Grid3X3 className="h-6 w-6 text-gray-400" />
+        <div className={`flex justify-center py-3 ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
+          <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
         </div>
 
         {/* Products Grid */}
-        <div className="p-1 bg-gray-50">
+        <div className={`p-1 ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
           {products.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">
               {products.map((product, index) => (
@@ -272,33 +310,47 @@ const Catalog = () => {
                     </div>
                   )}
                   
-                  {/* Overlay with product info */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-                      <h3 className="text-xs font-medium line-clamp-2 mb-1">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs font-bold">
-                        R$ {product.price.toFixed(2).replace('.', ',')}
-                      </p>
+                  {layout === 'overlay' ? (
+                    // Layout atual - overlay sobre a imagem
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                        <h3 className="text-xs font-medium line-clamp-2 mb-1">
+                          {product.name}
+                        </h3>
+                        <p className="text-xs font-bold">
+                          R$ {product.price.toFixed(2).replace('.', ',')}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    // Novo layout - informações abaixo da imagem
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+                      <div className="absolute bottom-0 left-0 right-0 p-2">
+                        <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{ textShadow: '1px 1px 2px rgba(255,255,255,0.8)' }}>
+                          {product.name}
+                        </h3>
+                        <p className="text-xs font-bold text-green-800 drop-shadow-lg" style={{ textShadow: '1px 1px 2px rgba(255,255,255,0.8)' }}>
+                          R$ {product.price.toFixed(2).replace('.', ',')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-white rounded-lg mx-2">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Grid3X3 className="h-8 w-8 text-gray-400" />
+            <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2`}>
+              <div className={`w-16 h-16 ${theme === 'light' ? 'bg-gray-100' : theme === 'dark' ? 'bg-gray-700' : 'bg-amber-200'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <Grid3X3 className={`h-8 w-8 ${themeClasses.textMuted}`} />
               </div>
-              <h3 className="font-medium text-gray-900 mb-2">Nenhum produto ainda</h3>
-              <p className="text-sm text-gray-500">Esta loja ainda não adicionou produtos ao catálogo.</p>
+              <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum produto ainda</h3>
+              <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou produtos ao catálogo.</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="text-center py-6 text-xs text-gray-400 bg-gray-50">
+        <div className={`text-center py-6 text-xs ${themeClasses.textMuted} ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
           <p>Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
           <p className="mt-1">Última atualização: {new Date(meta.generated_at).toLocaleString('pt-BR')}</p>
         </div>
