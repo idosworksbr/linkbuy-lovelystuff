@@ -46,13 +46,19 @@ export const useProducts = () => {
     }
   };
 
-  const createProduct = async (productData: Partial<Product>) => {
+  const createProduct = async (productData: Omit<Product, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
 
     try {
       const { data, error } = await supabase
         .from('products')
-        .insert([{ ...productData, user_id: user.id }])
+        .insert({
+          name: productData.name,
+          description: productData.description,
+          price: productData.price,
+          images: productData.images,
+          user_id: user.id
+        })
         .select()
         .single();
 
@@ -76,7 +82,7 @@ export const useProducts = () => {
     }
   };
 
-  const updateProduct = async (id: string, productData: Partial<Product>) => {
+  const updateProduct = async (id: string, productData: Partial<Omit<Product, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
     try {
       const { data, error } = await supabase
         .from('products')

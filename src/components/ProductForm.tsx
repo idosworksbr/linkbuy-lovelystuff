@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Product } from "@/hooks/useProducts";
 
 const productSchema = z.object({
   name: z.string().min(1, "Nome do produto é obrigatório"),
@@ -19,24 +20,16 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
-interface Product {
-  id?: number;
-  name: string;
-  price: number;
-  description: string;
-  image?: string;
-}
-
 interface ProductFormProps {
   product?: Product;
-  onSubmit: (data: ProductFormData & { image?: File }) => void;
+  onSubmit: (data: ProductFormData & { images?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: ProductFormProps) => {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(product?.image || null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(product?.images || []);
   const { toast } = useToast();
 
   const form = useForm<ProductFormData>({
@@ -49,15 +42,16 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
   });
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
+    const files = Array.from(event.target.files || []);
+    
+    for (const file of files) {
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Arquivo muito grande",
           description: "A imagem deve ter no máximo 5MB",
           variant: "destructive",
         });
-        return;
+        continue;
       }
 
       if (!file.type.startsWith('image/')) {
@@ -66,27 +60,28 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
           description: "Por favor, selecione apenas arquivos de imagem",
           variant: "destructive",
         });
-        return;
+        continue;
       }
 
-      setSelectedImage(file);
+      setSelectedImages(prev => [...prev, file]);
+      
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
+        setImagePreviews(prev => [...prev, e.target?.result as string]);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const removeImage = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = (data: ProductFormData) => {
     onSubmit({
       ...data,
-      image: selectedImage || undefined,
+      images: imagePreviews,
     });
   };
 
@@ -102,34 +97,40 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Image Upload */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Imagem do Produto</label>
+              <label className="text-sm font-medium">Imagens do Produto</label>
               <div className="flex flex-col items-center gap-4">
-                {imagePreview ? (
-                  <div className="relative">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-32 h-32 object-cover rounded-lg border"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6"
-                      onClick={removeImage}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
-                    <Upload className="h-8 w-8 text-muted-foreground" />
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-24 h-24 object-cover rounded-lg border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-6 w-6"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 )}
+                
+                <div className="w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                </div>
+                
                 <div>
                   <Input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageChange}
                     className="hidden"
                     id="image-upload"
@@ -137,7 +138,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
                   <label htmlFor="image-upload">
                     <Button type="button" variant="outline" asChild>
                       <span className="cursor-pointer">
-                        {imagePreview ? "Alterar Imagem" : "Adicionar Imagem"}
+                        Adicionar Imagens
                       </span>
                     </Button>
                   </label>
