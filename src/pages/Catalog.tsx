@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink } from "lucide-react";
@@ -45,6 +44,7 @@ const Catalog = () => {
   useEffect(() => {
     const fetchCatalogData = async () => {
       if (!storeUrl) {
+        console.log('❌ storeUrl está vazio:', storeUrl);
         setError('URL da loja não foi fornecida');
         setLoading(false);
         return;
@@ -54,7 +54,8 @@ const Catalog = () => {
         setLoading(true);
         setError(null);
         
-        console.log('🔍 Buscando catálogo para:', storeUrl);
+        console.log('🔍 Iniciando busca do catálogo para:', storeUrl);
+        console.log('🌐 URL completa da requisição:', `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`);
         
         const response = await fetch(
           `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`,
@@ -68,18 +69,50 @@ const Catalog = () => {
         );
         
         console.log('📡 Status da resposta:', response.status);
+        console.log('📡 Headers da resposta:', Object.fromEntries(response.headers.entries()));
+        
+        // Tentar ler o texto da resposta primeiro para debug
+        const responseText = await response.text();
+        console.log('📄 Texto completo da resposta:', responseText);
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ 
-            error: 'Erro na resposta do servidor',
-            message: 'Não foi possível carregar o catálogo'
-          }));
-          console.log('❌ Erro da API:', errorData);
+          console.log('❌ Resposta não OK, status:', response.status);
+          let errorData;
+          try {
+            errorData = JSON.parse(responseText);
+            console.log('❌ Dados de erro parseados:', errorData);
+          } catch (parseError) {
+            console.log('❌ Erro ao fazer parse do JSON de erro:', parseError);
+            errorData = { 
+              error: 'Erro na resposta do servidor',
+              message: 'Não foi possível carregar o catálogo',
+              responseText: responseText
+            };
+          }
           throw new Error(errorData.message || errorData.error || 'Loja não encontrada');
         }
 
-        const data: CatalogData = await response.json();
-        console.log('✅ Dados recebidos:', data);
+        // Tentar fazer parse do JSON
+        let data: CatalogData;
+        try {
+          data = JSON.parse(responseText);
+          console.log('✅ Dados parseados com sucesso:', data);
+        } catch (parseError) {
+          console.log('❌ Erro ao fazer parse do JSON:', parseError);
+          console.log('📄 Conteúdo que falhou no parse:', responseText);
+          throw new Error('Erro ao processar resposta do servidor');
+        }
+        
+        // Validar estrutura dos dados
+        if (!data.store || !data.products || !data.meta) {
+          console.log('❌ Estrutura de dados inválida:', data);
+          throw new Error('Dados do catálogo estão em formato inválido');
+        }
+        
+        console.log('✅ Definindo dados do catálogo:', {
+          store_name: data.store.store_name,
+          product_count: data.products.length
+        });
         
         setCatalogData(data);
         
@@ -89,8 +122,11 @@ const Catalog = () => {
         });
         
       } catch (error) {
-        console.error('💥 Error fetching catalog:', error);
+        console.error('💥 Erro completo:', error);
+        console.error('💥 Stack trace:', error instanceof Error ? error.stack : 'Sem stack trace');
+        
         const errorMessage = error instanceof Error ? error.message : 'Não foi possível carregar o catálogo';
+        console.log('📝 Definindo erro:', errorMessage);
         setError(errorMessage);
         
         toast({
@@ -99,6 +135,7 @@ const Catalog = () => {
           variant: "destructive",
         });
       } finally {
+        console.log('🏁 Finalizando carregamento');
         setLoading(false);
       }
     };
@@ -124,6 +161,13 @@ const Catalog = () => {
   const handleGoBack = () => {
     navigate('/');
   };
+
+  console.log('🎨 Renderizando componente - Estado atual:', {
+    loading,
+    error,
+    hasCatalogData: !!catalogData,
+    storeUrl
+  });
 
   if (loading) {
     return (
