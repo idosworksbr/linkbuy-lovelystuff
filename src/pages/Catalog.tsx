@@ -12,6 +12,7 @@ interface StoreProfile {
   profile_photo_url: string | null;
   background_color: string;
   store_url: string;
+  whatsapp_number: string | null;
   created_at: string;
 }
 
@@ -61,6 +62,7 @@ const Catalog = () => {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache',
             }
           }
         );
@@ -81,7 +83,6 @@ const Catalog = () => {
         
         setCatalogData(data);
         
-        // Exibir toast de sucesso
         toast({
           title: "Catálogo carregado!",
           description: `${data.meta.total_products} produtos encontrados`,
@@ -108,10 +109,12 @@ const Catalog = () => {
   const handleWhatsAppContact = () => {
     if (!catalogData?.store) return;
     
+    // Usar o número configurado pelo usuário ou um número padrão
+    const phoneNumber = catalogData.store.whatsapp_number || '5511999999999';
     const message = encodeURIComponent(
       `Olá! Vim pelo seu catálogo LinkBuy "${catalogData.store.store_name}" e gostaria de saber mais sobre seus produtos.`
     );
-    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
 
   const handleProductClick = (product: Product) => {
@@ -249,7 +252,7 @@ const Catalog = () => {
           <Grid3X3 className="h-6 w-6 text-gray-400" />
         </div>
 
-        {/* Products Grid */}
+        {/* Products Grid - Layout otimizado para mobile */}
         <div className="p-1 bg-gray-50">
           {products.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">
@@ -272,13 +275,13 @@ const Catalog = () => {
                     </div>
                   )}
                   
-                  {/* Overlay with product info */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-                      <h3 className="text-xs font-medium line-clamp-2 mb-1">
+                  {/* Overlay com gradiente escuro e informações do produto - Layout Mobile Otimizado */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90">
+                    <div className="absolute bottom-0 left-0 right-0 p-2">
+                      <h3 className="text-xs font-semibold text-white drop-shadow-lg line-clamp-2 mb-1">
                         {product.name}
                       </h3>
-                      <p className="text-xs font-bold">
+                      <p className="text-xs font-bold text-green-400 drop-shadow-lg">
                         R$ {product.price.toFixed(2).replace('.', ',')}
                       </p>
                     </div>
