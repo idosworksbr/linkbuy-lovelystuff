@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink } from "lucide-react";
@@ -11,7 +12,6 @@ interface StoreProfile {
   profile_photo_url: string | null;
   background_color: string;
   store_url: string;
-  whatsapp_number: string | null;
   created_at: string;
 }
 
@@ -107,11 +107,10 @@ const Catalog = () => {
   const handleWhatsAppContact = () => {
     if (!catalogData?.store) return;
     
-    const whatsappNumber = catalogData.store.whatsapp_number || '5511999999999';
     const message = encodeURIComponent(
-      `Olá! Gostaria de saber mais sobre seus produtos. Vim pelo seu catálogo LinkBuy "${catalogData.store.store_name}".`
+      `Olá! Vim pelo seu catálogo LinkBuy "${catalogData.store.store_name}" e gostaria de saber mais sobre seus produtos.`
     );
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
   };
 
   const handleProductClick = (product: Product) => {
