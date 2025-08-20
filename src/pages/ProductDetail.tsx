@@ -3,38 +3,33 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-// Mock data - em produção viria de uma API
-const mockProduct = {
-  id: 1,
-  name: "Tênis Esportivo Premium",
-  price: 299.90,
-  description: "Tênis de alta qualidade, perfeito para atividades físicas e uso casual. Fabricado com materiais premium que garantem conforto e durabilidade. Disponível em várias cores e tamanhos.",
-  images: [
-    "/api/placeholder/400/400",
-    "/api/placeholder/400/400", 
-    "/api/placeholder/400/400"
-  ]
-};
+import { useProductDetail } from "@/hooks/useProductDetail";
 
 const ProductDetail = () => {
-  const { storeSlug, productId } = useParams();
+  const { storeUrl, productId } = useParams();
   const navigate = useNavigate();
-  const [product] = useState(mockProduct);
+  const { product, loading, error } = useProductDetail(storeUrl || '', productId || '');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleWhatsAppOrder = () => {
-    const message = encodeURIComponent(`Olá! Tenho interesse no produto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`);
-    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
+    if (!product) return;
+    
+    const whatsappNumber = product.store.whatsapp_number || '5511999999999';
+    const message = encodeURIComponent(
+      `Olá! Tenho interesse no produto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`
+    );
+    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
   };
 
   const nextImage = () => {
+    if (!product?.images.length) return;
     setCurrentImageIndex((prev) => 
       prev === product.images.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
+    if (!product?.images.length) return;
     setCurrentImageIndex((prev) => 
       prev === 0 ? product.images.length - 1 : prev - 1
     );
@@ -44,6 +39,40 @@ const ProductDetail = () => {
     setCurrentImageIndex(index);
   };
 
+  const handleGoBack = () => {
+    if (storeUrl) {
+      navigate(`/catalog/${storeUrl}`);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-sm mx-auto p-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-700 font-medium">Carregando produto...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-3">Produto não encontrado</h1>
+          <p className="text-gray-600 mb-4">{error || "O produto que você está procurando não existe."}</p>
+          <Button onClick={handleGoBack} className="btn-hero">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar ao Catálogo
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white animate-fade-in">
       <div className="max-w-md mx-auto">
@@ -52,7 +81,7 @@ const ProductDetail = () => {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => navigate(`/c/${storeSlug}`)}
+            onClick={handleGoBack}
             className="rounded-full hover:bg-accent hover:scale-105 transition-all duration-200"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -63,14 +92,20 @@ const ProductDetail = () => {
         {/* Image Carousel */}
         <div className="relative rounded-xl mx-4 mt-4 overflow-hidden shadow-lg">
           <div className="aspect-square bg-muted overflow-hidden">
-            <img 
-              src={product.images[currentImageIndex]} 
-              alt={product.name}
-              className="w-full h-full object-cover transition-opacity duration-300"
-            />
+            {product.images && product.images.length > 0 ? (
+              <img 
+                src={product.images[currentImageIndex]} 
+                alt={product.name}
+                className="w-full h-full object-cover transition-opacity duration-300"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-400">Sem imagem</span>
+              </div>
+            )}
           </div>
           
-          {product.images.length > 1 && (
+          {product.images && product.images.length > 1 && (
             <>
               <button
                 onClick={prevImage}
@@ -108,25 +143,27 @@ const ProductDetail = () => {
         <div className="p-6 space-y-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
           <div className="bg-white rounded-xl p-4 shadow-sm border">
             <h1 className="text-2xl font-bold mb-3">{product.name}</h1>
-            <p className="text-3xl font-bold text-whatsapp">
+            <p className="text-3xl font-bold text-green-600">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border">
-            <h2 className="font-semibold mb-3 text-lg">Descrição</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {product.description}
-            </p>
-          </div>
+          {product.description && (
+            <div className="bg-white rounded-xl p-4 shadow-sm border">
+              <h2 className="font-semibold mb-3 text-lg">Descrição</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                {product.description}
+              </p>
+            </div>
+          )}
 
           {/* WhatsApp Button */}
           <div className="pt-2">
             <Button 
-              className="whatsapp-btn w-full text-lg py-6 rounded-full hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="bg-green-500 hover:bg-green-600 w-full text-lg py-6 rounded-full hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl text-white"
               onClick={handleWhatsAppOrder}
             >
-              <MessageCircle className="h-6 w-6" />
+              <MessageCircle className="h-6 w-6 mr-2" />
               Fazer Pedido pelo WhatsApp
             </Button>
           </div>
