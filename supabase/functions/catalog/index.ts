@@ -5,6 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
 }
 
 serve(async (req) => {
@@ -47,10 +48,13 @@ serve(async (req) => {
       )
     }
 
-    // Buscar informações da loja usando função segura
+    // Buscar informações da loja diretamente na tabela profiles
     console.log('🏪 Buscando informações da loja:', storeUrl)
     const { data: storeInfo, error: storeError } = await supabaseClient
-      .rpc('get_public_store_info', { store_url_param: storeUrl })
+      .from('profiles')
+      .select('id, name, store_url, store_name, store_description, profile_photo_url, background_color, created_at')
+      .eq('store_url', storeUrl)
+      .single()
 
     console.log('📊 Resultado da busca da loja:', { storeInfo, storeError })
 
@@ -71,7 +75,7 @@ serve(async (req) => {
     }
 
     // Verificar se a loja foi encontrada
-    if (!storeInfo || storeInfo.length === 0) {
+    if (!storeInfo) {
       console.log('❌ Loja não encontrada para store_url:', storeUrl)
       return new Response(
         JSON.stringify({ 
@@ -90,17 +94,18 @@ serve(async (req) => {
       )
     }
 
-    const store = storeInfo[0]
     console.log('✅ Loja encontrada:', {
-      id: store.id,
-      store_name: store.store_name,
-      store_url: store.store_url
+      id: storeInfo.id,
+      store_name: storeInfo.store_name,
+      store_url: storeInfo.store_url
     })
 
-    // Buscar produtos da loja usando função segura
+    // Buscar produtos da loja
     console.log('📦 Buscando produtos da loja')
     const { data: products, error: productsError } = await supabaseClient
-      .rpc('get_public_store_products', { store_url_param: storeUrl })
+      .from('products')
+      .select('id, name, description, price, images, created_at')
+      .eq('user_id', storeInfo.id)
 
     console.log('📊 Resultado da busca de produtos:', { 
       productCount: products?.length || 0, 
@@ -118,13 +123,14 @@ serve(async (req) => {
     // Montar resposta otimizada do catálogo
     const catalogData = {
       store: {
-        id: store.id,
-        store_name: store.store_name,
-        store_description: store.store_description,
-        profile_photo_url: store.profile_photo_url,
-        background_color: store.background_color || '#ffffff',
-        store_url: store.store_url,
-        created_at: store.created_at
+        id: storeInfo.id,
+        store_name: storeInfo.store_name,
+        store_description: storeInfo.store_description,
+        profile_photo_url: storeInfo.profile_photo_url,
+        background_color: storeInfo.background_color || '#ffffff',
+        store_url: storeInfo.store_url,
+        whatsapp_number: null, // Por enquanto null até a coluna ser criada
+        created_at: storeInfo.created_at
       },
       products: productList.map(product => ({
         id: product.id,
