@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink } from "lucide-react";
@@ -11,7 +12,6 @@ interface StoreProfile {
   profile_photo_url: string | null;
   background_color: string;
   store_url: string;
-  whatsapp_number: string | null;
   created_at: string;
 }
 
@@ -44,7 +44,6 @@ const Catalog = () => {
   useEffect(() => {
     const fetchCatalogData = async () => {
       if (!storeUrl) {
-        console.log('❌ storeUrl missing:', storeUrl);
         setError('URL da loja não foi fornecida');
         setLoading(false);
         return;
@@ -54,59 +53,43 @@ const Catalog = () => {
         setLoading(true);
         setError(null);
         
-        console.log('🔍 Fetching catalog for store URL:', storeUrl);
-        console.log('🔍 Store URL type:', typeof storeUrl);
-        console.log('🔍 Store URL length:', storeUrl.length);
+        console.log('🔍 Buscando catálogo para:', storeUrl);
         
-        // Limpar a URL de espaços em branco e caracteres especiais
-        const cleanStoreUrl = storeUrl.trim().toLowerCase();
-        console.log('🧹 Cleaned store URL:', cleanStoreUrl);
-        
-        const functionUrl = `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${cleanStoreUrl}`;
-        console.log('🌐 Function URL:', functionUrl);
-        
-        const response = await fetch(functionUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            }
           }
-        });
+        );
         
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response ok:', response.ok);
-        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-        
-        const responseText = await response.text();
-        console.log('📡 Raw response:', responseText);
+        console.log('📡 Status da resposta:', response.status);
         
         if (!response.ok) {
-          console.log('❌ Error response:', responseText);
-          throw new Error(`HTTP ${response.status}: ${responseText}`);
+          const errorData = await response.json().catch(() => ({ 
+            error: 'Erro na resposta do servidor',
+            message: 'Não foi possível carregar o catálogo'
+          }));
+          console.log('❌ Erro da API:', errorData);
+          throw new Error(errorData.message || errorData.error || 'Loja não encontrada');
         }
 
-        let data: CatalogData;
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('❌ JSON parse error:', parseError);
-          throw new Error('Resposta inválida do servidor');
-        }
-        
-        console.log('✅ Data parsed successfully:', {
-          store_name: data.store?.store_name,
-          product_count: data.products?.length || 0
-        });
+        const data: CatalogData = await response.json();
+        console.log('✅ Dados recebidos:', data);
         
         setCatalogData(data);
         
+        // Exibir toast de sucesso
         toast({
           title: "Catálogo carregado!",
           description: `${data.meta.total_products} produtos encontrados`,
         });
         
       } catch (error) {
-        console.error('💥 Fetch error:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar catálogo';
+        console.error('💥 Error fetching catalog:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Não foi possível carregar o catálogo';
         setError(errorMessage);
         
         toast({
@@ -125,11 +108,10 @@ const Catalog = () => {
   const handleWhatsAppContact = () => {
     if (!catalogData?.store) return;
     
-    const phoneNumber = catalogData.store.whatsapp_number || '5511999999999';
     const message = encodeURIComponent(
       `Olá! Vim pelo seu catálogo LinkBuy "${catalogData.store.store_name}" e gostaria de saber mais sobre seus produtos.`
     );
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
   };
 
   const handleProductClick = (product: Product) => {
@@ -167,9 +149,10 @@ const Catalog = () => {
           </p>
           
           <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm text-gray-500 mb-2">Detalhes:</p>
+            <p className="text-sm text-gray-500 mb-2">Detalhes técnicos:</p>
             <div className="space-y-1 text-sm">
-              <p><span className="font-medium">URL:</span> <span className="font-mono bg-gray-200 px-2 py-1 rounded">{storeUrl}</span></p>
+              <p><span className="font-medium">URL buscada:</span> <span className="font-mono bg-gray-200 px-2 py-1 rounded">{storeUrl}</span></p>
+              <p><span className="font-medium">Sugestão:</span> Verifique se a URL está correta</p>
             </div>
           </div>
 
@@ -199,6 +182,7 @@ const Catalog = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: store.background_color }}>
       <div className="max-w-md mx-auto bg-white min-h-screen shadow-lg">
+        {/* Header Profile Section */}
         <div className="px-4 pt-8 pb-6 border-b border-gray-100">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-200 flex-shrink-0">
@@ -218,6 +202,7 @@ const Catalog = () => {
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-semibold mb-2 truncate">{store.store_name}</h1>
               
+              {/* Stats Row */}
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
                   <div className="font-semibold text-gray-900">{meta.total_products}</div>
@@ -235,10 +220,12 @@ const Catalog = () => {
             </div>
           </div>
 
+          {/* Description */}
           {store.store_description && (
             <p className="text-sm text-gray-700 mb-4 leading-relaxed">{store.store_description}</p>
           )}
 
+          {/* Action Buttons */}
           <div className="flex gap-2">
             <Button 
               onClick={handleWhatsAppContact}
@@ -257,10 +244,12 @@ const Catalog = () => {
           </div>
         </div>
 
+        {/* Grid Icon */}
         <div className="flex justify-center py-3 bg-gray-50">
           <Grid3X3 className="h-6 w-6 text-gray-400" />
         </div>
 
+        {/* Products Grid */}
         <div className="p-1 bg-gray-50">
           {products.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">
@@ -283,12 +272,13 @@ const Catalog = () => {
                     </div>
                   )}
                   
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90">
-                    <div className="absolute bottom-0 left-0 right-0 p-2">
-                      <h3 className="text-xs font-semibold text-white drop-shadow-lg line-clamp-2 mb-1">
+                  {/* Overlay with product info */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                      <h3 className="text-xs font-medium line-clamp-2 mb-1">
                         {product.name}
                       </h3>
-                      <p className="text-xs font-bold text-green-400 drop-shadow-lg">
+                      <p className="text-xs font-bold">
                         R$ {product.price.toFixed(2).replace('.', ',')}
                       </p>
                     </div>
@@ -307,6 +297,7 @@ const Catalog = () => {
           )}
         </div>
 
+        {/* Footer */}
         <div className="text-center py-6 text-xs text-gray-400 bg-gray-50">
           <p>Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
           <p className="mt-1">Última atualização: {new Date(meta.generated_at).toLocaleString('pt-BR')}</p>

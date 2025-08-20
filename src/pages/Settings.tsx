@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, Phone } from "lucide-react";
+import { User, Save, Camera, Palette, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,7 @@ const Settings = () => {
     store_url: '',
     store_description: '',
     background_color: '#ffffff',
-    profile_photo_url: '',
-    whatsapp_number: ''
+    profile_photo_url: ''
   });
 
   // Atualizar formData quando o profile carregar
@@ -35,8 +34,7 @@ const Settings = () => {
         store_url: profile.store_url || '',
         store_description: profile.store_description || '',
         background_color: profile.background_color || '#ffffff',
-        profile_photo_url: profile.profile_photo_url || '',
-        whatsapp_number: (profile as any).whatsapp_number || ''
+        profile_photo_url: profile.profile_photo_url || ''
       });
     }
   }, [profile]);
@@ -57,30 +55,6 @@ const Settings = () => {
       .replace(/-+/g, '-');
     
     handleInputChange('store_url', formattedUrl);
-  };
-
-  const formatWhatsAppNumber = (value: string) => {
-    // Remove tudo que não é número
-    const numbers = value.replace(/\D/g, '');
-    
-    // Limita a 13 dígitos (55 + DDD + número)
-    const limited = numbers.slice(0, 13);
-    
-    // Aplica formatação
-    if (limited.length <= 2) {
-      return limited;
-    } else if (limited.length <= 4) {
-      return `${limited.slice(0, 2)} ${limited.slice(2)}`;
-    } else if (limited.length <= 9) {
-      return `${limited.slice(0, 2)} ${limited.slice(2, 4)} ${limited.slice(4)}`;
-    } else {
-      return `${limited.slice(0, 2)} ${limited.slice(2, 4)} ${limited.slice(4, 9)}-${limited.slice(9)}`;
-    }
-  };
-
-  const handleWhatsAppChange = (value: string) => {
-    const formatted = formatWhatsAppNumber(value);
-    handleInputChange('whatsapp_number', formatted);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,29 +88,10 @@ const Settings = () => {
       return;
     }
 
-    // Validar WhatsApp (opcional, mas se preenchido deve estar correto)
-    if (formData.whatsapp_number) {
-      const numbers = formData.whatsapp_number.replace(/\D/g, '');
-      if (numbers.length < 10 || numbers.length > 13) {
-        toast({
-          title: "Número de WhatsApp inválido",
-          description: "Por favor, digite um número válido com DDD.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     setIsLoading(true);
 
     try {
-      // Preparar dados para salvar (sem formatação no WhatsApp)
-      const dataToSave = {
-        ...formData,
-        whatsapp_number: formData.whatsapp_number ? formData.whatsapp_number.replace(/\D/g, '') : null
-      };
-      
-      await updateProfile(dataToSave);
+      await updateProfile(formData);
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {
@@ -292,24 +247,6 @@ const Settings = () => {
                 />
                 <p className="text-xs text-muted-foreground">
                   {formData.store_description.length}/500 caracteres
-                </p>
-              </div>
-
-              {/* Campo WhatsApp */}
-              <div className="space-y-2">
-                <Label htmlFor="whatsapp_number" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Número do WhatsApp
-                </Label>
-                <Input
-                  id="whatsapp_number"
-                  value={formData.whatsapp_number}
-                  onChange={(e) => handleWhatsAppChange(e.target.value)}
-                  placeholder="55 11 99999-9999"
-                  maxLength={16}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Digite seu número com código do país e DDD. Este número será usado nos botões de WhatsApp do seu catálogo.
                 </p>
               </div>
             </CardContent>

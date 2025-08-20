@@ -12,7 +12,6 @@ export interface Profile {
   store_description: string | null;
   profile_photo_url: string | null;
   background_color: string;
-  whatsapp_number: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,19 +29,12 @@ export const useProfile = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, store_url, store_name, store_description, profile_photo_url, background_color, created_at, updated_at')
+        .select('*')
         .eq('id', user.id)
         .single();
 
       if (error) throw error;
-      
-      // Adiciona whatsapp_number como null temporariamente até a coluna ser criada
-      const profileWithWhatsApp = {
-        ...data,
-        whatsapp_number: null
-      };
-      
-      setProfile(profileWithWhatsApp);
+      setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -54,31 +46,22 @@ export const useProfile = () => {
     if (!user) return;
 
     try {
-      // Remove whatsapp_number dos dados se estiver presente, até a coluna ser criada
-      const { whatsapp_number, ...dataWithoutWhatsApp } = profileData;
-      
       const { data, error } = await supabase
         .from('profiles')
-        .update(dataWithoutWhatsApp)
+        .update(profileData)
         .eq('id', user.id)
-        .select('id, name, store_url, store_name, store_description, profile_photo_url, background_color, created_at, updated_at')
+        .select()
         .single();
 
       if (error) throw error;
 
-      // Adiciona whatsapp_number como null temporariamente
-      const profileWithWhatsApp = {
-        ...data,
-        whatsapp_number: null
-      };
-
-      setProfile(profileWithWhatsApp);
+      setProfile(data);
       toast({
         title: "Perfil atualizado!",
         description: "Suas informações foram salvas.",
       });
 
-      return profileWithWhatsApp;
+      return data;
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
