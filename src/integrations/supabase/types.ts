@@ -85,42 +85,22 @@ export type Database = {
       }
     }
     Views: {
-      public_store_profiles: {
-        Row: {
-          background_color: string | null
-          created_at: string | null
-          id: string | null
-          profile_photo_url: string | null
-          store_description: string | null
-          store_name: string | null
-          store_url: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          background_color?: string | null
-          created_at?: string | null
-          id?: string | null
-          profile_photo_url?: string | null
-          store_description?: string | null
-          store_name?: string | null
-          store_url?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          background_color?: string | null
-          created_at?: string | null
-          id?: string | null
-          profile_photo_url?: string | null
-          store_description?: string | null
-          store_name?: string | null
-          store_url?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_public_store_info: {
+        Args: { store_url_param: string }
+        Returns: {
+          background_color: string
+          created_at: string
+          id: string
+          profile_photo_url: string
+          store_description: string
+          store_name: string
+          store_url: string
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

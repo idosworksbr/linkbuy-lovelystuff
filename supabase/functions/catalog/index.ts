@@ -35,12 +35,10 @@ serve(async (req) => {
       )
     }
 
-    // Buscar perfil da loja pela store_url
+    // Buscar perfil da loja pela store_url usando função segura
     console.log('Buscando perfil com store_url:', storeUrl)
     const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('*')
-      .eq('store_url', storeUrl)
+      .rpc('get_public_store_info', { store_url_param: storeUrl })
       .single()
 
     if (profileError) {
