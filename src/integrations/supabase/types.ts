@@ -58,7 +58,6 @@ export type Database = {
           store_name: string
           store_url: string
           updated_at: string
-          whatsapp_number: number | null
         }
         Insert: {
           background_color?: string | null
@@ -70,7 +69,6 @@ export type Database = {
           store_name: string
           store_url: string
           updated_at?: string
-          whatsapp_number?: number | null
         }
         Update: {
           background_color?: string | null
@@ -82,7 +80,6 @@ export type Database = {
           store_name?: string
           store_url?: string
           updated_at?: string
-          whatsapp_number?: number | null
         }
         Relationships: []
       }

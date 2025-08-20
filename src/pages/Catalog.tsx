@@ -81,6 +81,7 @@ const Catalog = () => {
         
         setCatalogData(data);
         
+        // Exibir toast de sucesso
         toast({
           title: "Catálogo carregado!",
           description: `${data.meta.total_products} produtos encontrados`,
@@ -271,26 +272,16 @@ const Catalog = () => {
                     </div>
                   )}
                   
-                  {/* Overlay com gradiente e informações do produto */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-2">
-                      <h3 className="text-white text-xs font-semibold line-clamp-2 mb-1 drop-shadow-lg">
+                  {/* Overlay with product info */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                      <h3 className="text-xs font-medium line-clamp-2 mb-1">
                         {product.name}
                       </h3>
-                      <p className="text-green-400 text-xs font-bold drop-shadow-lg">
+                      <p className="text-xs font-bold">
                         R$ {product.price.toFixed(2).replace('.', ',')}
                       </p>
                     </div>
-                  </div>
-
-                  {/* Texto sempre visível no mobile */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
-                    <h3 className="text-white text-xs font-semibold line-clamp-1 mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
-                      {product.name}
-                    </h3>
-                    <p className="text-green-400 text-xs font-bold" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
-                      R$ {product.price.toFixed(2).replace('.', ',')}
-                    </p>
                   </div>
                 </div>
               ))}

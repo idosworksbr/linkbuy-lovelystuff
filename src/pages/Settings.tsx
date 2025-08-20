@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, Phone } from "lucide-react";
+import { User, Save, Camera, Palette, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,7 @@ const Settings = () => {
     store_url: '',
     store_description: '',
     background_color: '#ffffff',
-    profile_photo_url: '',
-    whatsapp_number: ''
+    profile_photo_url: ''
   });
 
   // Atualizar formData quando o profile carregar
@@ -35,8 +34,7 @@ const Settings = () => {
         store_url: profile.store_url || '',
         store_description: profile.store_description || '',
         background_color: profile.background_color || '#ffffff',
-        profile_photo_url: profile.profile_photo_url || '',
-        whatsapp_number: profile.whatsapp_number || ''
+        profile_photo_url: profile.profile_photo_url || ''
       });
     }
   }, [profile]);
@@ -49,6 +47,7 @@ const Settings = () => {
   };
 
   const handleStoreUrlChange = (value: string) => {
+    // Limpar e formatar a URL da loja
     const formattedUrl = value
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, '')
@@ -56,12 +55,6 @@ const Settings = () => {
       .replace(/-+/g, '-');
     
     handleInputChange('store_url', formattedUrl);
-  };
-
-  const handleWhatsAppChange = (value: string) => {
-    // Remove tudo que não seja número
-    const numbersOnly = value.replace(/\D/g, '');
-    handleInputChange('whatsapp_number', numbersOnly);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,16 +83,6 @@ const Settings = () => {
       toast({
         title: "URL da loja inválida",
         description: "A URL da loja deve ter pelo menos 3 caracteres.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validação do WhatsApp
-    if (formData.whatsapp_number && (formData.whatsapp_number.length < 10 || formData.whatsapp_number.length > 11)) {
-      toast({
-        title: "Número do WhatsApp inválido",
-        description: "Digite um número válido com DDD (10 ou 11 dígitos).",
         variant: "destructive",
       });
       return;
@@ -249,25 +232,6 @@ const Settings = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Apenas letras minúsculas, números e hífens. Entre 3 e 50 caracteres.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="whatsapp_number">Número do WhatsApp</Label>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">+55</span>
-                  <Input
-                    id="whatsapp_number"
-                    value={formData.whatsapp_number}
-                    onChange={(e) => handleWhatsAppChange(e.target.value)}
-                    placeholder="11999999999"
-                    className="flex-1"
-                    maxLength={11}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Digite apenas números (DDD + número). Ex: 11999999999
                 </p>
               </div>
 
