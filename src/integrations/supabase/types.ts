@@ -101,6 +101,18 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_public_store_products: {
+        Args: { store_url_param: string }
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          images: string[]
+          name: string
+          price: number
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
