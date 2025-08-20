@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AddProduct from "./pages/AddProduct";
+import Settings from "./pages/Settings";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/add-product" element={<AddProduct />} />
+            <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/catalog/:storeUrl" element={<Catalog />} />
             <Route path="/catalog/:storeUrl/product/:productId" element={<ProductDetail />} />
             <Route path="*" element={<NotFound />} />

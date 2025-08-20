@@ -1,78 +1,116 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { MessageCircle, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data - em produção viria de uma API baseada no storeSlug
-const mockStore = {
-  name: "Minha Loja Fashion",
-  description: "Roupas e acessórios com estilo único",
-  logo: "/api/placeholder/150/150",
-  backgroundColor: "#f8fafc",
-  products: [{
-    id: 1,
-    name: "Tênis Esportivo Premium",
-    price: 299.90,
-    image: "/api/placeholder/300/300"
-  }, {
-    id: 2,
-    name: "Camiseta Básica",
-    price: 49.90,
-    image: "/api/placeholder/300/300"
-  }, {
-    id: 3,
-    name: "Jaqueta Jeans",
-    price: 159.90,
-    image: "/api/placeholder/300/300"
-  }, {
-    id: 4,
-    name: "Vestido Floral",
-    price: 129.90,
-    image: "/api/placeholder/300/300"
-  }, {
-    id: 5,
-    name: "Calça Jogger",
-    price: 89.90,
-    image: "/api/placeholder/300/300"
-  }, {
-    id: 6,
-    name: "Blusa de Frio",
-    price: 119.90,
-    image: "/api/placeholder/300/300"
-  }]
-};
+interface StoreProfile {
+  id: string;
+  name: string;
+  store_name: string;
+  store_description: string | null;
+  profile_photo_url: string | null;
+  background_color: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  images: string[];
+}
 
 const Catalog = () => {
-  const { storeSlug } = useParams();
-  const [store] = useState(mockStore);
+  const { storeUrl } = useParams();
+  const [store, setStore] = useState<StoreProfile | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCatalogData = async () => {
+      if (!storeUrl) return;
+
+      try {
+        setLoading(true);
+        
+        // Buscar dados usando a Edge Function
+        const response = await fetch(`https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`);
+        
+        if (!response.ok) {
+          throw new Error('Loja não encontrada');
+        }
+
+        const data = await response.json();
+        setStore(data.store);
+        setProducts(data.products || []);
+      } catch (error) {
+        console.error('Error fetching catalog:', error);
+        setError('Não foi possível carregar o catálogo');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCatalogData();
+  }, [storeUrl]);
 
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent(`Olá! Vim pelo seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.`);
     window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
   };
 
-  const handleProductClick = (product: any) => {
-    window.location.href = `/c/${storeSlug}/${product.id}`;
+  const handleProductClick = (product: Product) => {
+    window.location.href = `/catalog/${storeUrl}/${product.id}`;
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-500">Carregando catálogo...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !store) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Loja não encontrada</h1>
+          <p className="text-gray-600">A loja que você está procurando não existe ou foi removida.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: store.background_color }}>
       <div className="max-w-md mx-auto bg-white min-h-screen">
         {/* Header Profile Section */}
         <div className="px-4 pt-8 pb-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-200">
-              <img src={store.logo} alt={store.name} className="w-full h-full object-cover" />
+              {store.profile_photo_url ? (
+                <img src={store.profile_photo_url} alt={store.store_name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl font-bold">
+                  {store.store_name.charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
             
             <div className="flex-1">
-              <h1 className="text-xl font-semibold mb-1">{store.name}</h1>
+              <h1 className="text-xl font-semibold mb-1">{store.store_name}</h1>
               
               {/* Stats Row */}
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
-                  <div className="font-semibold">{store.products.length}</div>
+                  <div className="font-semibold">{products.length}</div>
                   <div className="text-gray-500">Produtos</div>
                 </div>
                 <div className="text-center">
@@ -88,7 +126,9 @@ const Catalog = () => {
           </div>
 
           {/* Description */}
-          <p className="text-sm text-gray-700 mb-4">{store.description}</p>
+          {store.store_description && (
+            <p className="text-sm text-gray-700 mb-4">{store.store_description}</p>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-2">
@@ -117,34 +157,46 @@ const Catalog = () => {
 
         {/* Products Grid */}
         <div className="px-1">
-          <div className="grid grid-cols-3 gap-1">
-            {store.products.map((product, index) => (
-              <div 
-                key={product.id} 
-                onClick={() => handleProductClick(product)} 
-                className="relative aspect-square cursor-pointer group animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <img 
-                  src={product.image} 
-                  alt={product.name} 
-                  className="w-full h-full object-cover" 
-                />
-                
-                {/* Gradient overlay with product info */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-                    <h3 className="text-xs font-medium line-clamp-2 mb-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs font-bold">
-                      R$ {product.price.toFixed(2).replace('.', ',')}
-                    </p>
+          {products.length > 0 ? (
+            <div className="grid grid-cols-3 gap-1">
+              {products.map((product, index) => (
+                <div 
+                  key={product.id} 
+                  onClick={() => handleProductClick(product)} 
+                  className="relative aspect-square cursor-pointer group animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {product.images && product.images.length > 0 ? (
+                    <img 
+                      src={product.images[0]} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-400 text-xs">Sem imagem</span>
+                    </div>
+                  )}
+                  
+                  {/* Gradient overlay with product info */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                      <h3 className="text-xs font-medium line-clamp-2 mb-1">
+                        {product.name}
+                      </h3>
+                      <p className="text-xs font-bold">
+                        R$ {product.price.toFixed(2).replace('.', ',')}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Nenhum produto disponível</p>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

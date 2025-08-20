@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useProfile } from "@/hooks/useProfile";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -21,6 +21,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { profile } = useProfile();
 
   const navigation = [
     {
@@ -45,6 +46,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const handleLogout = () => {
     navigate('/');
+  };
+
+  const handleViewCatalog = () => {
+    if (profile?.store_url) {
+      window.open(`/catalog/${profile.store_url}`, '_blank');
+    } else {
+      // Se não tem store_url, redireciona para configurações
+      navigate('/dashboard/settings');
+    }
   };
 
   const Sidebar = () => (
@@ -81,7 +91,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <Button
           variant="outline"
           className="w-full justify-start"
-          onClick={() => window.open('/c/minha-loja', '_blank')}
+          onClick={handleViewCatalog}
         >
           <Eye className="h-4 w-4 mr-2" />
           Ver meu catálogo
