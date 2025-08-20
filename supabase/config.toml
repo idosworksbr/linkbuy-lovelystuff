@@ -102,3 +102,6 @@ verify_jwt = false
 
 [functions.catalog]
 verify_jwt = false
+
+[functions.product-detail]
+verify_jwt = false
