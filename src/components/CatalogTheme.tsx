@@ -55,15 +55,6 @@ export const CatalogTheme = ({ theme, backgroundColor, children }: CatalogThemeP
       style={containerStyle}
       data-theme={theme}
     >
-      <style jsx>{`
-        [data-theme="${theme}"] .theme-container { ${theme !== 'light' ? `background-color: ${themeClasses.container.split(' ')[0].replace('bg-', '')}` : ''} }
-        [data-theme="${theme}"] .theme-card { @apply ${themeClasses.card}; }
-        [data-theme="${theme}"] .theme-text { @apply ${themeClasses.text}; }
-        [data-theme="${theme}"] .theme-text-muted { @apply ${themeClasses.textMuted}; }
-        [data-theme="${theme}"] .theme-button { @apply ${themeClasses.button}; }
-        [data-theme="${theme}"] .theme-button-outline { @apply ${themeClasses.buttonOutline}; }
-        [data-theme="${theme}"] .theme-header { @apply ${themeClasses.header}; }
-      `}</style>
       {children}
     </div>
   );

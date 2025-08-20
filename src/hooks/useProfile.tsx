@@ -39,7 +39,16 @@ export const useProfile = () => {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      
+      // Garantir que os tipos estão corretos
+      const profileData: Profile = {
+        ...data,
+        catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige') || 'light',
+        catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'
+      };
+      
+      setProfile(profileData);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -60,13 +69,21 @@ export const useProfile = () => {
 
       if (error) throw error;
 
-      setProfile(data);
+      // Garantir que os tipos estão corretos
+      const updatedProfile: Profile = {
+        ...data,
+        catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige') || 'light',
+        catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'
+      };
+
+      setProfile(updatedProfile);
       toast({
         title: "Perfil atualizado!",
         description: "Suas informações foram salvas.",
       });
 
-      return data;
+      return updatedProfile;
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
