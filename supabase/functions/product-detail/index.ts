@@ -14,12 +14,12 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🚀 Inicializando função product-detail')
+    console.log('🚀 Inicializando função product-detail (pública)')
     console.log('📍 URL da requisição:', req.url)
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
     const url = new URL(req.url)
@@ -43,7 +43,7 @@ serve(async (req) => {
       )
     }
 
-    // Buscar produto específico junto com dados da loja
+    // Buscar produto específico junto com dados da loja usando SERVICE_ROLE_KEY
     console.log('🔍 Buscando produto e loja...')
     const { data: productData, error: productError } = await supabaseClient
       .from('products')
@@ -104,7 +104,7 @@ serve(async (req) => {
       created_at: productData.created_at,
       store: {
         store_name: productData.profiles.store_name,
-        whatsapp_number: productData.profiles.whatsapp_number
+        whatsapp_number: productData.profiles.whatsapp_number ? productData.profiles.whatsapp_number.toString() : null
       }
     }
 

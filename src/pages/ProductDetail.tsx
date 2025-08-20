@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
@@ -14,6 +13,7 @@ const ProductDetail = () => {
   const handleWhatsAppOrder = () => {
     if (!product) return;
     
+    // Usar o número da loja se disponível, senão usar um padrão
     const whatsappNumber = product.store.whatsapp_number || '5511999999999';
     const message = encodeURIComponent(
       `Olá! Tenho interesse no produto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`
