@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { MessageCircle, ArrowLeft } from "lucide-react";
+import { MessageCircle, Instagram, Facebook, Twitter, Youtube, Mail, Globe, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Mock data - em produção viria de uma API baseada no storeSlug
@@ -10,6 +10,11 @@ const mockStore = {
   description: "Roupas e acessórios com estilo único",
   logo: "/api/placeholder/150/150",
   backgroundColor: "#f8fafc",
+  socialLinks: [
+    { type: "instagram", url: "https://instagram.com/minhaloja", label: "@minhaloja" },
+    { type: "facebook", url: "https://facebook.com/minhaloja", label: "Minha Loja Fashion" },
+    { type: "whatsapp", url: "https://wa.me/5511999999999", label: "(11) 99999-9999" }
+  ],
   products: [
     {
       id: 1,
@@ -50,6 +55,31 @@ const mockStore = {
   ]
 };
 
+const getSocialIcon = (type: string) => {
+  const iconProps = { className: "h-5 w-5" };
+  
+  switch (type) {
+    case "instagram":
+      return <Instagram {...iconProps} />;
+    case "facebook":
+      return <Facebook {...iconProps} />;
+    case "twitter":
+      return <Twitter {...iconProps} />;
+    case "youtube":
+      return <Youtube {...iconProps} />;
+    case "whatsapp":
+      return <MessageCircle {...iconProps} />;
+    case "email":
+      return <Mail {...iconProps} />;
+    case "website":
+      return <Globe {...iconProps} />;
+    case "phone":
+      return <Phone {...iconProps} />;
+    default:
+      return <Globe {...iconProps} />;
+  }
+};
+
 const Catalog = () => {
   const { storeSlug } = useParams();
   const [store] = useState(mockStore);
@@ -61,6 +91,10 @@ const Catalog = () => {
 
   const handleProductClick = (product: any) => {
     window.location.href = `/c/${storeSlug}/${product.id}`;
+  };
+
+  const handleSocialLinkClick = (url: string) => {
+    window.open(url, '_blank');
   };
 
   return (
@@ -82,6 +116,23 @@ const Catalog = () => {
           <h1 className="text-2xl font-bold mb-2">{store.name}</h1>
           <p className="text-muted-foreground mb-4">{store.description}</p>
           
+          {/* Social Links */}
+          {store.socialLinks && store.socialLinks.length > 0 && (
+            <div className="flex justify-center gap-3 mb-4">
+              {store.socialLinks.map((link, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSocialLinkClick(link.url)}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/70 hover:bg-white/90 rounded-full transition-colors border border-border"
+                  title={link.label}
+                >
+                  {getSocialIcon(link.type)}
+                  <span className="text-sm font-medium">{link.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          
           <Button 
             className="whatsapp-btn"
             onClick={handleWhatsAppContact}
@@ -93,28 +144,30 @@ const Catalog = () => {
 
         {/* Products Grid */}
         <div className="px-4 pb-8">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {store.products.map((product) => (
               <div
                 key={product.id}
                 className="product-card cursor-pointer"
                 onClick={() => handleProductClick(product)}
               >
-                <div className="aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
+                <div className="aspect-square bg-muted rounded-lg mb-3 overflow-hidden">
                   <img 
                     src={product.image} 
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                   />
                 </div>
                 
-                <h3 className="text-xs font-medium line-clamp-2 mb-1">
-                  {product.name}
-                </h3>
-                
-                <p className="text-sm font-bold text-whatsapp">
-                  R$ {product.price.toFixed(2).replace('.', ',')}
-                </p>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium line-clamp-2 leading-tight">
+                    {product.name}
+                  </h3>
+                  
+                  <p className="text-lg font-bold text-whatsapp">
+                    R$ {product.price.toFixed(2).replace('.', ',')}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
