@@ -54,15 +54,43 @@ serve(async (req) => {
       )
     }
 
-    // Buscar informações da loja usando maybeSingle() ao invés de single()
-    console.log('🏪 Buscando loja:', storeUrl)
-    const { data: storeInfo, error: storeError } = await supabaseClient
+    // NOVA ABORDAGEM: Vamos fazer múltiplas tentativas de busca
+    console.log('🏪 Tentando encontrar loja:', storeUrl)
+    
+    // Primeira tentativa: busca exata
+    let { data: storeInfo, error: storeError } = await supabaseClient
       .from('profiles')
       .select('id, name, store_url, store_name, store_description, profile_photo_url, background_color, created_at')
       .eq('store_url', storeUrl)
       .maybeSingle()
 
-    console.log('📊 Store query result:', { storeInfo, storeError })
+    console.log('📊 Primeira busca - Store query result:', { storeInfo, storeError })
+
+    // Se não encontrou, vamos tentar busca case-insensitive
+    if (!storeInfo && !storeError) {
+      console.log('🔍 Tentando busca case-insensitive')
+      const result = await supabaseClient
+        .from('profiles')
+        .select('id, name, store_url, store_name, store_description, profile_photo_url, background_color, created_at')
+        .ilike('store_url', storeUrl)
+        .maybeSingle()
+      
+      storeInfo = result.data
+      storeError = result.error
+      console.log('📊 Segunda busca - Store query result:', { storeInfo, storeError })
+    }
+
+    // Se ainda não encontrou, vamos listar todas as lojas para debug
+    if (!storeInfo && !storeError) {
+      console.log('🔍 Listando todas as lojas para debug')
+      const { data: allStores, error: listError } = await supabaseClient
+        .from('profiles')
+        .select('store_url')
+        .limit(10)
+      
+      console.log('📊 Todas as lojas:', allStores)
+      console.log('📊 Error ao listar:', listError)
+    }
 
     if (storeError) {
       console.log('❌ Error fetching store:', storeError)

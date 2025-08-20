@@ -54,9 +54,15 @@ const Catalog = () => {
         setLoading(true);
         setError(null);
         
-        console.log('🔍 Fetching catalog for:', storeUrl);
+        console.log('🔍 Fetching catalog for store URL:', storeUrl);
+        console.log('🔍 Store URL type:', typeof storeUrl);
+        console.log('🔍 Store URL length:', storeUrl.length);
         
-        const functionUrl = `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`;
+        // Limpar a URL de espaços em branco e caracteres especiais
+        const cleanStoreUrl = storeUrl.trim().toLowerCase();
+        console.log('🧹 Cleaned store URL:', cleanStoreUrl);
+        
+        const functionUrl = `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${cleanStoreUrl}`;
         console.log('🌐 Function URL:', functionUrl);
         
         const response = await fetch(functionUrl, {
@@ -68,14 +74,24 @@ const Catalog = () => {
         
         console.log('📡 Response status:', response.status);
         console.log('📡 Response ok:', response.ok);
+        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        const responseText = await response.text();
+        console.log('📡 Raw response:', responseText);
         
         if (!response.ok) {
-          const errorText = await response.text();
-          console.log('❌ Error response:', errorText);
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
+          console.log('❌ Error response:', responseText);
+          throw new Error(`HTTP ${response.status}: ${responseText}`);
         }
 
-        const data: CatalogData = await response.json();
+        let data: CatalogData;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ JSON parse error:', parseError);
+          throw new Error('Resposta inválida do servidor');
+        }
+        
         console.log('✅ Data parsed successfully:', {
           store_name: data.store?.store_name,
           product_count: data.products?.length || 0
