@@ -73,7 +73,7 @@ const Catalog = () => {
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
                   <div className="font-semibold">{store.products.length}</div>
-                  <div className="text-gray-500">Posts</div>
+                  <div className="text-gray-500">Produtos</div>
                 </div>
                 <div className="text-center">
                   <div className="font-semibold">1.2k</div>
