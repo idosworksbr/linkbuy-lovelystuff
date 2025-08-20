@@ -44,7 +44,7 @@ const Catalog = () => {
   useEffect(() => {
     const fetchCatalogData = async () => {
       if (!storeUrl) {
-        console.log('❌ storeUrl está vazio:', storeUrl);
+        console.log('❌ storeUrl missing:', storeUrl);
         setError('URL da loja não foi fornecida');
         setLoading(false);
         return;
@@ -54,64 +54,31 @@ const Catalog = () => {
         setLoading(true);
         setError(null);
         
-        console.log('🔍 Iniciando busca do catálogo para:', storeUrl);
-        console.log('🌐 URL completa da requisição:', `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`);
+        console.log('🔍 Fetching catalog for:', storeUrl);
         
-        const response = await fetch(
-          `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache',
-            }
+        const functionUrl = `https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`;
+        console.log('🌐 Function URL:', functionUrl);
+        
+        const response = await fetch(functionUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
           }
-        );
+        });
         
-        console.log('📡 Status da resposta:', response.status);
-        console.log('📡 Headers da resposta:', Object.fromEntries(response.headers.entries()));
-        
-        // Tentar ler o texto da resposta primeiro para debug
-        const responseText = await response.text();
-        console.log('📄 Texto completo da resposta:', responseText);
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
         
         if (!response.ok) {
-          console.log('❌ Resposta não OK, status:', response.status);
-          let errorData;
-          try {
-            errorData = JSON.parse(responseText);
-            console.log('❌ Dados de erro parseados:', errorData);
-          } catch (parseError) {
-            console.log('❌ Erro ao fazer parse do JSON de erro:', parseError);
-            errorData = { 
-              error: 'Erro na resposta do servidor',
-              message: 'Não foi possível carregar o catálogo',
-              responseText: responseText
-            };
-          }
-          throw new Error(errorData.message || errorData.error || 'Loja não encontrada');
+          const errorText = await response.text();
+          console.log('❌ Error response:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
 
-        // Tentar fazer parse do JSON
-        let data: CatalogData;
-        try {
-          data = JSON.parse(responseText);
-          console.log('✅ Dados parseados com sucesso:', data);
-        } catch (parseError) {
-          console.log('❌ Erro ao fazer parse do JSON:', parseError);
-          console.log('📄 Conteúdo que falhou no parse:', responseText);
-          throw new Error('Erro ao processar resposta do servidor');
-        }
-        
-        // Validar estrutura dos dados
-        if (!data.store || !data.products || !data.meta) {
-          console.log('❌ Estrutura de dados inválida:', data);
-          throw new Error('Dados do catálogo estão em formato inválido');
-        }
-        
-        console.log('✅ Definindo dados do catálogo:', {
-          store_name: data.store.store_name,
-          product_count: data.products.length
+        const data: CatalogData = await response.json();
+        console.log('✅ Data parsed successfully:', {
+          store_name: data.store?.store_name,
+          product_count: data.products?.length || 0
         });
         
         setCatalogData(data);
@@ -122,11 +89,8 @@ const Catalog = () => {
         });
         
       } catch (error) {
-        console.error('💥 Erro completo:', error);
-        console.error('💥 Stack trace:', error instanceof Error ? error.stack : 'Sem stack trace');
-        
-        const errorMessage = error instanceof Error ? error.message : 'Não foi possível carregar o catálogo';
-        console.log('📝 Definindo erro:', errorMessage);
+        console.error('💥 Fetch error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar catálogo';
         setError(errorMessage);
         
         toast({
@@ -135,7 +99,6 @@ const Catalog = () => {
           variant: "destructive",
         });
       } finally {
-        console.log('🏁 Finalizando carregamento');
         setLoading(false);
       }
     };
@@ -146,7 +109,6 @@ const Catalog = () => {
   const handleWhatsAppContact = () => {
     if (!catalogData?.store) return;
     
-    // Usar o número configurado pelo usuário ou um número padrão
     const phoneNumber = catalogData.store.whatsapp_number || '5511999999999';
     const message = encodeURIComponent(
       `Olá! Vim pelo seu catálogo LinkBuy "${catalogData.store.store_name}" e gostaria de saber mais sobre seus produtos.`
@@ -161,13 +123,6 @@ const Catalog = () => {
   const handleGoBack = () => {
     navigate('/');
   };
-
-  console.log('🎨 Renderizando componente - Estado atual:', {
-    loading,
-    error,
-    hasCatalogData: !!catalogData,
-    storeUrl
-  });
 
   if (loading) {
     return (
@@ -196,10 +151,9 @@ const Catalog = () => {
           </p>
           
           <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm text-gray-500 mb-2">Detalhes técnicos:</p>
+            <p className="text-sm text-gray-500 mb-2">Detalhes:</p>
             <div className="space-y-1 text-sm">
-              <p><span className="font-medium">URL buscada:</span> <span className="font-mono bg-gray-200 px-2 py-1 rounded">{storeUrl}</span></p>
-              <p><span className="font-medium">Sugestão:</span> Verifique se a URL está correta</p>
+              <p><span className="font-medium">URL:</span> <span className="font-mono bg-gray-200 px-2 py-1 rounded">{storeUrl}</span></p>
             </div>
           </div>
 
@@ -229,7 +183,6 @@ const Catalog = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: store.background_color }}>
       <div className="max-w-md mx-auto bg-white min-h-screen shadow-lg">
-        {/* Header Profile Section */}
         <div className="px-4 pt-8 pb-6 border-b border-gray-100">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-200 flex-shrink-0">
@@ -249,7 +202,6 @@ const Catalog = () => {
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-semibold mb-2 truncate">{store.store_name}</h1>
               
-              {/* Stats Row */}
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
                   <div className="font-semibold text-gray-900">{meta.total_products}</div>
@@ -267,12 +219,10 @@ const Catalog = () => {
             </div>
           </div>
 
-          {/* Description */}
           {store.store_description && (
             <p className="text-sm text-gray-700 mb-4 leading-relaxed">{store.store_description}</p>
           )}
 
-          {/* Action Buttons */}
           <div className="flex gap-2">
             <Button 
               onClick={handleWhatsAppContact}
@@ -291,12 +241,10 @@ const Catalog = () => {
           </div>
         </div>
 
-        {/* Grid Icon */}
         <div className="flex justify-center py-3 bg-gray-50">
           <Grid3X3 className="h-6 w-6 text-gray-400" />
         </div>
 
-        {/* Products Grid - Layout otimizado para mobile */}
         <div className="p-1 bg-gray-50">
           {products.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">
@@ -319,7 +267,6 @@ const Catalog = () => {
                     </div>
                   )}
                   
-                  {/* Overlay com gradiente escuro e informações do produto - Layout Mobile Otimizado */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90">
                     <div className="absolute bottom-0 left-0 right-0 p-2">
                       <h3 className="text-xs font-semibold text-white drop-shadow-lg line-clamp-2 mb-1">
@@ -344,7 +291,6 @@ const Catalog = () => {
           )}
         </div>
 
-        {/* Footer */}
         <div className="text-center py-6 text-xs text-gray-400 bg-gray-50">
           <p>Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
           <p className="mt-1">Última atualização: {new Date(meta.generated_at).toLocaleString('pt-BR')}</p>
