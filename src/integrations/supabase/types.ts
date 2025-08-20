@@ -85,7 +85,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_store_profiles: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          id: string | null
+          profile_photo_url: string | null
+          store_description: string | null
+          store_name: string | null
+          store_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          id?: string | null
+          profile_photo_url?: string | null
+          store_description?: string | null
+          store_name?: string | null
+          store_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          id?: string | null
+          profile_photo_url?: string | null
+          store_description?: string | null
+          store_name?: string | null
+          store_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
