@@ -3,34 +3,30 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import ProductForm from "@/components/ProductForm";
-import { useToast } from "@/hooks/use-toast";
+import { useProducts } from "@/hooks/useProducts";
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { createProduct } = useProducts();
 
   const handleSubmit = async (data: any) => {
     setIsLoading(true);
     
     try {
-      // Simular salvamento do produto
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Dados do produto:", data);
-      
-      toast({
-        title: "Produto adicionado!",
-        description: "Seu produto foi adicionado ao catálogo com sucesso.",
-      });
-      
+      // Converter o preço de string para number
+      const productData = {
+        name: data.name,
+        price: parseFloat(data.price),
+        description: data.description,
+        images: data.images || []
+      };
+
+      await createProduct(productData);
       navigate("/dashboard");
     } catch (error) {
-      toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao adicionar o produto. Tente novamente.",
-        variant: "destructive",
-      });
+      console.error('Erro ao criar produto:', error);
+      // O hook useProducts já mostra o toast de erro
     } finally {
       setIsLoading(false);
     }

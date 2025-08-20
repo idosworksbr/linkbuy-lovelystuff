@@ -1,156 +1,180 @@
 
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { 
-  ShoppingBag, 
-  Package, 
-  Plus, 
-  Settings, 
-  Menu,
-  LogOut,
-  Eye
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useProfile } from "@/hooks/useProfile";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Home, Package, Settings, User, LogOut, ExternalLink } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const location = useLocation();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const { user, signOut } = useAuth();
   const { profile } = useProfile();
-  const { signOut } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const navigation = [
-    {
-      name: "Meu Catálogo",
-      href: "/dashboard",
-      icon: Package,
-      current: location.pathname === "/dashboard"
-    },
-    {
-      name: "Adicionar Produto",
-      href: "/dashboard/add-product",
-      icon: Plus,
-      current: location.pathname === "/dashboard/add-product"
-    },
-    {
-      name: "Configurações",
-      href: "/dashboard/settings",
-      icon: Settings,
-      current: location.pathname === "/dashboard/settings"
-    }
-  ];
-
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     try {
+      setIsLoggingOut(true);
       await signOut();
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Erro ao fazer logout:", error);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
   const handleViewCatalog = () => {
     if (profile?.store_url) {
+      // Abrir em nova aba
       window.open(`/catalog/${profile.store_url}`, '_blank');
     } else {
-      // Se não tem store_url, redireciona para configurações
-      navigate('/dashboard/settings');
+      navigate("/dashboard/settings");
     }
   };
 
-  const Sidebar = () => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="flex items-center gap-2 p-6 border-b">
-        <ShoppingBag className="h-8 w-8 text-whatsapp" />
-        <span className="text-xl font-bold">LinkBuy</span>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex-1 px-6 py-6">
-        <nav className="space-y-2">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                item.current
-                  ? "bg-whatsapp text-whatsapp-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
-              }`}
-            >
-              <item.icon className="h-5 w-5" />
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-      </div>
-
-      {/* Bottom Actions */}
-      <div className="p-6 border-t space-y-2">
-        <Button
-          variant="outline"
-          className="w-full justify-start"
-          onClick={handleViewCatalog}
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          Ver meu catálogo
-        </Button>
-        
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground"
-          onClick={handleLogout}
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sair
-        </Button>
-      </div>
-    </div>
-  );
+  const menuItems = [
+    {
+      label: "Dashboard",
+      icon: Home,
+      path: "/dashboard",
+      active: location.pathname === "/dashboard"
+    },
+    {
+      label: "Adicionar Produto",
+      icon: Package,
+      path: "/dashboard/add-product",
+      active: location.pathname === "/dashboard/add-product"
+    },
+    {
+      label: "Configurações",
+      icon: Settings,
+      path: "/dashboard/settings",
+      active: location.pathname === "/dashboard/settings"
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-catalog">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-72 lg:overflow-y-auto lg:bg-card lg:border-r">
-        <Sidebar />
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-900">LinkBuy</h1>
+            </div>
 
-      {/* Mobile Header */}
-      <div className="lg:hidden">
-        <div className="flex items-center justify-between bg-card border-b px-4 py-3">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="h-6 w-6 text-whatsapp" />
-            <span className="text-lg font-bold">LinkBuy</span>
-          </div>
-          
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Menu className="h-5 w-5" />
+            {/* Navigation */}
+            <nav className="hidden md:flex space-x-8">
+              {menuItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    item.active
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </nav>
+
+            {/* User Menu */}
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewCatalog}
+                className="hidden sm:flex items-center space-x-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Ver meu catálogo</span>
               </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
-              <Sidebar />
-            </SheetContent>
-          </Sheet>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.profile_photo_url || ""} alt={profile?.name || "Usuário"} />
+                      <AvatarFallback>
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{profile?.name || "Usuário"}</p>
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Configurações</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleSignOut} 
+                    disabled={isLoggingOut}
+                    className="text-red-600 focus:text-red-600"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{isLoggingOut ? "Saindo..." : "Sair"}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden">
+            <div className="pt-2 pb-3 space-y-1">
+              {menuItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    item.active
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewCatalog}
+                className="w-full mt-2 flex items-center justify-center space-x-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Ver meu catálogo</span>
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="lg:pl-72">
-        <main className="py-6 px-4 lg:px-8">
-          {children}
-        </main>
-      </div>
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {children}
+      </main>
     </div>
   );
 };

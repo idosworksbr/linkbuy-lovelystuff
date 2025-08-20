@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { MessageCircle, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 
 interface StoreProfile {
   id: string;
@@ -12,6 +11,7 @@ interface StoreProfile {
   store_description: string | null;
   profile_photo_url: string | null;
   background_color: string;
+  store_url: string;
 }
 
 interface Product {
@@ -31,24 +31,37 @@ const Catalog = () => {
 
   useEffect(() => {
     const fetchCatalogData = async () => {
-      if (!storeUrl) return;
+      if (!storeUrl) {
+        setError('URL da loja não foi fornecida');
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
+        setError(null);
+        
+        console.log('Buscando catálogo para:', storeUrl);
         
         // Buscar dados usando a Edge Function
         const response = await fetch(`https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/catalog/${storeUrl}`);
         
+        console.log('Status da resposta:', response.status);
+        
         if (!response.ok) {
-          throw new Error('Loja não encontrada');
+          const errorData = await response.json().catch(() => ({ error: 'Erro na resposta' }));
+          console.log('Erro da API:', errorData);
+          throw new Error(errorData.error || 'Loja não encontrada');
         }
 
         const data = await response.json();
+        console.log('Dados recebidos:', data);
+        
         setStore(data.store);
         setProducts(data.products || []);
       } catch (error) {
         console.error('Error fetching catalog:', error);
-        setError('Não foi possível carregar o catálogo');
+        setError(error instanceof Error ? error.message : 'Não foi possível carregar o catálogo');
       } finally {
         setLoading(false);
       }
@@ -72,6 +85,7 @@ const Catalog = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-500">Carregando catálogo...</p>
+          <p className="text-xs text-gray-400 mt-2">Loja: {storeUrl}</p>
         </div>
       </div>
     );
@@ -80,9 +94,15 @@ const Catalog = () => {
   if (error || !store) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Loja não encontrada</h1>
-          <p className="text-gray-600">A loja que você está procurando não existe ou foi removida.</p>
+          <p className="text-gray-600 mb-4">
+            {error || "A loja que você está procurando não existe ou foi removida."}
+          </p>
+          <div className="text-sm text-gray-400 space-y-1">
+            <p>URL buscada: <span className="font-mono">{storeUrl}</span></p>
+            <p>Verifique se a URL está correta</p>
+          </div>
         </div>
       </div>
     );

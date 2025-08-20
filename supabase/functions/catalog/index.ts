@@ -22,7 +22,10 @@ serve(async (req) => {
     const url = new URL(req.url)
     const storeUrl = url.pathname.split('/').pop()
 
+    console.log('Buscando catálogo para store_url:', storeUrl)
+
     if (!storeUrl) {
+      console.log('Store URL não fornecida')
       return new Response(
         JSON.stringify({ error: 'Store URL is required' }),
         { 
@@ -33,21 +36,29 @@ serve(async (req) => {
     }
 
     // Buscar perfil da loja pela store_url
+    console.log('Buscando perfil com store_url:', storeUrl)
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
       .eq('store_url', storeUrl)
       .single()
 
+    if (profileError) {
+      console.log('Erro ao buscar perfil:', profileError)
+    }
+
     if (profileError || !profile) {
+      console.log('Loja não encontrada para store_url:', storeUrl)
       return new Response(
-        JSON.stringify({ error: 'Store not found' }),
+        JSON.stringify({ error: 'Store not found', store_url: storeUrl }),
         { 
           status: 404, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
     }
+
+    console.log('Perfil encontrado:', profile.store_name)
 
     // Buscar produtos da loja
     const { data: products, error: productsError } = await supabaseClient
@@ -57,8 +68,11 @@ serve(async (req) => {
       .order('created_at', { ascending: false })
 
     if (productsError) {
+      console.log('Erro ao buscar produtos:', productsError)
       throw productsError
     }
+
+    console.log('Produtos encontrados:', products?.length || 0)
 
     const catalogData = {
       store: profile,
@@ -73,9 +87,9 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Erro interno:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
