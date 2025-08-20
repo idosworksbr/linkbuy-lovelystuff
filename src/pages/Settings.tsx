@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Save, Camera, Palette, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,27 +17,27 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: profile?.name || '',
-    store_name: profile?.store_name || '',
-    store_url: profile?.store_url || '',
-    store_description: profile?.store_description || '',
-    background_color: profile?.background_color || '#ffffff',
-    profile_photo_url: profile?.profile_photo_url || ''
+    name: '',
+    store_name: '',
+    store_url: '',
+    store_description: '',
+    background_color: '#ffffff',
+    profile_photo_url: ''
   });
 
   // Atualizar formData quando o profile carregar
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFormData({
-        name: profile.name,
-        store_name: profile.store_name,
-        store_url: profile.store_url,
+        name: profile.name || '',
+        store_name: profile.store_name || '',
+        store_url: profile.store_url || '',
         store_description: profile.store_description || '',
-        background_color: profile.background_color,
+        background_color: profile.background_color || '#ffffff',
         profile_photo_url: profile.profile_photo_url || ''
       });
     }
-  });
+  }, [profile]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -46,25 +46,68 @@ const Settings = () => {
     }));
   };
 
+  const handleStoreUrlChange = (value: string) => {
+    // Limpar e formatar a URL da loja
+    const formattedUrl = value
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-');
+    
+    handleInputChange('store_url', formattedUrl);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validações básicas
+    if (!formData.name.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "Por favor, preencha seu nome completo.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.store_name.trim()) {
+      toast({
+        title: "Nome da loja obrigatório",
+        description: "Por favor, preencha o nome da sua loja.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.store_url.trim() || formData.store_url.length < 3) {
+      toast({
+        title: "URL da loja inválida",
+        description: "A URL da loja deve ter pelo menos 3 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       await updateProfile(formData);
-      toast({
-        title: "Configurações salvas!",
-        description: "Suas informações foram atualizadas com sucesso.",
-      });
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar as configurações.",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePreviewCatalog = () => {
+    if (formData.store_url && formData.store_url.length >= 3) {
+      window.open(`/catalog/${formData.store_url}`, '_blank');
+    } else {
+      toast({
+        title: "URL da loja necessária",
+        description: "Configure uma URL válida para visualizar seu catálogo.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -83,7 +126,7 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold">Configurações</h1>
@@ -106,12 +149,13 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome Completo</Label>
+                <Label htmlFor="name">Nome Completo *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Seu nome completo"
+                  required
                 />
               </div>
 
@@ -159,29 +203,35 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="store_name">Nome da Loja</Label>
+                <Label htmlFor="store_name">Nome da Loja *</Label>
                 <Input
                   id="store_name"
                   value={formData.store_name}
                   onChange={(e) => handleInputChange('store_name', e.target.value)}
                   placeholder="Nome da sua loja"
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="store_url">URL da Loja</Label>
+                <Label htmlFor="store_url">URL da Loja *</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">linkbuy.com/catalog/</span>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    linkbuy.com/catalog/
+                  </span>
                   <Input
                     id="store_url"
                     value={formData.store_url}
-                    onChange={(e) => handleInputChange('store_url', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                    onChange={(e) => handleStoreUrlChange(e.target.value)}
                     placeholder="minha-loja"
                     className="flex-1"
+                    required
+                    minLength={3}
+                    maxLength={50}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Apenas letras minúsculas, números e hífens. Mínimo 3 caracteres.
+                  Apenas letras minúsculas, números e hífens. Entre 3 e 50 caracteres.
                 </p>
               </div>
 
@@ -193,7 +243,11 @@ const Settings = () => {
                   onChange={(e) => handleInputChange('store_description', e.target.value)}
                   placeholder="Descreva sua loja e seus produtos..."
                   rows={3}
+                  maxLength={500}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {formData.store_description.length}/500 caracteres
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -213,7 +267,7 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="background_color">Cor de Fundo</Label>
+                <Label htmlFor="background_color">Cor de Fundo do Catálogo</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="background_color"
@@ -226,20 +280,24 @@ const Settings = () => {
                     value={formData.background_color}
                     onChange={(e) => handleInputChange('background_color', e.target.value)}
                     placeholder="#ffffff"
+                    pattern="^#[0-9A-Fa-f]{6}$"
                     className="flex-1"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Escolha a cor de fundo que será usada no seu catálogo público
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Botão Salvar */}
-          <div className="flex justify-end gap-2">
+          {/* Botões de Ação */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
             <Button 
               type="button" 
               variant="outline"
-              onClick={() => window.open(`/catalog/${formData.store_url}`, '_blank')}
-              disabled={!formData.store_url}
+              onClick={handlePreviewCatalog}
+              disabled={!formData.store_url || formData.store_url.length < 3}
             >
               Visualizar Catálogo
             </Button>
