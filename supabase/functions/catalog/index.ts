@@ -23,6 +23,11 @@ serve(async (req) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false,
+        },
+      }
     )
 
     const url = new URL(req.url)
@@ -49,13 +54,13 @@ serve(async (req) => {
       )
     }
 
-    // Buscar informações da loja
+    // Buscar informações da loja usando maybeSingle() ao invés de single()
     console.log('🏪 Buscando loja:', storeUrl)
     const { data: storeInfo, error: storeError } = await supabaseClient
       .from('profiles')
       .select('id, name, store_url, store_name, store_description, profile_photo_url, background_color, created_at')
       .eq('store_url', storeUrl)
-      .single()
+      .maybeSingle()
 
     console.log('📊 Store query result:', { storeInfo, storeError })
 
@@ -96,11 +101,12 @@ serve(async (req) => {
     })
 
     // Buscar produtos
-    console.log('📦 Fetching products')
+    console.log('📦 Fetching products for user_id:', storeInfo.id)
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
       .select('id, name, description, price, images, created_at')
       .eq('user_id', storeInfo.id)
+      .order('created_at', { ascending: false })
 
     console.log('📊 Products query result:', { 
       productCount: products?.length || 0, 
@@ -109,7 +115,6 @@ serve(async (req) => {
 
     if (productsError) {
       console.log('⚠️ Error fetching products:', productsError)
-      // Continue mesmo com erro nos produtos
     }
 
     const productList = products || []
