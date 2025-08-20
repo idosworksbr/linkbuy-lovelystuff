@@ -6,79 +6,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DashboardLayout from "@/components/DashboardLayout";
 import ProductForm from "@/components/ProductForm";
-import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-
-// Mock data - em produção viria de uma API
-const mockProducts = [
-  {
-    id: 1,
-    name: "Tênis Esportivo Premium",
-    price: 299.90,
-    image: "/api/placeholder/300/300",
-    description: "Tênis confortável para atividades físicas"
-  },
-  {
-    id: 2,
-    name: "Camiseta Básica",
-    price: 49.90,
-    image: "/api/placeholder/300/300", 
-    description: "Camiseta 100% algodão"
-  },
-  {
-    id: 3,
-    name: "Jaqueta Jeans",
-    price: 159.90,
-    image: "/api/placeholder/300/300",
-    description: "Jaqueta jeans clássica"
-  }
-];
+import { useProducts, Product } from "@/hooks/useProducts";
 
 const Dashboard = () => {
-  const [products, setProducts] = useState(mockProducts);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const { products, loading, updateProduct, deleteProduct } = useProducts();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleDeleteProduct = (id: number) => {
-    setProducts(products.filter(p => p.id !== id));
-    toast({
-      title: "Produto removido",
-      description: "O produto foi removido do seu catálogo.",
-    });
+  const handleDeleteProduct = async (id: string) => {
+    await deleteProduct(id);
   };
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
   };
 
   const handleUpdateProduct = async (data: any) => {
-    setIsLoading(true);
+    if (!editingProduct) return;
     
+    setIsLoading(true);
     try {
-      // Simular atualização do produto
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const updatedProducts = products.map(p => 
-        p.id === editingProduct.id 
-          ? { ...p, ...data, price: parseFloat(data.price) }
-          : p
-      );
-      
-      setProducts(updatedProducts);
+      await updateProduct(editingProduct.id, {
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price),
+        images: data.images || []
+      });
       setEditingProduct(null);
-      
-      toast({
-        title: "Produto atualizado!",
-        description: "As alterações foram salvas com sucesso.",
-      });
     } catch (error) {
-      toast({
-        title: "Erro ao atualizar",
-        description: "Ocorreu um erro ao atualizar o produto. Tente novamente.",
-        variant: "destructive",
-      });
+      console.error('Error updating product:', error);
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +49,19 @@ const Dashboard = () => {
   const handleAddProduct = () => {
     navigate("/dashboard/add-product");
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-whatsapp mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Carregando produtos...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -141,9 +112,9 @@ const Dashboard = () => {
               <Card key={product.id} className="dashboard-card group">
                 <CardContent className="p-4">
                   <div className="aspect-square bg-muted rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                    {product.image ? (
+                    {product.images && product.images.length > 0 ? (
                       <img 
-                        src={product.image} 
+                        src={product.images[0]} 
                         alt={product.name}
                         className="w-full h-full object-cover"
                       />

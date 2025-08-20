@@ -7,29 +7,48 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { signIn, signUp } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simular login
-    setTimeout(() => {
-      setIsLoading(false);
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      await signIn(email, password);
       navigate('/dashboard');
-    }, 1000);
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simular cadastro
-    setTimeout(() => {
+    
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      await signUp(email, password, name);
+      // Não navegar automaticamente após registro, pois precisa confirmar email
+    } catch (error) {
+      console.error('Register error:', error);
+    } finally {
       setIsLoading(false);
-      navigate('/dashboard');
-    }, 1000);
+    }
   };
 
   return (
@@ -71,6 +90,7 @@ const Login = () => {
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="seu@email.com"
                         className="pl-10 input-focus"
@@ -85,6 +105,7 @@ const Login = () => {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="password"
+                        name="password"
                         type="password"
                         placeholder="Sua senha"
                         className="pl-10 input-focus"
@@ -119,6 +140,7 @@ const Login = () => {
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="name"
+                        name="name"
                         type="text"
                         placeholder="Seu nome"
                         className="pl-10 input-focus"
@@ -133,6 +155,7 @@ const Login = () => {
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="register-email"
+                        name="email"
                         type="email"
                         placeholder="seu@email.com"
                         className="pl-10 input-focus"
@@ -147,6 +170,7 @@ const Login = () => {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="register-password"
+                        name="password"
                         type="password"
                         placeholder="Crie uma senha"
                         className="pl-10 input-focus"
