@@ -79,7 +79,7 @@ const Catalog = () => {
 
         {/* Products Grid */}
         <div className="px-4 pb-8">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             {store.products.map((product, index) => (
               <div 
                 key={product.id} 
@@ -95,12 +95,12 @@ const Catalog = () => {
                   />
                 </div>
                 
-                <div className="p-3">
-                  <h3 className="text-sm font-medium line-clamp-2 mb-2">
+                <div className="p-2">
+                  <h3 className="text-xs font-medium line-clamp-2 mb-1">
                     {product.name}
                   </h3>
                   
-                  <p className="text-lg font-bold text-whatsapp">
+                  <p className="text-sm font-bold text-whatsapp">
                     R$ {product.price.toFixed(2).replace('.', ',')}
                   </p>
                 </div>
