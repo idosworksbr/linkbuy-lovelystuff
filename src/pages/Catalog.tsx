@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { MessageCircle, ArrowLeft } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Mock data - em produção viria de uma API baseada no storeSlug
@@ -41,32 +42,36 @@ const mockStore = {
     image: "/api/placeholder/300/300"
   }]
 };
+
 const Catalog = () => {
-  const {
-    storeSlug
-  } = useParams();
+  const { storeSlug } = useParams();
   const [store] = useState(mockStore);
+
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent(`Olá! Vim pelo seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.`);
     window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
   };
+
   const handleProductClick = (product: any) => {
     window.location.href = `/c/${storeSlug}/${product.id}`;
   };
-  return <div className="min-h-screen" style={{
-    backgroundColor: store.backgroundColor
-  }}>
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: store.backgroundColor }}>
       <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm min-h-screen">
         {/* Header */}
-        <div className="text-center pt-8 pb-6 px-6">
-          <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-white shadow-lg">
+        <div className="text-center pt-8 pb-6 px-6 animate-fade-in">
+          <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-white shadow-lg ring-4 ring-white/50 hover:shadow-xl transition-all duration-300">
             <img src={store.logo} alt={store.name} className="w-full h-full object-cover" />
           </div>
           
           <h1 className="text-2xl font-bold mb-2">{store.name}</h1>
           <p className="text-muted-foreground mb-4">{store.description}</p>
           
-          <Button onClick={handleWhatsAppContact} className="whatsapp-btn mx-0 my-0 py-0 px-[9px]">
+          <Button 
+            onClick={handleWhatsAppContact} 
+            className="whatsapp-btn rounded-full hover:scale-105 transition-all duration-200"
+          >
             <MessageCircle className="h-5 w-5" />
             Falar no WhatsApp
           </Button>
@@ -74,28 +79,43 @@ const Catalog = () => {
 
         {/* Products Grid */}
         <div className="px-4 pb-8">
-          <div className="grid grid-cols-3 gap-3">
-            {store.products.map(product => <div key={product.id} onClick={() => handleProductClick(product)} className="product-card cursor-pointer py-0 mx-0 px-0 my-0">
-                <div className="aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+          <div className="grid grid-cols-2 gap-4">
+            {store.products.map((product, index) => (
+              <div 
+                key={product.id} 
+                onClick={() => handleProductClick(product)} 
+                className="product-card cursor-pointer rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="aspect-square bg-muted overflow-hidden">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                  />
                 </div>
                 
-                <h3 className="text-xs font-medium line-clamp-2 mb-1">
-                  {product.name}
-                </h3>
-                
-                <p className="text-sm font-bold text-whatsapp">
-                  R$ {product.price.toFixed(2).replace('.', ',')}
-                </p>
-              </div>)}
+                <div className="p-3">
+                  <h3 className="text-sm font-medium line-clamp-2 mb-2">
+                    {product.name}
+                  </h3>
+                  
+                  <p className="text-lg font-bold text-whatsapp">
+                    R$ {product.price.toFixed(2).replace('.', ',')}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center py-6 text-xs text-muted-foreground border-t bg-white/50">
+        <div className="text-center py-6 text-xs text-muted-foreground border-t bg-white/50 rounded-t-xl">
           Criado com 💚 no LinkBuy
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Catalog;
