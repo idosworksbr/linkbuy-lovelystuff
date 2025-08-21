@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProductDetail } from "@/hooks/useProductDetail";
+import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useState } from "react";
 
 const ProductDetail = () => {
@@ -11,6 +12,9 @@ const ProductDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const { product, loading, error } = useProductDetail(storeUrl || '', productId || '');
+  
+  const theme = product?.store.catalog_theme || 'light';
+  const themeClasses = useThemeClasses(theme);
 
   const handleWhatsAppOrder = () => {
     if (!product?.store.whatsapp_number) {
@@ -18,9 +22,9 @@ const ProductDetail = () => {
       return;
     }
 
-    const message = encodeURIComponent(
-      `Olá! Tenho interesse no produto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`
-    );
+    const customMessage = product.store.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.';
+    const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`;
+    const message = encodeURIComponent(productMessage);
     const whatsappUrl = `https://wa.me/55${product.store.whatsapp_number}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -45,10 +49,10 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className={`min-h-screen ${themeClasses.container} flex items-center justify-center`}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-whatsapp mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando produto...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className={themeClasses.textMuted}>Carregando produto...</p>
         </div>
       </div>
     );
@@ -56,7 +60,7 @@ const ProductDetail = () => {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className={`min-h-screen ${themeClasses.container} flex items-center justify-center`}>
         <div className="text-center p-6">
           <p className="text-red-500 mb-4">Produto não encontrado</p>
           <Button onClick={() => navigate(`/catalog/${storeUrl}`)}>
@@ -68,15 +72,15 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white animate-fade-in">
+    <CatalogTheme theme={theme} backgroundColor={product.store.background_color}>
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className={`flex items-center justify-between p-4 border-b ${themeClasses.header}`}>
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => navigate(`/catalog/${storeUrl}`)}
-            className="rounded-full hover:bg-accent hover:scale-105 transition-all duration-200"
+            className={`rounded-full hover:bg-accent hover:scale-105 transition-all duration-200 ${themeClasses.buttonOutline}`}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
@@ -135,17 +139,17 @@ const ProductDetail = () => {
 
         {/* Product Info */}
         <div className="p-6 space-y-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <div className="bg-white rounded-xl p-4 shadow-sm border">
-            <h1 className="text-2xl font-bold mb-3">{product.name}</h1>
-            <p className="text-3xl font-bold text-whatsapp">
+          <div className={`${themeClasses.card} rounded-xl p-4 shadow-sm border`}>
+            <h1 className={`text-2xl font-bold mb-3 ${themeClasses.text}`}>{product.name}</h1>
+            <p className="text-3xl font-bold text-green-600">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </p>
           </div>
 
           {product.description && (
-            <div className="bg-white rounded-xl p-4 shadow-sm border">
-              <h2 className="font-semibold mb-3 text-lg">Descrição</h2>
-              <p className="text-muted-foreground leading-relaxed">
+            <div className={`${themeClasses.card} rounded-xl p-4 shadow-sm border`}>
+              <h2 className={`font-semibold mb-3 text-lg ${themeClasses.text}`}>Descrição</h2>
+              <p className={`${themeClasses.textMuted} leading-relaxed`}>
                 {product.description}
               </p>
             </div>
@@ -165,11 +169,12 @@ const ProductDetail = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center py-6 text-xs text-muted-foreground border-t bg-gray-50/50 rounded-t-xl mx-4">
+        <div className={`text-center py-6 text-xs ${themeClasses.textMuted} border-t rounded-t-xl mx-4`} 
+             style={{ backgroundColor: theme === 'light' ? '#f8f9fa' : theme === 'dark' ? '#374151' : '#fef3c7' }}>
           Criado com 💚 no LinkBuy
         </div>
       </div>
-    </div>
+    </CatalogTheme>
   );
 };
 

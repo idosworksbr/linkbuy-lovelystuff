@@ -17,6 +17,10 @@ export interface ProductDetail {
     background_color: string;
     store_url: string;
     whatsapp_number: string | null;
+    custom_whatsapp_message: string;
+    instagram_url: string | null;
+    catalog_theme: 'light' | 'dark' | 'beige';
+    catalog_layout: 'overlay' | 'bottom';
   };
 }
 

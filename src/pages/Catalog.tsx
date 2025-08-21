@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useThemeClasses } from "@/components/CatalogTheme";
+import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 
 interface StoreProfile {
   id: string;
@@ -128,7 +127,7 @@ const Catalog = () => {
     }
 
     const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+    window.open(`https://wa.me/55${phoneNumber}?text=${message}`, '_blank');
   };
 
   const handleInstagramFollow = () => {
@@ -208,14 +207,9 @@ const Catalog = () => {
   }
 
   const { store, products, meta } = catalogData;
-  
-  // Aplicar cor de fundo apenas para tema claro
-  const containerStyle = theme === 'light' && store.background_color 
-    ? { backgroundColor: store.background_color } 
-    : {};
 
   return (
-    <div className={`min-h-screen ${theme !== 'light' ? themeClasses.container : ''}`} style={containerStyle}>
+    <CatalogTheme theme={theme} backgroundColor={store.background_color}>
       <div className={`max-w-md mx-auto ${themeClasses.card} min-h-screen shadow-lg`}>
         {/* Header Profile Section */}
         <div className={`px-4 pt-8 pb-6 border-b ${themeClasses.header}`}>
@@ -323,7 +317,7 @@ const Catalog = () => {
                       </div>
                     </div>
                   ) : (
-                    // Novo layout - informações abaixo da imagem
+                    // Novo layout - informações na parte inferior
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
                       <div className="absolute bottom-0 left-0 right-0 p-2">
                         <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{ textShadow: '1px 1px 2px rgba(255,255,255,0.8)' }}>
@@ -355,7 +349,7 @@ const Catalog = () => {
           <p className="mt-1">Última atualização: {new Date(meta.generated_at).toLocaleString('pt-BR')}</p>
         </div>
       </div>
-    </div>
+    </CatalogTheme>
   );
 };
 

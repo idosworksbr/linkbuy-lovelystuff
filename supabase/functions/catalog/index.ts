@@ -124,6 +124,11 @@ serve(async (req) => {
         profile_photo_url: store.profile_photo_url,
         background_color: store.background_color || '#ffffff',
         store_url: store.store_url,
+        whatsapp_number: store.whatsapp_number,
+        custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.',
+        instagram_url: store.instagram_url,
+        catalog_theme: store.catalog_theme || 'light',
+        catalog_layout: store.catalog_layout || 'overlay',
         created_at: store.created_at
       },
       products: productList.map(product => ({
