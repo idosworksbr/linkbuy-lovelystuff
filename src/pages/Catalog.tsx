@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram } from "lucide-react";
@@ -50,6 +51,20 @@ const Catalog = () => {
   const layout = catalogData?.store.catalog_layout || 'overlay';
   const themeClasses = useThemeClasses(theme);
 
+  // Função para verificar se o WhatsApp está disponível
+  const isWhatsAppAvailable = () => {
+    const whatsappNumber = catalogData?.store.whatsapp_number;
+    console.log('Verificando WhatsApp - Dados:', {
+      whatsappNumber,
+      type: typeof whatsappNumber,
+      isNull: whatsappNumber === null,
+      isUndefined: whatsappNumber === undefined,
+      store: catalogData?.store
+    });
+    
+    return whatsappNumber !== null && whatsappNumber !== undefined && whatsappNumber > 0;
+  };
+
   useEffect(() => {
     const fetchCatalogData = async () => {
       if (!storeUrl) {
@@ -87,6 +102,7 @@ const Catalog = () => {
 
         const data: CatalogData = await response.json();
         console.log('✅ Dados recebidos:', data);
+        console.log('📞 WhatsApp number no response:', data.store.whatsapp_number, typeof data.store.whatsapp_number);
         
         setCatalogData(data);
         
@@ -116,14 +132,7 @@ const Catalog = () => {
   const handleWhatsAppContact = () => {
     if (!catalogData?.store) return;
     
-    const phoneNumber = catalogData.store.whatsapp_number;
-    console.log('WhatsApp Contact - dados:', {
-      phoneNumber,
-      type: typeof phoneNumber,
-      store: catalogData.store
-    });
-
-    if (!phoneNumber) {
+    if (!isWhatsAppAvailable()) {
       toast({
         title: "WhatsApp não disponível",
         description: "Esta loja não configurou um número de WhatsApp.",
@@ -132,6 +141,7 @@ const Catalog = () => {
       return;
     }
 
+    const phoneNumber = catalogData.store.whatsapp_number;
     const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
     const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${message}`;
     
@@ -279,12 +289,12 @@ const Catalog = () => {
             </Button>
             <Button 
               variant="outline" 
-              className={`flex-1 ${themeClasses.buttonOutline} rounded-lg h-9 text-sm font-medium transition-colors`}
+              className={`flex-1 ${themeClasses.buttonOutline} rounded-lg h-9 text-sm font-medium transition-colors ${!isWhatsAppAvailable() ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleWhatsAppContact}
-              disabled={!store.whatsapp_number}
+              disabled={!isWhatsAppAvailable()}
             >
               <MessageCircle className="h-4 w-4 mr-2" />
-              Mensagem
+              {isWhatsAppAvailable() ? 'Mensagem' : 'WhatsApp indisponível'}
             </Button>
           </div>
         </div>

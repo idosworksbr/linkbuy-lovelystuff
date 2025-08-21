@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,13 +16,24 @@ const ProductDetail = () => {
   const theme = product?.store.catalog_theme || 'light';
   const themeClasses = useThemeClasses(theme);
 
-  const handleWhatsAppOrder = () => {
-    console.log('WhatsApp dados:', {
-      whatsapp_number: product?.store.whatsapp_number,
-      type: typeof product?.store.whatsapp_number
+  // Função para verificar se o WhatsApp está disponível
+  const isWhatsAppAvailable = () => {
+    const whatsappNumber = product?.store.whatsapp_number;
+    console.log('Verificando WhatsApp no produto - Dados:', {
+      whatsappNumber,
+      type: typeof whatsappNumber,
+      isNull: whatsappNumber === null,
+      isUndefined: whatsappNumber === undefined,
+      store: product?.store
     });
+    
+    return whatsappNumber !== null && whatsappNumber !== undefined && whatsappNumber > 0;
+  };
 
-    if (!product?.store.whatsapp_number) {
+  const handleWhatsAppOrder = () => {
+    if (!product?.store) return;
+    
+    if (!isWhatsAppAvailable()) {
       console.error('Número do WhatsApp não disponível');
       return;
     }
@@ -163,12 +175,12 @@ const ProductDetail = () => {
           {/* WhatsApp Button */}
           <div className="pt-2">
             <Button 
-              className="whatsapp-btn w-full text-lg py-6 rounded-full hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className={`whatsapp-btn w-full text-lg py-6 rounded-full hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl ${!isWhatsAppAvailable() ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleWhatsAppOrder}
-              disabled={!product.store.whatsapp_number}
+              disabled={!isWhatsAppAvailable()}
             >
               <MessageCircle className="h-6 w-6 mr-2" />
-              {product.store.whatsapp_number ? 'Fazer Pedido pelo WhatsApp' : 'WhatsApp não disponível'}
+              {isWhatsAppAvailable() ? 'Fazer Pedido pelo WhatsApp' : 'WhatsApp não disponível'}
             </Button>
           </div>
         </div>
