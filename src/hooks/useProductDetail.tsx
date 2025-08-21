@@ -16,7 +16,7 @@ export interface ProductDetail {
     profile_photo_url: string | null;
     background_color: string;
     store_url: string;
-    whatsapp_number: string | null;
+    whatsapp_number: number | null;
     custom_whatsapp_message: string;
     instagram_url: string | null;
     catalog_theme: 'light' | 'dark' | 'beige';

@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,11 @@ const ProductDetail = () => {
   const themeClasses = useThemeClasses(theme);
 
   const handleWhatsAppOrder = () => {
+    console.log('WhatsApp dados:', {
+      whatsapp_number: product?.store.whatsapp_number,
+      type: typeof product?.store.whatsapp_number
+    });
+
     if (!product?.store.whatsapp_number) {
       console.error('Número do WhatsApp não disponível');
       return;
@@ -26,6 +30,8 @@ const ProductDetail = () => {
     const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`;
     const message = encodeURIComponent(productMessage);
     const whatsappUrl = `https://wa.me/55${product.store.whatsapp_number}?text=${message}`;
+    
+    console.log('Abrindo WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
   };
 
@@ -119,7 +125,6 @@ const ProductDetail = () => {
                 <ChevronRight className="h-4 w-4" />
               </button>
               
-              {/* Dots indicator */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                 {product.images.map((_, index) => (
                   <button

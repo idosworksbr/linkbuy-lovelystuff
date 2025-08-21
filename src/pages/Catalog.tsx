@@ -117,6 +117,12 @@ const Catalog = () => {
     if (!catalogData?.store) return;
     
     const phoneNumber = catalogData.store.whatsapp_number;
+    console.log('WhatsApp Contact - dados:', {
+      phoneNumber,
+      type: typeof phoneNumber,
+      store: catalogData.store
+    });
+
     if (!phoneNumber) {
       toast({
         title: "WhatsApp não disponível",
@@ -127,10 +133,18 @@ const Catalog = () => {
     }
 
     const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
-    window.open(`https://wa.me/55${phoneNumber}?text=${message}`, '_blank');
+    const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${message}`;
+    
+    console.log('Abrindo WhatsApp:', whatsappUrl);
+    window.open(whatsappUrl, '_blank');
   };
 
   const handleInstagramFollow = () => {
+    console.log('Instagram - dados:', {
+      instagram_url: catalogData?.store.instagram_url,
+      store: catalogData?.store
+    });
+
     if (!catalogData?.store.instagram_url) {
       toast({
         title: "Instagram não disponível",
@@ -140,6 +154,7 @@ const Catalog = () => {
       return;
     }
     
+    console.log('Abrindo Instagram:', catalogData.store.instagram_url);
     window.open(catalogData.store.instagram_url, '_blank');
   };
 
@@ -231,7 +246,6 @@ const Catalog = () => {
             <div className="flex-1 min-w-0">
               <h1 className={`text-xl font-semibold mb-2 truncate ${themeClasses.text}`}>{store.store_name}</h1>
               
-              {/* Stats Row */}
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
                   <div className={`font-semibold ${themeClasses.text}`}>{meta.total_products}</div>
@@ -249,7 +263,6 @@ const Catalog = () => {
             </div>
           </div>
 
-          {/* Description */}
           {store.store_description && (
             <p className={`text-sm ${themeClasses.textMuted} mb-4 leading-relaxed`}>{store.store_description}</p>
           )}
@@ -305,7 +318,6 @@ const Catalog = () => {
                   )}
                   
                   {layout === 'overlay' ? (
-                    // Layout atual - overlay sobre a imagem
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
                       <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
                         <h3 className="text-xs font-medium line-clamp-2 mb-1">
@@ -317,7 +329,6 @@ const Catalog = () => {
                       </div>
                     </div>
                   ) : (
-                    // Novo layout - informações na parte inferior
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
                       <div className="absolute bottom-0 left-0 right-0 p-2">
                         <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{ textShadow: '1px 1px 2px rgba(255,255,255,0.8)' }}>
