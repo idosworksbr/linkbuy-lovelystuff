@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram } from "lucide-react";
+import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
@@ -46,23 +45,58 @@ const Catalog = () => {
   const [catalogData, setCatalogData] = useState<CatalogData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'overlay';
   const themeClasses = useThemeClasses(theme);
 
-  // Função para verificar se o WhatsApp está disponível
+  // Função robusta para verificar se o WhatsApp está disponível
   const isWhatsAppAvailable = () => {
     const whatsappNumber = catalogData?.store.whatsapp_number;
-    console.log('Verificando WhatsApp - Dados:', {
-      whatsappNumber,
-      type: typeof whatsappNumber,
-      isNull: whatsappNumber === null,
-      isUndefined: whatsappNumber === undefined,
-      store: catalogData?.store
-    });
     
-    return whatsappNumber !== null && whatsappNumber !== undefined && whatsappNumber > 0;
+    console.group('🔍 WhatsApp Debug - Catalog');
+    console.log('Raw whatsapp_number:', whatsappNumber);
+    console.log('Type:', typeof whatsappNumber);
+    console.log('Is null:', whatsappNumber === null);
+    console.log('Is undefined:', whatsappNumber === undefined);
+    console.log('String value:', String(whatsappNumber));
+    console.log('Number conversion:', Number(whatsappNumber));
+    console.log('Is NaN:', isNaN(Number(whatsappNumber)));
+    console.groupEnd();
+
+    // Verificação robusta: não pode ser null, undefined, 0, NaN ou string vazia
+    if (whatsappNumber === null || whatsappNumber === undefined) {
+      return false;
+    }
+
+    const numberValue = Number(whatsappNumber);
+    if (isNaN(numberValue) || numberValue <= 0) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Função robusta para verificar se o Instagram está disponível
+  const isInstagramAvailable = () => {
+    const instagramUrl = catalogData?.store.instagram_url;
+    
+    console.group('🔍 Instagram Debug - Catalog');
+    console.log('Raw instagram_url:', instagramUrl);
+    console.log('Type:', typeof instagramUrl);
+    console.log('Is null:', instagramUrl === null);
+    console.log('Is undefined:', instagramUrl === undefined);
+    console.log('Is empty string:', instagramUrl === '');
+    console.log('Trimmed value:', instagramUrl?.trim());
+    console.groupEnd();
+
+    // Verificação robusta: não pode ser null, undefined ou string vazia
+    if (!instagramUrl || typeof instagramUrl !== 'string' || instagramUrl.trim() === '') {
+      return false;
+    }
+
+    return true;
   };
 
   useEffect(() => {
@@ -133,9 +167,10 @@ const Catalog = () => {
     if (!catalogData?.store) return;
     
     if (!isWhatsAppAvailable()) {
+      console.error('WhatsApp não está disponível');
       toast({
         title: "WhatsApp não disponível",
-        description: "Esta loja não configurou um número de WhatsApp.",
+        description: "Esta loja não configurou um número de WhatsApp válido.",
         variant: "destructive",
       });
       return;
@@ -145,26 +180,24 @@ const Catalog = () => {
     const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
     const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${message}`;
     
-    console.log('Abrindo WhatsApp:', whatsappUrl);
+    console.log('📞 Abrindo WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
   };
 
   const handleInstagramFollow = () => {
-    console.log('Instagram - dados:', {
-      instagram_url: catalogData?.store.instagram_url,
-      store: catalogData?.store
-    });
+    if (!catalogData?.store) return;
 
-    if (!catalogData?.store.instagram_url) {
+    if (!isInstagramAvailable()) {
+      console.error('Instagram não está disponível');
       toast({
         title: "Instagram não disponível",
-        description: "Esta loja não configurou um perfil do Instagram.",
+        description: "Esta loja não configurou um perfil do Instagram válido.",
         variant: "destructive",
       });
       return;
     }
     
-    console.log('Abrindo Instagram:', catalogData.store.instagram_url);
+    console.log('📷 Abrindo Instagram:', catalogData.store.instagram_url);
     window.open(catalogData.store.instagram_url, '_blank');
   };
 
@@ -174,6 +207,46 @@ const Catalog = () => {
 
   const handleGoBack = () => {
     navigate('/');
+  };
+
+  // Debug component
+  const DebugInfo = () => {
+    if (!showDebug || !catalogData) return null;
+
+    return (
+      <div className="fixed top-4 right-4 bg-black text-white p-4 rounded-lg z-50 max-w-md text-xs">
+        <h3 className="font-bold mb-2">🐛 Debug Info</h3>
+        <div className="space-y-2">
+          <div>
+            <strong>WhatsApp Number:</strong> {JSON.stringify(catalogData.store.whatsapp_number)}
+          </div>
+          <div>
+            <strong>WhatsApp Type:</strong> {typeof catalogData.store.whatsapp_number}
+          </div>
+          <div>
+            <strong>WhatsApp Available:</strong> {isWhatsAppAvailable() ? '✅' : '❌'}
+          </div>
+          <div>
+            <strong>Instagram URL:</strong> {JSON.stringify(catalogData.store.instagram_url)}
+          </div>
+          <div>
+            <strong>Instagram Available:</strong> {isInstagramAvailable() ? '✅' : '❌'}
+          </div>
+          <div>
+            <strong>Theme:</strong> {catalogData.store.catalog_theme}
+          </div>
+          <div>
+            <strong>Layout:</strong> {catalogData.store.catalog_layout}
+          </div>
+        </div>
+        <button 
+          onClick={() => setShowDebug(false)}
+          className="mt-2 bg-red-500 px-2 py-1 rounded text-xs"
+        >
+          Fechar
+        </button>
+      </div>
+    );
   };
 
   if (loading) {
@@ -233,9 +306,32 @@ const Catalog = () => {
 
   const { store, products, meta } = catalogData;
 
+  console.table({
+    'Store Name': store.store_name,
+    'WhatsApp Number': store.whatsapp_number,
+    'WhatsApp Type': typeof store.whatsapp_number,
+    'WhatsApp Available': isWhatsAppAvailable(),
+    'Instagram URL': store.instagram_url,
+    'Instagram Available': isInstagramAvailable(),
+    'Theme': store.catalog_theme,
+    'Layout': store.catalog_layout
+  });
+
   return (
     <CatalogTheme theme={theme} backgroundColor={store.background_color}>
-      <div className={`max-w-md mx-auto ${themeClasses.card} min-h-screen shadow-lg`}>
+      <div className={`max-w-md mx-auto ${themeClasses.card} min-h-screen shadow-lg relative`}>
+        
+        {/* Debug Button */}
+        <button
+          onClick={() => setShowDebug(!showDebug)}
+          className="fixed top-4 left-4 bg-red-500 text-white p-2 rounded-full z-40 shadow-lg hover:bg-red-600"
+          title="Debug Info"
+        >
+          <Bug className="h-4 w-4" />
+        </button>
+
+        <DebugInfo />
+
         {/* Header Profile Section */}
         <div className={`px-4 pt-8 pb-6 border-b ${themeClasses.header}`}>
           <div className="flex items-center gap-4 mb-4">
@@ -282,14 +378,14 @@ const Catalog = () => {
             <Button 
               onClick={handleInstagramFollow}
               className={`flex-1 ${themeClasses.button} rounded-lg h-9 text-sm font-medium transition-colors`}
-              disabled={!store.instagram_url}
+              disabled={!isInstagramAvailable()}
             >
               <Instagram className="h-4 w-4 mr-2" />
-              Seguir
+              {isInstagramAvailable() ? 'Seguir' : 'Instagram indisponível'}
             </Button>
             <Button 
               variant="outline" 
-              className={`flex-1 ${themeClasses.buttonOutline} rounded-lg h-9 text-sm font-medium transition-colors ${!isWhatsAppAvailable() ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex-1 ${themeClasses.buttonOutline} rounded-lg h-9 text-sm font-medium transition-colors`}
               onClick={handleWhatsAppContact}
               disabled={!isWhatsAppAvailable()}
             >
