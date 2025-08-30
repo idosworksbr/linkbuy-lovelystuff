@@ -345,13 +345,20 @@ const Catalog = () => {
               {products.length > 0 ? (
                 <div className="grid grid-cols-3 gap-1">
                   {products.map((product, index) => (
-                    <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden" style={{
-                      animationDelay: `${index * 50}ms`
+                    <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden w-full" style={{
+                      animationDelay: `${index * 50}ms`,
+                      minHeight: '120px',
+                      maxHeight: '120px'
                     }}>
                       {product.images && product.images.length > 0 ? (
-                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                        <img 
+                          src={product.images[0]} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          style={{ aspectRatio: '1/1' }}
+                        />
                       ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center" style={{ aspectRatio: '1/1' }}>
                           <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
                         </div>
                       )}
