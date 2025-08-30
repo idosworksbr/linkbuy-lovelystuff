@@ -107,13 +107,18 @@ export type Database = {
         Args: { store_url_param: string }
         Returns: {
           background_color: string
+          catalog_layout: string
+          catalog_theme: string
           created_at: string
+          custom_whatsapp_message: string
           id: string
+          instagram_url: string
           profile_photo_url: string
           store_description: string
           store_name: string
           store_url: string
           updated_at: string
+          whatsapp_number: number
         }[]
       }
       get_public_store_products: {
