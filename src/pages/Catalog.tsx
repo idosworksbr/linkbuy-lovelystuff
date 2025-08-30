@@ -274,7 +274,13 @@ const Catalog = () => {
               <div className="flex items-center gap-2 mb-2">
                 <h1 className={`text-xl font-semibold truncate ${themeClasses.text}`}>{store.store_name}</h1>
                 {store.is_verified && (
-                  <ShieldCheck className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                  <div className="relative flex-shrink-0">
+                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
                 )}
               </div>
               
@@ -344,7 +350,16 @@ const Catalog = () => {
 
         {/* Products Container */}
         {activeTab === 'products' && (
-          <div className={`${themeClasses.accent} p-1 animate-fade-in`}>
+          <div 
+            className={`p-1 animate-fade-in`}
+            style={{
+              backgroundColor: store.background_type === 'color' ? store.background_color : undefined,
+              backgroundImage: store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
             {products.length > 0 ? (
               <div className="grid grid-cols-3 gap-1">
                 {products.map((product, index) => (
@@ -394,7 +409,7 @@ const Catalog = () => {
                 ))}
               </div>
             ) : (
-              <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2`}>
+              <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2 bg-white/90 backdrop-blur-sm`}>
                 <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
                   <Grid3X3 className={`h-8 w-8 ${themeClasses.textMuted}`} />
                 </div>
@@ -407,7 +422,16 @@ const Catalog = () => {
 
         {/* Custom Links Container */}
         {activeTab === 'links' && catalogData.customLinks && catalogData.customLinks.length > 0 && (
-          <div className={`${themeClasses.accent} p-4 animate-fade-in`}>
+          <div 
+            className={`p-4 animate-fade-in`}
+            style={{
+              backgroundColor: store.background_type === 'color' ? store.background_color : undefined,
+              backgroundImage: store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
             <div className="flex flex-col gap-3">
               {catalogData.customLinks.map((link, index) => {
                 const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || ExternalLink;
@@ -438,8 +462,17 @@ const Catalog = () => {
 
         {/* Empty Links State */}
         {activeTab === 'links' && (!catalogData.customLinks || catalogData.customLinks.length === 0) && (
-          <div className={`${themeClasses.accent} p-4 animate-fade-in`}>
-            <div className={`text-center py-16 ${themeClasses.card} rounded-lg`}>
+          <div 
+            className={`p-4 animate-fade-in`}
+            style={{
+              backgroundColor: store.background_type === 'color' ? store.background_color : undefined,
+              backgroundImage: store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            <div className={`text-center py-16 ${themeClasses.card} rounded-lg bg-white/90 backdrop-blur-sm`}>
               <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
                 <Link2 className={`h-8 w-8 ${themeClasses.textMuted}`} />
               </div>

@@ -380,31 +380,34 @@ const Settings = () => {
                     <SelectValue placeholder="Selecione o layout" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="overlay">Título/Preço sobre a imagem (atual)</SelectItem>
-                    <SelectItem value="bottom">Título/Preço abaixo da imagem</SelectItem>
+                    <SelectItem value="overlay">Titulo/Preço visível no feed</SelectItem>
+                    <SelectItem value="bottom">Titulo/Preço oculto no feed</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  No layout "bottom", o nome será preto com sombra e o preço verde escuro com sombra para melhor contraste
+                  Escolha se deseja mostrar ou ocultar as informações dos produtos no grid principal
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="background_type">Tipo de Fundo</Label>
+                <Label htmlFor="background_type">Tipo de Fundo da Grade</Label>
                 <Select value={formData.background_type} onValueChange={(value: 'color' | 'image') => handleInputChange('background_type', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="color">Cor Sólida</SelectItem>
-                    <SelectItem value="image">Imagem de Fundo</SelectItem>
+                    <SelectItem value="color">Cor Sólida na Grade</SelectItem>
+                    <SelectItem value="image">Imagem de Fundo na Grade</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  Esta configuração será aplicada apenas na área da grade de produtos/links, não na página inteira
+                </p>
               </div>
 
               {formData.background_type === 'color' && (
                 <div className="space-y-2">
-                  <Label htmlFor="background_color">Cor de Fundo do Catálogo</Label>
+                  <Label htmlFor="background_color">Cor de Fundo da Grade</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="background_color"
@@ -422,14 +425,14 @@ const Settings = () => {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Cor de fundo externa do catálogo (apenas para tema claro)
+                    Cor de fundo aplicada apenas na área da grade de produtos/links
                   </p>
                 </div>
               )}
 
               {formData.background_type === 'image' && (
                 <div className="space-y-2">
-                  <Label htmlFor="background_image_url">URL da Imagem de Fundo</Label>
+                  <Label htmlFor="background_image_url">URL da Imagem de Fundo da Grade</Label>
                   <Input
                     id="background_image_url"
                     value={formData.background_image_url}
@@ -437,7 +440,7 @@ const Settings = () => {
                     placeholder="https://exemplo.com/imagem-fundo.jpg"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Imagem de fundo do catálogo (recomendado: 1080x1920px)
+                    Imagem de fundo aplicada apenas na área da grade de produtos/links (recomendado: 800x600px)
                   </p>
                   {formData.background_image_url && (
                     <div className="mt-2">
@@ -489,22 +492,15 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Label>Selo de verificado</Label>
                   <p className="text-xs text-muted-foreground">
-                    Exibe um selo ao lado do nome da loja (apenas para contas verificadas)
+                    Exibe um selo azul ao lado do nome da loja para maior credibilidade
                   </p>
                 </div>
                 <input
                   type="checkbox"
                   checked={formData.is_verified}
-                  disabled
-                  className="h-4 w-4 opacity-50"
+                  onChange={(e) => setFormData(prev => ({ ...prev, is_verified: e.target.checked }))}
+                  className="h-4 w-4"
                 />
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-sm text-blue-800">
-                  💡 <strong>Dica:</strong> O selo de verificado é concedido após análise manual. 
-                  Entre em contato conosco para solicitar a verificação da sua loja.
-                </p>
               </div>
             </CardContent>
           </Card>
