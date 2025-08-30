@@ -169,6 +169,7 @@ export type Database = {
           instagram_url: string | null
           is_verified: boolean | null
           name: string
+          product_grid_layout: string | null
           profile_photo_url: string | null
           store_description: string | null
           store_name: string
@@ -190,6 +191,7 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           name: string
+          product_grid_layout?: string | null
           profile_photo_url?: string | null
           store_description?: string | null
           store_name: string
@@ -211,6 +213,7 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           name?: string
+          product_grid_layout?: string | null
           profile_photo_url?: string | null
           store_description?: string | null
           store_name?: string
@@ -303,11 +306,11 @@ export type Database = {
           id: string
           instagram_url: string
           is_verified: boolean
+          product_grid_layout: string
           profile_photo_url: string
           store_description: string
           store_name: string
           store_url: string
-          updated_at: string
           whatsapp_number: number
         }[]
       }
