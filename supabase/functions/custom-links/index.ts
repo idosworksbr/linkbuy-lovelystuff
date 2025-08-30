@@ -42,10 +42,16 @@ Deno.serve(async (req) => {
 
     const url = new URL(req.url);
     const method = req.method;
-    const linkId = url.pathname.split('/').pop();
+    const pathParts = url.pathname.split('/');
+    const linkId = pathParts.length > 3 ? pathParts[pathParts.length - 1] : null;
+    const isRootPath = pathParts[pathParts.length - 1] === 'custom-links';
+
+    console.log('Request details:', { method, pathname: url.pathname, linkId, isRootPath });
 
     // GET /custom-links - Get all custom links for the authenticated user
-    if (method === 'GET' && !linkId) {
+    if (method === 'GET' && isRootPath) {
+      console.log('Fetching custom links for user:', user.id);
+      
       const { data, error } = await supabaseClient
         .from('custom_links')
         .select('*')
@@ -56,11 +62,12 @@ Deno.serve(async (req) => {
       if (error) {
         console.error('Error fetching custom links:', error);
         return new Response(
-          JSON.stringify({ error: 'Failed to fetch custom links' }),
+          JSON.stringify({ error: 'Failed to fetch custom links', details: error.message }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
+      console.log('Found custom links:', data?.length || 0);
       return new Response(
         JSON.stringify({ data }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -68,7 +75,7 @@ Deno.serve(async (req) => {
     }
 
     // POST /custom-links - Create a new custom link
-    if (method === 'POST') {
+    if (method === 'POST' && isRootPath) {
       const body = await req.json() as CustomLink;
       
       if (!body.title || !body.url) {
@@ -159,8 +166,13 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log('No matching route found:', { method, pathname: url.pathname, linkId, isRootPath });
     return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
+      JSON.stringify({ 
+        error: 'Method not allowed', 
+        details: `${method} ${url.pathname} not supported`,
+        debug: { method, linkId, isRootPath }
+      }),
       { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

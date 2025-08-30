@@ -25,13 +25,21 @@ export const useCustomLinks = () => {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('custom-links', {
+      const response = await fetch('https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/custom-links', {
         method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa2F3aW1ydWhmcWh4YnBhdmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTcwOTEsImV4cCI6MjA3MTIzMzA5MX0.XaMLFfKuOWDTuz4UMYv6tiKFlP3sYBeftAhhvvlNtdc'
+        }
       });
 
-      if (error) throw error;
-      
-      setCustomLinks(data.data || []);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch custom links');
+      }
+
+      const { data } = await response.json();
+      setCustomLinks(data || []);
     } catch (error) {
       console.error('Error fetching custom links:', error);
       toast({
@@ -48,14 +56,23 @@ export const useCustomLinks = () => {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase.functions.invoke('custom-links', {
+      const response = await fetch('https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/custom-links', {
         method: 'POST',
-        body: linkData,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa2F3aW1ydWhmcWh4YnBhdmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTcwOTEsImV4cCI6MjA3MTIzMzA5MX0.XaMLFfKuOWDTuz4UMYv6tiKFlP3sYBeftAhhvvlNtdc'
+        },
+        body: JSON.stringify(linkData)
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create custom link');
+      }
 
-      const newLink = data.data;
+      const { data } = await response.json();
+      const newLink = data;
       setCustomLinks(prev => [...prev, newLink]);
       
       toast({
@@ -79,14 +96,23 @@ export const useCustomLinks = () => {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase.functions.invoke(`custom-links/${id}`, {
+      const response = await fetch(`https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/custom-links/${id}`, {
         method: 'PUT',
-        body: linkData,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa2F3aW1ydWhmcWh4YnBhdmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTcwOTEsImV4cCI6MjA3MTIzMzA5MX0.XaMLFfKuOWDTuz4UMYv6tiKFlP3sYBeftAhhvvlNtdc'
+        },
+        body: JSON.stringify(linkData)
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update custom link');
+      }
 
-      const updatedLink = data.data;
+      const { data } = await response.json();
+      const updatedLink = data;
       setCustomLinks(prev => 
         prev.map(link => link.id === id ? updatedLink : link)
       );
@@ -112,11 +138,18 @@ export const useCustomLinks = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.functions.invoke(`custom-links/${id}`, {
+      const response = await fetch(`https://rpkawimruhfqhxbpavce.supabase.co/functions/v1/custom-links/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa2F3aW1ydWhmcWh4YnBhdmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTcwOTEsImV4cCI6MjA3MTIzMzA5MX0.XaMLFfKuOWDTuz4UMYv6tiKFlP3sYBeftAhhvvlNtdc'
+        }
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete custom link');
+      }
 
       setCustomLinks(prev => prev.filter(link => link.id !== id));
       
