@@ -43,6 +43,11 @@ const App = () => (
                 <Analytics />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } />
             <Route path="/catalog/:storeUrl" element={<Catalog />} />
             <Route path="/catalog/:storeUrl/product/:productId" element={<ProductDetail />} />
             <Route path="*" element={<NotFound />} />
