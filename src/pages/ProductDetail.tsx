@@ -1,5 +1,6 @@
+
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight, Bug } from "lucide-react";
+import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProductDetail } from "@/hooks/useProductDetail";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
@@ -9,7 +10,6 @@ const ProductDetail = () => {
   const { storeUrl, productId } = useParams();
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showDebug, setShowDebug] = useState(false);
   
   const { product, loading, error } = useProductDetail(storeUrl || '', productId || '');
   
@@ -20,17 +20,6 @@ const ProductDetail = () => {
   const isWhatsAppAvailable = () => {
     const whatsappNumber = product?.store.whatsapp_number;
     
-    console.group('🔍 WhatsApp Debug - Product Detail');
-    console.log('Raw whatsapp_number:', whatsappNumber);
-    console.log('Type:', typeof whatsappNumber);
-    console.log('Is null:', whatsappNumber === null);
-    console.log('Is undefined:', whatsappNumber === undefined);
-    console.log('String value:', String(whatsappNumber));
-    console.log('Number conversion:', Number(whatsappNumber));
-    console.log('Is NaN:', isNaN(Number(whatsappNumber)));
-    console.log('Store data:', product?.store);
-    console.groupEnd();
-
     // Verificação robusta: não pode ser null, undefined, 0, NaN ou string vazia
     if (whatsappNumber === null || whatsappNumber === undefined) {
       return false;
@@ -57,48 +46,7 @@ const ProductDetail = () => {
     const message = encodeURIComponent(productMessage);
     const whatsappUrl = `https://wa.me/55${product.store.whatsapp_number}?text=${message}`;
     
-    console.log('📞 Abrindo WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
-  };
-
-  // Debug component
-  const DebugInfo = () => {
-    if (!showDebug || !product) return null;
-
-    return (
-      <div className="fixed top-4 right-4 bg-black text-white p-4 rounded-lg z-50 max-w-md text-xs">
-        <h3 className="font-bold mb-2">🐛 Debug Info</h3>
-        <div className="space-y-2">
-          <div>
-            <strong>Product ID:</strong> {product.id}
-          </div>
-          <div>
-            <strong>WhatsApp Number:</strong> {JSON.stringify(product.store.whatsapp_number)}
-          </div>
-          <div>
-            <strong>WhatsApp Type:</strong> {typeof product.store.whatsapp_number}
-          </div>
-          <div>
-            <strong>WhatsApp Available:</strong> {isWhatsAppAvailable() ? '✅' : '❌'}
-          </div>
-          <div>
-            <strong>Custom Message:</strong> {product.store.custom_whatsapp_message}
-          </div>
-          <div>
-            <strong>Theme:</strong> {product.store.catalog_theme}
-          </div>
-          <div>
-            <strong>Layout:</strong> {product.store.catalog_layout}
-          </div>
-        </div>
-        <button 
-          onClick={() => setShowDebug(false)}
-          className="mt-2 bg-red-500 px-2 py-1 rounded text-xs"
-        >
-          Fechar
-        </button>
-      </div>
-    );
   };
 
   const nextImage = () => {
@@ -143,30 +91,10 @@ const ProductDetail = () => {
     );
   }
 
-  console.table({
-    'Product Name': product.name,
-    'WhatsApp Number': product.store.whatsapp_number,
-    'WhatsApp Type': typeof product.store.whatsapp_number,
-    'WhatsApp Available': isWhatsAppAvailable(),
-    'Theme': product.store.catalog_theme,
-    'Layout': product.store.catalog_layout
-  });
-
   return (
     <CatalogTheme theme={theme} backgroundColor={product.store.background_color}>
       <div className="max-w-md mx-auto relative">
         
-        {/* Debug Button */}
-        <button
-          onClick={() => setShowDebug(!showDebug)}
-          className="fixed top-4 left-4 bg-red-500 text-white p-2 rounded-full z-40 shadow-lg hover:bg-red-600"
-          title="Debug Info"
-        >
-          <Bug className="h-4 w-4" />
-        </button>
-
-        <DebugInfo />
-
         {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b ${themeClasses.header}`}>
           <Button 
