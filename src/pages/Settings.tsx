@@ -23,12 +23,16 @@ const Settings = () => {
     store_url: '',
     store_description: '',
     background_color: '#ffffff',
+    background_type: 'color' as 'color' | 'image',
+    background_image_url: '',
     profile_photo_url: '',
     whatsapp_number: '',
     custom_whatsapp_message: 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
     instagram_url: '',
-    catalog_theme: 'light' as 'light' | 'dark' | 'beige',
-    catalog_layout: 'overlay' as 'overlay' | 'bottom'
+    catalog_theme: 'light' as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset',
+    catalog_layout: 'overlay' as 'overlay' | 'bottom',
+    hide_footer: false,
+    is_verified: false
   });
 
   useEffect(() => {
@@ -39,12 +43,16 @@ const Settings = () => {
         store_url: profile.store_url || '',
         store_description: profile.store_description || '',
         background_color: profile.background_color || '#ffffff',
+        background_type: (profile as any).background_type || 'color',
+        background_image_url: (profile as any).background_image_url || '',
         profile_photo_url: profile.profile_photo_url || '',
         whatsapp_number: profile.whatsapp_number?.toString() || '',
         custom_whatsapp_message: profile.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
         instagram_url: profile.instagram_url || '',
         catalog_theme: profile.catalog_theme || 'light',
-        catalog_layout: profile.catalog_layout || 'overlay'
+        catalog_layout: profile.catalog_layout || 'overlay',
+        hide_footer: (profile as any).hide_footer || false,
+        is_verified: (profile as any).is_verified || false
       });
     }
   }, [profile]);
@@ -348,7 +356,7 @@ const Settings = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="catalog_theme">Tema do Catálogo</Label>
-                <Select value={formData.catalog_theme} onValueChange={(value: 'light' | 'dark' | 'beige') => handleInputChange('catalog_theme', value)}>
+                <Select value={formData.catalog_theme} onValueChange={(value: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') => handleInputChange('catalog_theme', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tema" />
                   </SelectTrigger>
@@ -356,6 +364,11 @@ const Settings = () => {
                     <SelectItem value="light">Claro (Branco e Cinza)</SelectItem>
                     <SelectItem value="dark">Escuro</SelectItem>
                     <SelectItem value="beige">Bege</SelectItem>
+                    <SelectItem value="rose">Rosa</SelectItem>
+                    <SelectItem value="gold">Dourado</SelectItem>
+                    <SelectItem value="purple">Roxo</SelectItem>
+                    <SelectItem value="mint">Verde Menta</SelectItem>
+                    <SelectItem value="sunset">Por do Sol</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -377,29 +390,126 @@ const Settings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="background_color">Cor de Fundo do Catálogo</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="background_color"
-                    type="color"
-                    value={formData.background_color}
-                    onChange={(e) => handleInputChange('background_color', e.target.value)}
-                    className="w-16 h-10 p-1 border rounded cursor-pointer"
-                  />
-                  <Input
-                    value={formData.background_color}
-                    onChange={(e) => handleInputChange('background_color', e.target.value)}
-                    placeholder="#ffffff"
-                    pattern="^#[0-9A-Fa-f]{6}$"
-                    className="flex-1"
-                  />
+                <Label htmlFor="background_type">Tipo de Fundo</Label>
+                <Select value={formData.background_type} onValueChange={(value: 'color' | 'image') => handleInputChange('background_type', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="color">Cor Sólida</SelectItem>
+                    <SelectItem value="image">Imagem de Fundo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.background_type === 'color' && (
+                <div className="space-y-2">
+                  <Label htmlFor="background_color">Cor de Fundo do Catálogo</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="background_color"
+                      type="color"
+                      value={formData.background_color}
+                      onChange={(e) => handleInputChange('background_color', e.target.value)}
+                      className="w-16 h-10 p-1 border rounded cursor-pointer"
+                    />
+                    <Input
+                      value={formData.background_color}
+                      onChange={(e) => handleInputChange('background_color', e.target.value)}
+                      placeholder="#ffffff"
+                      pattern="^#[0-9A-Fa-f]{6}$"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Cor de fundo externa do catálogo (apenas para tema claro)
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Cor de fundo externa do catálogo (apenas para tema claro)
+              )}
+
+              {formData.background_type === 'image' && (
+                <div className="space-y-2">
+                  <Label htmlFor="background_image_url">URL da Imagem de Fundo</Label>
+                  <Input
+                    id="background_image_url"
+                    value={formData.background_image_url}
+                    onChange={(e) => handleInputChange('background_image_url', e.target.value)}
+                    placeholder="https://exemplo.com/imagem-fundo.jpg"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Imagem de fundo do catálogo (recomendado: 1080x1920px)
+                  </p>
+                  {formData.background_image_url && (
+                    <div className="mt-2">
+                      <img 
+                        src={formData.background_image_url} 
+                        alt="Prévia do fundo" 
+                        className="w-24 h-32 object-cover border rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Separator />
+
+          {/* Configurações Avançadas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layout className="h-5 w-5" />
+                Configurações Avançadas
+              </CardTitle>
+              <CardDescription>
+                Personalizações especiais para seu catálogo
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Esconder rodapé "Criado com ❤️ no LinkBuy"</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Remove o rodapé de crédito do catálogo
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={formData.hide_footer}
+                  onChange={(e) => setFormData(prev => ({ ...prev, hide_footer: e.target.checked }))}
+                  className="h-4 w-4"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Selo de verificado</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Exibe um selo ao lado do nome da loja (apenas para contas verificadas)
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={formData.is_verified}
+                  disabled
+                  className="h-4 w-4 opacity-50"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  💡 <strong>Dica:</strong> O selo de verificado é concedido após análise manual. 
+                  Entre em contato conosco para solicitar a verificação da sua loja.
                 </p>
               </div>
             </CardContent>
           </Card>
+
+          <Separator />
 
           {/* Botões de Ação */}
           <div className="flex flex-col sm:flex-row justify-end gap-2">

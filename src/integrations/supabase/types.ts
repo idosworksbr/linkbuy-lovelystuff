@@ -275,6 +275,16 @@ export type Database = {
           whatsapp_clicks: number
         }[]
       }
+      get_public_custom_links: {
+        Args: { store_url_param: string }
+        Returns: {
+          display_order: number
+          icon: string
+          id: string
+          title: string
+          url: string
+        }[]
+      }
       get_public_store_info: {
         Args: { store_url_param: string }
         Returns: {

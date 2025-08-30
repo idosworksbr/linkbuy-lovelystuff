@@ -10,7 +10,8 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AddProduct from "./pages/AddProduct";
-import Settings from "./pages/Settings";
+import CustomLinks from "@/pages/CustomLinks";
+import Settings from "@/pages/Settings";
 import Analytics from "./pages/Analytics";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
@@ -41,6 +42,11 @@ const App = () => (
             <Route path="/dashboard/analytics" element={
               <ProtectedRoute>
                 <Analytics />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/custom-links" element={
+              <ProtectedRoute>
+                <CustomLinks />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/settings" element={

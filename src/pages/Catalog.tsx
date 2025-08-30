@@ -1,24 +1,30 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram } from "lucide-react";
+import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram, CheckBadge, Link2, icons } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useAnalyticsTracker } from "@/hooks/useAnalytics";
+
 interface StoreProfile {
   id: string;
   store_name: string;
   store_description: string | null;
   profile_photo_url: string | null;
   background_color: string;
+  background_type?: 'color' | 'image';
+  background_image_url?: string | null;
   store_url: string;
   whatsapp_number: number | null;
   custom_whatsapp_message: string;
   instagram_url: string | null;
-  catalog_theme: 'light' | 'dark' | 'beige';
+  catalog_theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
   catalog_layout: 'overlay' | 'bottom';
+  hide_footer?: boolean;
+  is_verified?: boolean;
   created_at: string;
 }
+
 interface Product {
   id: string;
   name: string;
@@ -27,11 +33,22 @@ interface Product {
   images: string[];
   created_at: string;
 }
+
+interface CustomLink {
+  id: string;
+  title: string;
+  url: string;
+  icon?: string;
+  display_order: number;
+}
+
 interface CatalogData {
   store: StoreProfile;
   products: Product[];
+  customLinks: CustomLink[];
   meta: {
     total_products: number;
+    total_custom_links: number;
     generated_at: string;
   };
 }
@@ -161,14 +178,14 @@ const Catalog = () => {
     
     window.open(catalogData.store.instagram_url, '_blank');
   };
-  const handleProductClick = (product: Product) => {
-    if (catalogData?.store) {
-      trackEvent('product_view', catalogData.store.id, product.id);
-    }
-    navigate(`/catalog/${storeUrl}/product/${product.id}`);
-  };
   const handleGoBack = () => {
     navigate('/');
+  };
+  const handleCustomLinkClick = (link: CustomLink) => {
+    if (catalogData?.store) {
+      trackEvent('custom_link_click', catalogData.store.id);
+    }
+    window.open(link.url, '_blank');
   };
   if (loading) {
     return <div className={`min-h-screen ${themeClasses.container} flex items-center justify-center`}>
@@ -217,7 +234,12 @@ const Catalog = () => {
     products,
     meta
   } = catalogData;
-  return <CatalogTheme theme={theme} backgroundColor={store.background_color}>
+  return <CatalogTheme 
+    theme={theme} 
+    backgroundColor={store.background_color}
+    backgroundImage={store.background_image_url}
+    backgroundType={store.background_type}
+  >
       <div className={`max-w-md mx-auto ${themeClasses.card} min-h-screen shadow-lg relative`}>
         
         {/* Header Profile Section */}
@@ -230,7 +252,12 @@ const Catalog = () => {
             </div>
             
             <div className="flex-1 min-w-0">
-              <h1 className={`text-xl font-semibold mb-2 truncate ${themeClasses.text}`}>{store.store_name}</h1>
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className={`text-xl font-semibold truncate ${themeClasses.text}`}>{store.store_name}</h1>
+                {store.is_verified && (
+                  <CheckBadge className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                )}
+              </div>
               
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
@@ -262,15 +289,37 @@ const Catalog = () => {
               {isWhatsAppAvailable() ? 'Mensagem' : 'WhatsApp indisponível'}
             </Button>
           </div>
+
+          {/* Custom Links Section */}
+          {catalogData.customLinks && catalogData.customLinks.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {catalogData.customLinks.map((link) => {
+                const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || Link2;
+                
+                return (
+                  <Button
+                    key={link.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCustomLinkClick(link)}
+                    className={`${themeClasses.buttonOutline} rounded-lg text-xs transition-colors flex items-center gap-1`}
+                  >
+                    <IconComponent className="h-3 w-3" />
+                    {link.title}
+                  </Button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Grid Icon */}
-        <div className={`flex justify-center py-3 ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
+        <div className={`flex justify-center py-3 ${themeClasses.accent}`}>
           <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
         </div>
 
         {/* Products Grid */}
-        <div className={`p-1 ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
+        <div className={`p-1 ${themeClasses.accent}`}>
           {products.length > 0 ? <div className="grid grid-cols-3 gap-1">
               {products.map((product, index) => <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden" style={{
             animationDelay: `${index * 50}ms`

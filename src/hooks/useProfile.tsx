@@ -12,11 +12,15 @@ export interface Profile {
   store_description: string | null;
   profile_photo_url: string | null;
   background_color: string;
+  background_type?: 'color' | 'image';
+  background_image_url?: string | null;
   whatsapp_number: number | null;
   custom_whatsapp_message: string;
   instagram_url: string | null;
-  catalog_theme: 'light' | 'dark' | 'beige';
+  catalog_theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
   catalog_layout: 'overlay' | 'bottom';
+  hide_footer?: boolean;
+  is_verified?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -43,8 +47,9 @@ export const useProfile = () => {
       // Garantir que os tipos estão corretos
       const profileData: Profile = {
         ...data,
-        catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige') || 'light',
+        catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') || 'light',
         catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'
       };
       
@@ -72,8 +77,9 @@ export const useProfile = () => {
       // Garantir que os tipos estão corretos
       const updatedProfile: Profile = {
         ...data,
-        catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige') || 'light',
+        catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') || 'light',
         catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'
       };
 
