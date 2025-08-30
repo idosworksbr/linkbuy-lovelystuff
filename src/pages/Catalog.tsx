@@ -1,30 +1,24 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram, ShieldCheck, Link2, icons } from "lucide-react";
+import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useAnalyticsTracker } from "@/hooks/useAnalytics";
-
 interface StoreProfile {
   id: string;
   store_name: string;
   store_description: string | null;
   profile_photo_url: string | null;
   background_color: string;
-  background_type?: 'color' | 'image';
-  background_image_url?: string | null;
   store_url: string;
   whatsapp_number: number | null;
   custom_whatsapp_message: string;
   instagram_url: string | null;
-  catalog_theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
+  catalog_theme: 'light' | 'dark' | 'beige';
   catalog_layout: 'overlay' | 'bottom';
-  hide_footer?: boolean;
-  is_verified?: boolean;
   created_at: string;
 }
-
 interface Product {
   id: string;
   name: string;
@@ -33,22 +27,11 @@ interface Product {
   images: string[];
   created_at: string;
 }
-
-interface CustomLink {
-  id: string;
-  title: string;
-  url: string;
-  icon?: string;
-  display_order: number;
-}
-
 interface CatalogData {
   store: StoreProfile;
   products: Product[];
-  customLinks: CustomLink[];
   meta: {
     total_products: number;
-    total_custom_links: number;
     generated_at: string;
   };
 }
@@ -64,7 +47,6 @@ const Catalog = () => {
   const [catalogData, setCatalogData] = useState<CatalogData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'products' | 'links'>('products');
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'overlay';
   const themeClasses = useThemeClasses(theme);
@@ -160,7 +142,7 @@ const Catalog = () => {
     
     const phoneNumber = catalogData.store.whatsapp_number;
     const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
-    const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
   const handleInstagramFollow = () => {
@@ -179,21 +161,14 @@ const Catalog = () => {
     
     window.open(catalogData.store.instagram_url, '_blank');
   };
-  const handleGoBack = () => {
-    navigate('/');
-  };
-  const handleCustomLinkClick = (link: CustomLink) => {
-    if (catalogData?.store) {
-      trackEvent('whatsapp_click', catalogData.store.id); // Using existing event type for now
-    }
-    window.open(link.url, '_blank');
-  };
-
   const handleProductClick = (product: Product) => {
     if (catalogData?.store) {
       trackEvent('product_view', catalogData.store.id, product.id);
     }
     navigate(`/catalog/${storeUrl}/product/${product.id}`);
+  };
+  const handleGoBack = () => {
+    navigate('/');
   };
   if (loading) {
     return <div className={`min-h-screen ${themeClasses.container} flex items-center justify-center`}>
@@ -242,12 +217,7 @@ const Catalog = () => {
     products,
     meta
   } = catalogData;
-  return <CatalogTheme 
-    theme={theme} 
-    backgroundColor={store.background_color}
-    backgroundImage={store.background_image_url}
-    backgroundType={store.background_type}
-  >
+  return <CatalogTheme theme={theme} backgroundColor={store.background_color}>
       <div className={`max-w-md mx-auto ${themeClasses.card} min-h-screen shadow-lg relative`}>
         
         {/* Header Profile Section */}
@@ -260,12 +230,7 @@ const Catalog = () => {
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <h1 className={`text-xl font-semibold truncate ${themeClasses.text}`}>{store.store_name}</h1>
-                {store.is_verified && (
-                  <ShieldCheck className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                )}
-              </div>
+              <h1 className={`text-xl font-semibold mb-2 truncate ${themeClasses.text}`}>{store.store_name}</h1>
               
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
@@ -299,161 +264,59 @@ const Catalog = () => {
           </div>
         </div>
 
-        {/* Navigation Tabs Section - Similar to Instagram */}
-        <div className={`border-b ${themeClasses.header}`}>
-          {/* Tab Buttons */}
-          <div className="flex justify-center gap-8 py-3">
-            <button 
-              onClick={() => setActiveTab('products')}
-              className={`flex flex-col items-center cursor-pointer transition-colors ${
-                activeTab === 'products' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
-              }`}
-            >
-              <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
-              {activeTab === 'products' && (
-                <div className={`w-6 h-0.5 bg-current mt-1 ${themeClasses.textMuted}`}></div>
-              )}
-            </button>
-            
-            {catalogData.customLinks && catalogData.customLinks.length > 0 && (
-              <button 
-                onClick={() => setActiveTab('links')}
-                className={`flex flex-col items-center cursor-pointer transition-colors ${
-                  activeTab === 'links' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
-                }`}
-              >
-                <Link2 className={`h-6 w-6 ${themeClasses.textMuted}`} />
-                {activeTab === 'links' && (
-                  <div className={`w-6 h-0.5 bg-current mt-1 ${themeClasses.textMuted}`}></div>
-                )}
-              </button>
-            )}
-          </div>
+        {/* Grid Icon */}
+        <div className={`flex justify-center py-3 ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
+          <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
         </div>
 
-        {/* Content Area with Swipe Support */}
-        <div className={`${themeClasses.accent} overflow-hidden`}>
-          <div 
-            className="flex transition-transform duration-300 ease-in-out"
-            style={{ 
-              transform: `translateX(-${activeTab === 'products' ? 0 : 100}%)`,
-              width: catalogData.customLinks && catalogData.customLinks.length > 0 ? '200%' : '100%'
-            }}
-          >
-            {/* Products Tab - 3 columns grid */}
-            <div className="w-full flex-shrink-0 p-1">
-              {products.length > 0 ? (
-                <div className="grid grid-cols-3 gap-1">
-                  {products.map((product, index) => (
-                    <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden w-full" style={{
-                      animationDelay: `${index * 50}ms`,
-                      minHeight: '120px',
-                      maxHeight: '120px'
-                    }}>
-                      {product.images && product.images.length > 0 ? (
-                        <img 
-                          src={product.images[0]} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          style={{ aspectRatio: '1/1' }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center" style={{ aspectRatio: '1/1' }}>
-                          <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
-                        </div>
-                      )}
-                      
-                      {layout === 'overlay' ? (
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-                            <h3 className="text-xs font-medium line-clamp-2 mb-1">
-                              {product.name}
-                            </h3>
-                            <p className="text-xs font-bold">
-                              R$ {product.price.toFixed(2).replace('.', ',')}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                          <div className="absolute bottom-0 left-0 right-0 p-2">
-                            <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
-                              textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                            }}>
-                              {product.name}
-                            </h3>
-                            <p style={{
-                              textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                            }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
-                              R$ {product.price.toFixed(2).replace('.', ',')}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2`}>
-                  <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                    <Grid3X3 className={`h-8 w-8 ${themeClasses.textMuted}`} />
-                  </div>
-                  <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum produto ainda</h3>
-                  <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou produtos ao catálogo.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Links Tab - Single column list */}
-            {catalogData.customLinks && catalogData.customLinks.length > 0 && (
-              <div className="w-full flex-shrink-0 p-4">
-                {catalogData.customLinks.length > 0 ? (
-                  <div className="flex flex-col gap-3">
-                    {catalogData.customLinks.map((link, index) => {
-                      const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || ExternalLink;
-                      
-                      return (
-                        <div
-                          key={link.id}
-                          onClick={() => handleCustomLinkClick(link)}
-                          className={`w-full ${themeClasses.card} rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] animate-fade-in border flex items-center gap-3 group`}
-                          style={{
-                            animationDelay: `${index * 100}ms`
-                          }}
-                        >
-                          <div className={`w-12 h-12 rounded-full ${themeClasses.accent} flex items-center justify-center flex-shrink-0`}>
-                            <IconComponent className={`h-6 w-6 ${themeClasses.textMuted}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className={`font-medium ${themeClasses.text} truncate`}>{link.title}</h3>
-                            <p className={`text-sm ${themeClasses.textMuted} truncate`}>Clique para acessar</p>
-                          </div>
-                          <ExternalLink className={`h-5 w-5 ${themeClasses.textMuted} opacity-50 group-hover:opacity-100 transition-opacity flex-shrink-0`} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className={`text-center py-16 ${themeClasses.card} rounded-lg`}>
-                    <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                      <Link2 className={`h-8 w-8 ${themeClasses.textMuted}`} />
-                    </div>
-                    <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum link ainda</h3>
-                    <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou links personalizados.</p>
-                  </div>
-                )}
+        {/* Products Grid */}
+        <div className={`p-1 ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
+          {products.length > 0 ? <div className="grid grid-cols-3 gap-1">
+              {products.map((product, index) => <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden" style={{
+            animationDelay: `${index * 50}ms`
+          }}>
+                  {product.images && product.images.length > 0 ? <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" /> : <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                      <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
+                    </div>}
+                  
+                  {layout === 'overlay' ? <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                        <h3 className="text-xs font-medium line-clamp-2 mb-1">
+                          {product.name}
+                        </h3>
+                        <p className="text-xs font-bold">
+                          R$ {product.price.toFixed(2).replace('.', ',')}
+                        </p>
+                      </div>
+                    </div> : <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+                      <div className="absolute bottom-0 left-0 right-0 p-2">
+                        <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
+                  textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                }}>
+                          {product.name}
+                        </h3>
+                        <p style={{
+                  textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
+                          R$ {product.price.toFixed(2).replace('.', ',')}
+                        </p>
+                      </div>
+                    </div>}
+                </div>)}
+            </div> : <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2`}>
+              <div className={`w-16 h-16 ${theme === 'light' ? 'bg-gray-100' : theme === 'dark' ? 'bg-gray-700' : 'bg-amber-200'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <Grid3X3 className={`h-8 w-8 ${themeClasses.textMuted}`} />
               </div>
-            )}
-          </div>
+              <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum produto ainda</h3>
+              <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou produtos ao catálogo.</p>
+            </div>}
         </div>
 
         {/* Footer */}
-        {!store.hide_footer && (
-          <div className={`text-center py-6 text-xs ${themeClasses.textMuted} ${themeClasses.accent}`}>
-            <p className="text-xs">Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
-            <p className="mt-1 text-xs font-thin">Última atualização: {new Date(catalogData.meta.generated_at).toLocaleString('pt-BR')}</p>
-          </div>
-        )}
+        <div className={`text-center py-6 text-xs ${themeClasses.textMuted} ${theme === 'light' ? 'bg-gray-50' : theme === 'dark' ? 'bg-gray-800' : 'bg-amber-100'}`}>
+          <p className="text-xs">Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
+          <p className="mt-1 text-xs font-thin">Última atualização: {new Date(meta.generated_at).toLocaleString('pt-BR')}</p>
+        </div>
       </div>
     </CatalogTheme>;
 };
