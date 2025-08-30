@@ -23,6 +23,8 @@ export interface Profile {
   product_grid_layout?: 'default' | 'round' | 'instagram';
   hide_footer?: boolean;
   is_verified?: boolean;
+  subscription_plan: 'free' | 'pro' | 'pro_plus' | 'verified' | 'pro_plus_verified';
+  subscription_expires_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -54,7 +56,9 @@ export const useProfile = () => {
         product_grid_layout: (data.product_grid_layout as 'default' | 'round' | 'instagram') || 'default',
         background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_background_enabled: data.custom_background_enabled || false,
-        custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'
+        custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
+        subscription_plan: (data.subscription_plan as 'free' | 'pro' | 'pro_plus' | 'verified' | 'pro_plus_verified') || 'free',
+        subscription_expires_at: data.subscription_expires_at || null
       };
       
       setProfile(profileData);
@@ -86,7 +90,9 @@ export const useProfile = () => {
         product_grid_layout: (data.product_grid_layout as 'default' | 'round' | 'instagram') || 'default',
         background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_background_enabled: data.custom_background_enabled || false,
-        custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'
+        custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
+        subscription_plan: (data.subscription_plan as 'free' | 'pro' | 'pro_plus' | 'verified' | 'pro_plus_verified') || 'free',
+        subscription_expires_at: data.subscription_expires_at || null
       };
 
       setProfile(updatedProfile);

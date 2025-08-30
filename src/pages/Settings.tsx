@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,13 +7,21 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
+import { usePlans } from "@/hooks/usePlans";
+import { PlanCard } from "@/components/PlanCard";
+import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
+import { useSearchParams } from "react-router-dom";
 
 const Settings = () => {
   const { profile, loading, updateProfile } = useProfile();
   const { toast } = useToast();
+  const { plans, canAccessFeature, getPlanName } = usePlans();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'profile';
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -104,6 +111,15 @@ const Settings = () => {
       return;
     }
 
+    if (!canAccessFeature(profile, 'custom_store_url') && formData.store_url !== profile?.store_url) {
+      toast({
+        title: "Recurso premium",
+        description: "Escolher URL da loja está disponível no plano Pro+.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!formData.store_url.trim() || formData.store_url.length < 3) {
       toast({
         title: "URL da loja inválida",
@@ -140,6 +156,13 @@ const Settings = () => {
     }
   };
 
+  const handleSelectPlan = (planName: string) => {
+    toast({
+      title: "Em breve!",
+      description: `A funcionalidade de upgrade para ${planName} será implementada em breve.`,
+    });
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -163,419 +186,580 @@ const Settings = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informações Pessoais */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Informações Pessoais
-              </CardTitle>
-              <CardDescription>
-                Suas informações básicas de perfil
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome Completo *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Seu nome completo"
-                  required
-                />
-              </div>
+        <Tabs defaultValue={initialTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="profile">Perfil</TabsTrigger>
+            <TabsTrigger value="visual">Visual</TabsTrigger>
+            <TabsTrigger value="plans">Planos</TabsTrigger>
+          </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="profile_photo_url">URL da Foto de Perfil</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="profile_photo_url"
-                    value={formData.profile_photo_url}
-                    onChange={(e) => handleInputChange('profile_photo_url', e.target.value)}
-                    placeholder="https://exemplo.com/foto.jpg"
-                  />
-                  <Button type="button" variant="outline" size="icon">
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                </div>
-                {formData.profile_photo_url && (
-                  <div className="mt-2">
-                    <img 
-                      src={formData.profile_photo_url} 
-                      alt="Prévia" 
-                      className="w-16 h-16 rounded-full object-cover border"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
+          {/* Tab de Perfil e Loja */}
+          <TabsContent value="profile" className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Informações Pessoais */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Informações Pessoais
+                  </CardTitle>
+                  <CardDescription>
+                    Suas informações básicas de perfil
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nome Completo *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      placeholder="Seu nome completo"
+                      required
                     />
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
 
-          <Separator />
-
-          {/* Configurações da Loja */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
-                Configurações da Loja
-              </CardTitle>
-              <CardDescription>
-                Configure como sua loja aparecerá para os clientes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="store_name">Nome da Loja *</Label>
-                <Input
-                  id="store_name"
-                  value={formData.store_name}
-                  onChange={(e) => handleInputChange('store_name', e.target.value)}
-                  placeholder="Nome da sua loja"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="store_url">URL da Loja *</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">
-                    linkbuy.com/catalog/
-                  </span>
-                  <Input
-                    id="store_url"
-                    value={formData.store_url}
-                    onChange={(e) => handleStoreUrlChange(e.target.value)}
-                    placeholder="minha-loja"
-                    className="flex-1"
-                    required
-                    minLength={3}
-                    maxLength={50}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Apenas letras minúsculas, números e hífens. Entre 3 e 50 caracteres.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="store_description">Descrição da Loja</Label>
-                <Textarea
-                  id="store_description"
-                  value={formData.store_description}
-                  onChange={(e) => handleInputChange('store_description', e.target.value)}
-                  placeholder="Descreva sua loja e seus produtos..."
-                  rows={3}
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.store_description.length}/500 caracteres
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          {/* Configurações de Contato */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
-                Configurações de Contato
-              </CardTitle>
-              <CardDescription>
-                Configure como os clientes podem entrar em contato
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="whatsapp_number">Número do WhatsApp</Label>
-                <div className="flex items-center gap-2">
-                  <Smartphone className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="whatsapp_number"
-                    value={formData.whatsapp_number}
-                    onChange={(e) => handleWhatsAppNumberChange(e.target.value)}
-                    placeholder="5511999999999"
-                    type="tel"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Digite apenas números. Exemplo: 5511999999999 (código do país + DDD + número)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="custom_whatsapp_message">Mensagem Personalizada do WhatsApp</Label>
-                <Textarea
-                  id="custom_whatsapp_message"
-                  value={formData.custom_whatsapp_message}
-                  onChange={(e) => handleInputChange('custom_whatsapp_message', e.target.value)}
-                  placeholder="Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos."
-                  rows={3}
-                  maxLength={300}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Mensagem que será enviada quando clicarem no botão "Mensagem" do catálogo. {formData.custom_whatsapp_message.length}/300 caracteres
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="instagram_url">URL do Instagram</Label>
-                <div className="flex items-center gap-2">
-                  <Instagram className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="instagram_url"
-                    value={formData.instagram_url}
-                    onChange={(e) => handleInputChange('instagram_url', e.target.value)}
-                    placeholder="https://instagram.com/seuusuario"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Link do seu perfil no Instagram (usado no botão "Seguir" do catálogo)
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          {/* Personalização Visual */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Personalização Visual
-              </CardTitle>
-              <CardDescription>
-                Customize a aparência do seu catálogo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="catalog_theme">Tema do Catálogo</Label>
-                <Select value={formData.catalog_theme} onValueChange={(value: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') => handleInputChange('catalog_theme', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tema" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Claro (Branco e Cinza)</SelectItem>
-                    <SelectItem value="dark">Escuro</SelectItem>
-                    <SelectItem value="beige">Bege</SelectItem>
-                    <SelectItem value="rose">Rosa</SelectItem>
-                    <SelectItem value="gold">Dourado</SelectItem>
-                    <SelectItem value="purple">Roxo</SelectItem>
-                    <SelectItem value="mint">Verde Menta</SelectItem>
-                    <SelectItem value="sunset">Por do Sol</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="catalog_layout">Layout dos Produtos</Label>
-                <Select value={formData.catalog_layout} onValueChange={(value: 'overlay' | 'bottom') => handleInputChange('catalog_layout', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o layout" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="overlay">Titulo/Preço visível no feed</SelectItem>
-                    <SelectItem value="bottom">Titulo/Preço oculto no feed</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Escolha se deseja mostrar ou ocultar as informações dos produtos no grid principal
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="product_grid_layout">Visualização da Grade</Label>
-                <Select value={formData.product_grid_layout} onValueChange={(value: 'default' | 'round' | 'instagram') => handleInputChange('product_grid_layout', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o estilo da grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Padrão (Cards com bordas)</SelectItem>
-                    <SelectItem value="round">Imagens Redondas (Título/preço abaixo)</SelectItem>
-                    <SelectItem value="instagram">Estilo Instagram (Sem separação entre imagens)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Escolha como os produtos aparecerão na grade do catálogo
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between mb-4">
-                <div className="space-y-0.5">
-                  <Label>Personalizar Plano de Fundo</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Ative para usar cores/imagens personalizadas ou mantenha desativado para usar o fundo padrão do tema
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={formData.custom_background_enabled}
-                  onChange={(e) => setFormData(prev => ({ ...prev, custom_background_enabled: e.target.checked }))}
-                  className="h-4 w-4"
-                />
-              </div>
-
-              {formData.custom_background_enabled && (
-                <>
                   <div className="space-y-2">
-                    <Label htmlFor="background_type">Tipo de Fundo da Grade</Label>
-                    <Select value={formData.background_type} onValueChange={(value: 'color' | 'image') => handleInputChange('background_type', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="color">Cor Sólida na Grade</SelectItem>
-                        <SelectItem value="image">Imagem de Fundo na Grade</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="profile_photo_url">URL da Foto de Perfil</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="profile_photo_url"
+                        value={formData.profile_photo_url}
+                        onChange={(e) => handleInputChange('profile_photo_url', e.target.value)}
+                        placeholder="https://exemplo.com/foto.jpg"
+                      />
+                      <Button type="button" variant="outline" size="icon">
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {formData.profile_photo_url && (
+                      <div className="mt-2">
+                        <img 
+                          src={formData.profile_photo_url} 
+                          alt="Prévia" 
+                          className="w-16 h-16 rounded-full object-cover border"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Separator />
+
+              {/* Configurações da Loja */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Store className="h-5 w-5" />
+                    Configurações da Loja
+                  </CardTitle>
+                  <CardDescription>
+                    Configure como sua loja aparecerá para os clientes
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="store_name">Nome da Loja *</Label>
+                    <Input
+                      id="store_name"
+                      value={formData.store_name}
+                      onChange={(e) => handleInputChange('store_name', e.target.value)}
+                      placeholder="Nome da sua loja"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="store_url">URL da Loja *</Label>
+                    {!canAccessFeature(profile, 'custom_store_url') ? (
+                      <PlanFeatureRestriction 
+                        requiredPlan="pro_plus"
+                        featureName="URL Personalizada da Loja"
+                        description="No plano Pro+ você pode escolher uma URL personalizada para sua loja"
+                      />
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">
+                            linkbuy.com/catalog/
+                          </span>
+                          <Input
+                            id="store_url"
+                            value={formData.store_url}
+                            onChange={(e) => handleStoreUrlChange(e.target.value)}
+                            placeholder="minha-loja"
+                            className="flex-1"
+                            required
+                            minLength={3}
+                            maxLength={50}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Apenas letras minúsculas, números e hífens. Entre 3 e 50 caracteres.
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="store_description">Descrição da Loja</Label>
+                    {!canAccessFeature(profile, 'bio_message') ? (
+                      <PlanFeatureRestriction 
+                        requiredPlan="pro"
+                        featureName="Mensagem na Bio"
+                        description="No plano Pro você pode configurar uma descrição personalizada para sua loja"
+                      />
+                    ) : (
+                      <>
+                        <Textarea
+                          id="store_description"
+                          value={formData.store_description}
+                          onChange={(e) => handleInputChange('store_description', e.target.value)}
+                          placeholder="Descreva sua loja e seus produtos..."
+                          rows={3}
+                          maxLength={500}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {formData.store_description.length}/500 caracteres
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Separator />
+
+              {/* Configurações de Contato */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageCircle className="h-5 w-5" />
+                    Configurações de Contato
+                  </CardTitle>
+                  <CardDescription>
+                    Configure como os clientes podem entrar em contato
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp_number">Número do WhatsApp</Label>
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="whatsapp_number"
+                        value={formData.whatsapp_number}
+                        onChange={(e) => handleWhatsAppNumberChange(e.target.value)}
+                        placeholder="5511999999999"
+                        type="tel"
+                      />
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      Esta configuração será aplicada apenas na área da grade de produtos/links, não na página inteira
+                      Digite apenas números. Exemplo: 5511999999999 (código do país + DDD + número)
                     </p>
                   </div>
 
-                  {formData.background_type === 'color' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="background_color">Cor de Fundo da Grade</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="background_color"
-                          type="color"
-                          value={formData.background_color}
-                          onChange={(e) => handleInputChange('background_color', e.target.value)}
-                          className="w-16 h-10 p-1 border rounded cursor-pointer"
+                  <div className="space-y-2">
+                    <Label htmlFor="custom_whatsapp_message">Mensagem Personalizada do WhatsApp</Label>
+                    {!canAccessFeature(profile, 'custom_whatsapp_message') ? (
+                      <PlanFeatureRestriction 
+                        requiredPlan="pro"
+                        featureName="Mensagem Personalizada WhatsApp"
+                        description="No plano Pro você pode personalizar a mensagem que será enviada via WhatsApp"
+                      />
+                    ) : (
+                      <>
+                        <Textarea
+                          id="custom_whatsapp_message"
+                          value={formData.custom_whatsapp_message}
+                          onChange={(e) => handleInputChange('custom_whatsapp_message', e.target.value)}
+                          placeholder="Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos."
+                          rows={3}
+                          maxLength={300}
                         />
-                        <Input
-                          value={formData.background_color}
-                          onChange={(e) => handleInputChange('background_color', e.target.value)}
-                          placeholder="#ffffff"
-                          pattern="^#[0-9A-Fa-f]{6}$"
-                          className="flex-1"
+                        <p className="text-xs text-muted-foreground">
+                          Mensagem que será enviada quando clicarem no botão "Mensagem" do catálogo. {formData.custom_whatsapp_message.length}/300 caracteres
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram_url">URL do Instagram</Label>
+                    <div className="flex items-center gap-2">
+                      <Instagram className="h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="instagram_url"
+                        value={formData.instagram_url}
+                        onChange={(e) => handleInputChange('instagram_url', e.target.value)}
+                        placeholder="https://instagram.com/seuusuario"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Link do seu perfil no Instagram (usado no botão "Seguir" do catálogo)
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Botões de Ação */}
+              <div className="flex flex-col sm:flex-row justify-end gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={handlePreviewCatalog}
+                  disabled={!formData.store_url || formData.store_url.length < 3}
+                >
+                  Visualizar Catálogo
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="btn-hero"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar Alterações
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+
+          {/* Tab de Personalização Visual */}
+          <TabsContent value="visual" className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Palette className="h-5 w-5" />
+                    Personalização Visual
+                  </CardTitle>
+                  <CardDescription>
+                    Customize a aparência do seu catálogo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="catalog_theme">Tema do Catálogo</Label>
+                    {!canAccessFeature(profile, 'catalog_theme') ? (
+                      <PlanFeatureRestriction 
+                        requiredPlan="pro"
+                        featureName="Temas Personalizados"
+                        description="No plano Pro você pode escolher entre diferentes temas para seu catálogo"
+                      />
+                    ) : (
+                      <Select value={formData.catalog_theme} onValueChange={(value: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') => handleInputChange('catalog_theme', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tema" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="light">Claro (Branco e Cinza)</SelectItem>
+                          <SelectItem value="dark">Escuro</SelectItem>
+                          <SelectItem value="beige">Bege</SelectItem>
+                          <SelectItem value="rose">Rosa</SelectItem>
+                          <SelectItem value="gold">Dourado</SelectItem>
+                          <SelectItem value="purple">Roxo</SelectItem>
+                          <SelectItem value="mint">Verde Menta</SelectItem>
+                          <SelectItem value="sunset">Por do Sol</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="catalog_layout">Layout dos Produtos</Label>
+                    <Select value={formData.catalog_layout} onValueChange={(value: 'overlay' | 'bottom') => handleInputChange('catalog_layout', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o layout" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="overlay">Titulo/Preço visível no feed</SelectItem>
+                        <SelectItem value="bottom">Titulo/Preço oculto no feed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Escolha se deseja mostrar ou ocultar as informações dos produtos no grid principal
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="product_grid_layout">Visualização da Grade</Label>
+                    {!canAccessFeature(profile, 'grid_layout') ? (
+                      <PlanFeatureRestriction 
+                        requiredPlan="pro"
+                        featureName="Layouts de Grade Personalizados"
+                        description="No plano Pro você pode escolher diferentes estilos de visualização para seus produtos"
+                      />
+                    ) : (
+                      <>
+                        <Select value={formData.product_grid_layout} onValueChange={(value: 'default' | 'round' | 'instagram') => handleInputChange('product_grid_layout', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o estilo da grade" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Padrão (Cards com bordas)</SelectItem>
+                            <SelectItem value="round">Imagens Redondas (Título/preço abaixo)</SelectItem>
+                            <SelectItem value="instagram">Estilo Instagram (Sem separação entre imagens)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Escolha como os produtos aparecerão na grade do catálogo
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  {canAccessFeature(profile, 'custom_background') && (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="space-y-0.5">
+                          <Label>Personalizar Plano de Fundo</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Ative para usar cores/imagens personalizadas ou mantenha desativado para usar o fundo padrão do tema
+                          </p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={formData.custom_background_enabled}
+                          onChange={(e) => setFormData(prev => ({ ...prev, custom_background_enabled: e.target.checked }))}
+                          className="h-4 w-4"
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Cor de fundo aplicada apenas na área da grade de produtos/links
-                      </p>
-                    </div>
-                  )}
 
-                  {formData.background_type === 'image' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="background_image_url">URL da Imagem de Fundo da Grade</Label>
-                      <Input
-                        id="background_image_url"
-                        value={formData.background_image_url}
-                        onChange={(e) => handleInputChange('background_image_url', e.target.value)}
-                        placeholder="https://exemplo.com/imagem-fundo.jpg"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Imagem de fundo aplicada apenas na área da grade de produtos/links (recomendado: 800x600px)
-                      </p>
-                      {formData.background_image_url && (
-                        <div className="mt-2">
-                          <img 
-                            src={formData.background_image_url} 
-                            alt="Prévia do fundo" 
-                            className="w-24 h-32 object-cover border rounded"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
+                      {formData.custom_background_enabled && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="background_type">Tipo de Fundo da Grade</Label>
+                            <Select value={formData.background_type} onValueChange={(value: 'color' | 'image') => handleInputChange('background_type', value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="color">Cor Sólida na Grade</SelectItem>
+                                <SelectItem value="image">Imagem de Fundo na Grade</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                              Esta configuração será aplicada apenas na área da grade de produtos/links, não na página inteira
+                            </p>
+                          </div>
+
+                          {formData.background_type === 'color' && (
+                            <div className="space-y-2">
+                              <Label htmlFor="background_color">Cor de Fundo da Grade</Label>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  id="background_color"
+                                  type="color"
+                                  value={formData.background_color}
+                                  onChange={(e) => handleInputChange('background_color', e.target.value)}
+                                  className="w-16 h-10 p-1 border rounded cursor-pointer"
+                                />
+                                <Input
+                                  value={formData.background_color}
+                                  onChange={(e) => handleInputChange('background_color', e.target.value)}
+                                  placeholder="#ffffff"
+                                  pattern="^#[0-9A-Fa-f]{6}$"
+                                  className="flex-1"
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Cor de fundo aplicada apenas na área da grade de produtos/links
+                              </p>
+                            </div>
+                          )}
+
+                          {formData.background_type === 'image' && (
+                            <div className="space-y-2">
+                              <Label htmlFor="background_image_url">URL da Imagem de Fundo da Grade</Label>
+                              <Input
+                                id="background_image_url"
+                                value={formData.background_image_url}
+                                onChange={(e) => handleInputChange('background_image_url', e.target.value)}
+                                placeholder="https://exemplo.com/imagem-fundo.jpg"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Imagem de fundo aplicada apenas na área da grade de produtos/links (recomendado: 800x600px)
+                              </p>
+                              {formData.background_image_url && (
+                                <div className="mt-2">
+                                  <img 
+                                    src={formData.background_image_url} 
+                                    alt="Prévia do fundo" 
+                                    className="w-24 h-32 object-cover border rounded"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
                       )}
-                    </div>
+                    </>
                   )}
-                </>
-              )}
-            </CardContent>
-          </Card>
 
-          <Separator />
+                  {!canAccessFeature(profile, 'custom_background') && (
+                    <PlanFeatureRestriction 
+                      requiredPlan="pro"
+                      featureName="Planos de Fundo Personalizados"
+                      description="No plano Pro você pode personalizar as cores e imagens de fundo do seu catálogo"
+                    />
+                  )}
+                </CardContent>
+              </Card>
 
-          {/* Configurações Avançadas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Layout className="h-5 w-5" />
-                Configurações Avançadas
-              </CardTitle>
-              <CardDescription>
-                Personalizações especiais para seu catálogo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Esconder rodapé "Criado com ❤️ no LinkBuy"</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Remove o rodapé de crédito do catálogo
+              {/* Configurações Avançadas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Layout className="h-5 w-5" />
+                    Configurações Avançadas
+                  </CardTitle>
+                  <CardDescription>
+                    Personalizações especiais para seu catálogo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Esconder rodapé "Criado com ❤️ no LinkBuy"</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Remove o rodapé de crédito do catálogo
+                      </p>
+                    </div>
+                    {canAccessFeature(profile, 'hide_footer') ? (
+                      <input
+                        type="checkbox"
+                        checked={formData.hide_footer}
+                        onChange={(e) => setFormData(prev => ({ ...prev, hide_footer: e.target.checked }))}
+                        className="h-4 w-4"
+                      />
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toast({
+                          title: "Recurso premium",
+                          description: "Disponível no plano Pro+",
+                        })}
+                      >
+                        <Crown className="h-3 w-3 mr-1" />
+                        Pro+
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Selo de verificado</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Exibe um selo azul ao lado do nome da loja para maior credibilidade
+                      </p>
+                    </div>
+                    {canAccessFeature(profile, 'verified_badge') ? (
+                      <input
+                        type="checkbox"
+                        checked={formData.is_verified}
+                        onChange={(e) => setFormData(prev => ({ ...prev, is_verified: e.target.checked }))}
+                        className="h-4 w-4"
+                      />
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toast({
+                          title: "Recurso premium",
+                          description: "Disponível nos planos Verificado ou Pro+ Verificado",
+                        })}
+                      >
+                        <Crown className="h-3 w-3 mr-1" />
+                        Verificado
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Botões de Ação */}
+              <div className="flex flex-col sm:flex-row justify-end gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={handlePreviewCatalog}
+                  disabled={!formData.store_url || formData.store_url.length < 3}
+                >
+                  Visualizar Catálogo
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="btn-hero"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar Alterações
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+
+          {/* Tab de Planos */}
+          <TabsContent value="plans" className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold mb-2">Escolha seu plano</h2>
+              <p className="text-muted-foreground">
+                Desbloqueie recursos premium para seu catálogo online
+              </p>
+              {profile && (
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <p className="text-sm">
+                    <strong>Plano atual:</strong> {getPlanName(profile.subscription_plan)}
+                    {profile.subscription_expires_at && (
+                      <span className="text-muted-foreground">
+                        {" "}• Expira em {new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}
+                      </span>
+                    )}
                   </p>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={formData.hide_footer}
-                  onChange={(e) => setFormData(prev => ({ ...prev, hide_footer: e.target.checked }))}
-                  className="h-4 w-4"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Selo de verificado</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Exibe um selo azul ao lado do nome da loja para maior credibilidade
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={formData.is_verified}
-                  onChange={(e) => setFormData(prev => ({ ...prev, is_verified: e.target.checked }))}
-                  className="h-4 w-4"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          {/* Botões de Ação */}
-          <div className="flex flex-col sm:flex-row justify-end gap-2">
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={handlePreviewCatalog}
-              disabled={!formData.store_url || formData.store_url.length < 3}
-            >
-              Visualizar Catálogo
-            </Button>
-            <Button 
-              type="submit" 
-              className="btn-hero"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Salvando...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
-                </>
               )}
-            </Button>
-          </div>
-        </form>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {plans.map((plan) => (
+                <PlanCard
+                  key={plan.name}
+                  plan={plan}
+                  isCurrentPlan={profile ? getPlanName(profile.subscription_plan) === plan.name : false}
+                  onSelectPlan={() => handleSelectPlan(plan.name)}
+                />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

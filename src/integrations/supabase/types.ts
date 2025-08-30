@@ -174,6 +174,10 @@ export type Database = {
           store_description: string | null
           store_name: string
           store_url: string
+          subscription_expires_at: string | null
+          subscription_plan:
+            | Database["public"]["Enums"]["subscription_plan"]
+            | null
           updated_at: string
           whatsapp_number: number | null
         }
@@ -196,6 +200,10 @@ export type Database = {
           store_description?: string | null
           store_name: string
           store_url: string
+          subscription_expires_at?: string | null
+          subscription_plan?:
+            | Database["public"]["Enums"]["subscription_plan"]
+            | null
           updated_at?: string
           whatsapp_number?: number | null
         }
@@ -218,6 +226,10 @@ export type Database = {
           store_description?: string | null
           store_name?: string
           store_url?: string
+          subscription_expires_at?: string | null
+          subscription_plan?:
+            | Database["public"]["Enums"]["subscription_plan"]
+            | null
           updated_at?: string
           whatsapp_number?: number | null
         }
@@ -342,7 +354,12 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      subscription_plan:
+        | "free"
+        | "pro"
+        | "pro_plus"
+        | "verified"
+        | "pro_plus_verified"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -469,6 +486,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      subscription_plan: [
+        "free",
+        "pro",
+        "pro_plus",
+        "verified",
+        "pro_plus_verified",
+      ],
+    },
   },
 } as const

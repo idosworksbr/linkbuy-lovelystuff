@@ -12,6 +12,9 @@ import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { useAnalytics, useProductAnalytics } from '@/hooks/useAnalytics'
+import { useProfile } from '@/hooks/useProfile'
+import { usePlans } from '@/hooks/usePlans'
+import { PlanFeatureRestriction } from '@/components/PlanFeatureRestriction'
 
 type CustomDateRange = {
   from: Date | undefined
@@ -19,11 +22,35 @@ type CustomDateRange = {
 }
 
 const Analytics = () => {
+  const { profile } = useProfile();
+  const { canAccessFeature } = usePlans();
   const [timeFilter, setTimeFilter] = useState<string>('all-time')
   const [customDateRange, setCustomDateRange] = useState<CustomDateRange>({
     from: undefined,
     to: undefined
   })
+
+  // Verificar acesso ao analytics
+  if (!canAccessFeature(profile, 'analytics')) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6 max-w-6xl mx-auto">
+          <div>
+            <h1 className="text-3xl font-bold">Analytics</h1>
+            <p className="text-muted-foreground">
+              Acompanhe o desempenho da sua loja
+            </p>
+          </div>
+          
+          <PlanFeatureRestriction 
+            requiredPlan="pro_plus"
+            featureName="Analytics Avançado"
+            description="O acesso ao analytics está disponível exclusivamente no plano Pro+. Upgrade para ver métricas detalhadas da sua loja."
+          />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   // Calculate date range based on filter
   const getDateRange = () => {
