@@ -25,6 +25,7 @@ const Settings = () => {
     background_color: '#ffffff',
     background_type: 'color' as 'color' | 'image',
     background_image_url: '',
+    custom_background_enabled: false,
     profile_photo_url: '',
     whatsapp_number: '',
     custom_whatsapp_message: 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
@@ -45,6 +46,7 @@ const Settings = () => {
         background_color: profile.background_color || '#ffffff',
         background_type: (profile as any).background_type || 'color',
         background_image_url: (profile as any).background_image_url || '',
+        custom_background_enabled: (profile as any).custom_background_enabled || false,
         profile_photo_url: profile.profile_photo_url || '',
         whatsapp_number: profile.whatsapp_number?.toString() || '',
         custom_whatsapp_message: profile.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
@@ -389,72 +391,91 @@ const Settings = () => {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="background_type">Tipo de Fundo da Grade</Label>
-                <Select value={formData.background_type} onValueChange={(value: 'color' | 'image') => handleInputChange('background_type', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="color">Cor Sólida na Grade</SelectItem>
-                    <SelectItem value="image">Imagem de Fundo na Grade</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Esta configuração será aplicada apenas na área da grade de produtos/links, não na página inteira
-                </p>
+              <div className="flex items-center justify-between mb-4">
+                <div className="space-y-0.5">
+                  <Label>Personalizar Plano de Fundo</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Ative para usar cores/imagens personalizadas ou mantenha desativado para usar o fundo padrão do tema
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={formData.custom_background_enabled}
+                  onChange={(e) => setFormData(prev => ({ ...prev, custom_background_enabled: e.target.checked }))}
+                  className="h-4 w-4"
+                />
               </div>
 
-              {formData.background_type === 'color' && (
-                <div className="space-y-2">
-                  <Label htmlFor="background_color">Cor de Fundo da Grade</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="background_color"
-                      type="color"
-                      value={formData.background_color}
-                      onChange={(e) => handleInputChange('background_color', e.target.value)}
-                      className="w-16 h-10 p-1 border rounded cursor-pointer"
-                    />
-                    <Input
-                      value={formData.background_color}
-                      onChange={(e) => handleInputChange('background_color', e.target.value)}
-                      placeholder="#ffffff"
-                      pattern="^#[0-9A-Fa-f]{6}$"
-                      className="flex-1"
-                    />
+              {formData.custom_background_enabled && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="background_type">Tipo de Fundo da Grade</Label>
+                    <Select value={formData.background_type} onValueChange={(value: 'color' | 'image') => handleInputChange('background_type', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="color">Cor Sólida na Grade</SelectItem>
+                        <SelectItem value="image">Imagem de Fundo na Grade</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Esta configuração será aplicada apenas na área da grade de produtos/links, não na página inteira
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Cor de fundo aplicada apenas na área da grade de produtos/links
-                  </p>
-                </div>
-              )}
 
-              {formData.background_type === 'image' && (
-                <div className="space-y-2">
-                  <Label htmlFor="background_image_url">URL da Imagem de Fundo da Grade</Label>
-                  <Input
-                    id="background_image_url"
-                    value={formData.background_image_url}
-                    onChange={(e) => handleInputChange('background_image_url', e.target.value)}
-                    placeholder="https://exemplo.com/imagem-fundo.jpg"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Imagem de fundo aplicada apenas na área da grade de produtos/links (recomendado: 800x600px)
-                  </p>
-                  {formData.background_image_url && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.background_image_url} 
-                        alt="Prévia do fundo" 
-                        className="w-24 h-32 object-cover border rounded"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
+                  {formData.background_type === 'color' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="background_color">Cor de Fundo da Grade</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="background_color"
+                          type="color"
+                          value={formData.background_color}
+                          onChange={(e) => handleInputChange('background_color', e.target.value)}
+                          className="w-16 h-10 p-1 border rounded cursor-pointer"
+                        />
+                        <Input
+                          value={formData.background_color}
+                          onChange={(e) => handleInputChange('background_color', e.target.value)}
+                          placeholder="#ffffff"
+                          pattern="^#[0-9A-Fa-f]{6}$"
+                          className="flex-1"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Cor de fundo aplicada apenas na área da grade de produtos/links
+                      </p>
                     </div>
                   )}
-                </div>
+
+                  {formData.background_type === 'image' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="background_image_url">URL da Imagem de Fundo da Grade</Label>
+                      <Input
+                        id="background_image_url"
+                        value={formData.background_image_url}
+                        onChange={(e) => handleInputChange('background_image_url', e.target.value)}
+                        placeholder="https://exemplo.com/imagem-fundo.jpg"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Imagem de fundo aplicada apenas na área da grade de produtos/links (recomendado: 800x600px)
+                      </p>
+                      {formData.background_image_url && (
+                        <div className="mt-2">
+                          <img 
+                            src={formData.background_image_url} 
+                            alt="Prévia do fundo" 
+                            className="w-24 h-32 object-cover border rounded"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

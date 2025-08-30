@@ -14,6 +14,7 @@ interface StoreProfile {
   background_color: string;
   background_type?: 'color' | 'image';
   background_image_url?: string | null;
+  custom_background_enabled?: boolean;
   store_url: string;
   whatsapp_number: number | null;
   custom_whatsapp_message: string;
@@ -353,8 +354,8 @@ const Catalog = () => {
           <div 
             className={`p-1 animate-fade-in`}
             style={{
-              backgroundColor: store.background_type === 'color' ? store.background_color : undefined,
-              backgroundImage: store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
+              backgroundColor: store.custom_background_enabled && store.background_type === 'color' ? store.background_color : undefined,
+              backgroundImage: store.custom_background_enabled && store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
@@ -425,8 +426,8 @@ const Catalog = () => {
           <div 
             className={`p-4 animate-fade-in`}
             style={{
-              backgroundColor: store.background_type === 'color' ? store.background_color : undefined,
-              backgroundImage: store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
+              backgroundColor: store.custom_background_enabled && store.background_type === 'color' ? store.background_color : undefined,
+              backgroundImage: store.custom_background_enabled && store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
@@ -465,8 +466,8 @@ const Catalog = () => {
           <div 
             className={`p-4 animate-fade-in`}
             style={{
-              backgroundColor: store.background_type === 'color' ? store.background_color : undefined,
-              backgroundImage: store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
+              backgroundColor: store.custom_background_enabled && store.background_type === 'color' ? store.background_color : undefined,
+              backgroundImage: store.custom_background_enabled && store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
