@@ -32,6 +32,7 @@ const Settings = () => {
     instagram_url: '',
     catalog_theme: 'light' as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset',
     catalog_layout: 'overlay' as 'overlay' | 'bottom',
+    product_grid_layout: 'default' as 'default' | 'round' | 'instagram',
     hide_footer: false,
     is_verified: false
   });
@@ -53,6 +54,7 @@ const Settings = () => {
         instagram_url: profile.instagram_url || '',
         catalog_theme: profile.catalog_theme || 'light',
         catalog_layout: profile.catalog_layout || 'overlay',
+        product_grid_layout: (profile as any).product_grid_layout || 'default',
         hide_footer: (profile as any).hide_footer || false,
         is_verified: (profile as any).is_verified || false
       });
@@ -388,6 +390,23 @@ const Settings = () => {
                 </Select>
                 <p className="text-xs text-muted-foreground">
                   Escolha se deseja mostrar ou ocultar as informações dos produtos no grid principal
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="product_grid_layout">Visualização da Grade</Label>
+                <Select value={formData.product_grid_layout} onValueChange={(value: 'default' | 'round' | 'instagram') => handleInputChange('product_grid_layout', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o estilo da grade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Padrão (Cards com bordas)</SelectItem>
+                    <SelectItem value="round">Imagens Redondas (Título/preço abaixo)</SelectItem>
+                    <SelectItem value="instagram">Estilo Instagram (Sem separação entre imagens)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Escolha como os produtos aparecerão na grade do catálogo
                 </p>
               </div>
 

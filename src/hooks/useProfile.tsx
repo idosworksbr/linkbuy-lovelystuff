@@ -20,6 +20,7 @@ export interface Profile {
   instagram_url: string | null;
   catalog_theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
   catalog_layout: 'overlay' | 'bottom';
+  product_grid_layout?: 'default' | 'round' | 'instagram';
   hide_footer?: boolean;
   is_verified?: boolean;
   created_at: string;
@@ -50,6 +51,7 @@ export const useProfile = () => {
         ...data,
         catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') || 'light',
         catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        product_grid_layout: (data.product_grid_layout as 'default' | 'round' | 'instagram') || 'default',
         background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_background_enabled: data.custom_background_enabled || false,
         custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'
@@ -81,6 +83,7 @@ export const useProfile = () => {
         ...data,
         catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') || 'light',
         catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        product_grid_layout: (data.product_grid_layout as 'default' | 'round' | 'instagram') || 'default',
         background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_background_enabled: data.custom_background_enabled || false,
         custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.'

@@ -21,6 +21,7 @@ interface StoreProfile {
   instagram_url: string | null;
   catalog_theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
   catalog_layout: 'overlay' | 'bottom';
+  product_grid_layout?: 'default' | 'round' | 'instagram';
   hide_footer?: boolean;
   is_verified?: boolean;
   created_at: string;
@@ -248,6 +249,124 @@ const Catalog = () => {
   }
 
   const { store, products, meta } = catalogData;
+  const gridLayout = store.product_grid_layout || 'default';
+
+  // Função para renderizar o produto baseado no layout
+  const renderProduct = (product: Product, index: number) => {
+    const baseClasses = "cursor-pointer group animate-fade-in relative";
+    const animationStyle = { animationDelay: `${index * 50}ms` };
+
+    if (gridLayout === 'instagram') {
+      // Layout Instagram - sem gap nem bordas, apenas as imagens
+      return (
+        <div 
+          key={product.id} 
+          onClick={() => handleProductClick(product)} 
+          className={`${baseClasses} aspect-square overflow-hidden`}
+          style={animationStyle}
+        >
+          {product.images && product.images.length > 0 ? (
+            <img 
+              src={product.images[0]} 
+              alt={product.name} 
+              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
+            </div>
+          )}
+          
+          {/* Overlay com informações apenas no hover para Instagram */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+              <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
+              <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (gridLayout === 'round') {
+      // Layout com imagens redondas e informações abaixo
+      return (
+        <div 
+          key={product.id} 
+          onClick={() => handleProductClick(product)} 
+          className={`${baseClasses} bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-all`}
+          style={animationStyle}
+        >
+          <div className="flex flex-col items-center">
+            {/* Imagem redonda */}
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 mb-2 ring-2 ring-gray-200 group-hover:ring-4 group-hover:ring-blue-200 transition-all">
+              {product.images && product.images.length > 0 ? (
+                <img 
+                  src={product.images[0]} 
+                  alt={product.name} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                  <span className="text-gray-400 text-xs">Sem imagem</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Informações abaixo da imagem */}
+            <div className="text-center">
+              <h3 className="text-xs font-medium text-gray-800 line-clamp-2 mb-1">{product.name}</h3>
+              <p className="text-xs font-bold text-green-600">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Layout padrão (default)
+    return (
+      <div 
+        key={product.id} 
+        onClick={() => handleProductClick(product)} 
+        className={`${baseClasses} aspect-square bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-all`}
+        style={animationStyle}
+      >
+        {product.images && product.images.length > 0 ? (
+          <img 
+            src={product.images[0]} 
+            alt={product.name} 
+            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+            <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
+          </div>
+        )}
+        
+        {layout === 'overlay' ? (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+              <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
+              <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-2">
+              <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
+                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+              }}>{product.name}</h3>
+              <p style={{
+                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+              }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
+                R$ {product.price.toFixed(2).replace('.', ',')}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <CatalogTheme 
@@ -362,52 +481,8 @@ const Catalog = () => {
             }}
           >
             {products.length > 0 ? (
-              <div className="grid grid-cols-3 gap-1">
-                {products.map((product, index) => (
-                  <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden" style={{
-                    animationDelay: `${index * 50}ms`
-                  }}>
-                    {product.images && product.images.length > 0 ? (
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                        <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
-                      </div>
-                    )}
-                    
-                    {layout === 'overlay' ? (
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-                          <h3 className="text-xs font-medium line-clamp-2 mb-1">
-                            {product.name}
-                          </h3>
-                          <p className="text-xs font-bold">
-                            R$ {product.price.toFixed(2).replace('.', ',')}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                        <div className="absolute bottom-0 left-0 right-0 p-2">
-                          <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
-                            textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                          }}>
-                            {product.name}
-                          </h3>
-                          <p style={{
-                            textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                          }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
-                            R$ {product.price.toFixed(2).replace('.', ',')}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className={gridLayout === 'instagram' ? 'grid grid-cols-3' : gridLayout === 'round' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-3 gap-1'}>
+                {products.map((product, index) => renderProduct(product, index))}
               </div>
             ) : (
               <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2 bg-white/90 backdrop-blur-sm`}>
