@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram, BadgeCheck, Link2, icons } from "lucide-react";
+import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram, ShieldCheck, Link2, icons } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
@@ -262,7 +262,7 @@ const Catalog = () => {
               <div className="flex items-center gap-2 mb-2">
                 <h1 className={`text-xl font-semibold truncate ${themeClasses.text}`}>{store.store_name}</h1>
                 {store.is_verified && (
-                  <BadgeCheck className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                  <ShieldCheck className="h-5 w-5 text-blue-500 flex-shrink-0" />
                 )}
               </div>
               
