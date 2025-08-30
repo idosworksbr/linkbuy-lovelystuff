@@ -113,12 +113,16 @@ export type Database = {
       profiles: {
         Row: {
           background_color: string | null
+          background_image_url: string | null
+          background_type: string | null
           catalog_layout: string | null
           catalog_theme: string | null
           created_at: string
           custom_whatsapp_message: string | null
+          hide_footer: boolean | null
           id: string
           instagram_url: string | null
+          is_verified: boolean | null
           name: string
           profile_photo_url: string | null
           store_description: string | null
@@ -129,12 +133,16 @@ export type Database = {
         }
         Insert: {
           background_color?: string | null
+          background_image_url?: string | null
+          background_type?: string | null
           catalog_layout?: string | null
           catalog_theme?: string | null
           created_at?: string
           custom_whatsapp_message?: string | null
+          hide_footer?: boolean | null
           id: string
           instagram_url?: string | null
+          is_verified?: boolean | null
           name: string
           profile_photo_url?: string | null
           store_description?: string | null
@@ -145,12 +153,16 @@ export type Database = {
         }
         Update: {
           background_color?: string | null
+          background_image_url?: string | null
+          background_type?: string | null
           catalog_layout?: string | null
           catalog_theme?: string | null
           created_at?: string
           custom_whatsapp_message?: string | null
+          hide_footer?: boolean | null
           id?: string
           instagram_url?: string | null
+          is_verified?: boolean | null
           name?: string
           profile_photo_url?: string | null
           store_description?: string | null
