@@ -4,6 +4,7 @@ import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram } from "luci
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
+import { useAnalyticsTracker } from "@/hooks/useAnalytics";
 interface StoreProfile {
   id: string;
   store_name: string;
@@ -42,6 +43,7 @@ const Catalog = () => {
   const {
     toast
   } = useToast();
+  const { trackEvent } = useAnalyticsTracker();
   const [catalogData, setCatalogData] = useState<CatalogData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +101,12 @@ const Catalog = () => {
         }
         const data: CatalogData = await response.json();
         setCatalogData(data);
+        
+        // Track catalog view
+        if (data.store.id) {
+          trackEvent('catalog_view', data.store.id);
+        }
+        
         toast({
           title: "Catálogo carregado!",
           description: `${data.meta.total_products} produtos encontrados`
@@ -128,6 +136,10 @@ const Catalog = () => {
       });
       return;
     }
+    
+    // Track WhatsApp click
+    trackEvent('whatsapp_click', catalogData.store.id);
+    
     const phoneNumber = catalogData.store.whatsapp_number;
     const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
     const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${message}`;
@@ -143,9 +155,16 @@ const Catalog = () => {
       });
       return;
     }
+    
+    // Track Instagram click
+    trackEvent('instagram_click', catalogData.store.id);
+    
     window.open(catalogData.store.instagram_url, '_blank');
   };
   const handleProductClick = (product: Product) => {
+    if (catalogData?.store) {
+      trackEvent('product_view', catalogData.store.id, product.id);
+    }
     navigate(`/catalog/${storeUrl}/product/${product.id}`);
   };
   const handleGoBack = () => {

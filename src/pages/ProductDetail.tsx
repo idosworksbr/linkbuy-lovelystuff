@@ -4,11 +4,13 @@ import { ArrowLeft, MessageCircle, ChevronLeft, ChevronRight } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { useProductDetail } from "@/hooks/useProductDetail";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAnalyticsTracker } from "@/hooks/useAnalytics";
 
 const ProductDetail = () => {
   const { storeUrl, productId } = useParams();
   const navigate = useNavigate();
+  const { trackEvent } = useAnalyticsTracker();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const { product, loading, error } = useProductDetail(storeUrl || '', productId || '');
@@ -41,6 +43,9 @@ const ProductDetail = () => {
       return;
     }
 
+    // Track WhatsApp click
+    trackEvent('whatsapp_click', product.store.id, product.id);
+
     const customMessage = product.store.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.';
     const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`;
     const message = encodeURIComponent(productMessage);
@@ -66,6 +71,13 @@ const ProductDetail = () => {
   const goToImage = (index: number) => {
     setCurrentImageIndex(index);
   };
+
+  // Track product view when component mounts
+  useEffect(() => {
+    if (product?.store?.id && productId) {
+      trackEvent('product_view', product.store.id, productId);
+    }
+  }, [product, productId, trackEvent]);
 
   if (loading) {
     return (

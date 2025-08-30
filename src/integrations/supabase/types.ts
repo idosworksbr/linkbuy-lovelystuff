@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          product_id: string | null
+          referrer: string | null
+          store_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          store_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          store_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      product_analytics: {
+        Row: {
+          id: string
+          instagram_clicks: number
+          last_view: string | null
+          product_id: string
+          total_views: number
+          updated_at: string
+          whatsapp_clicks: number
+        }
+        Insert: {
+          id?: string
+          instagram_clicks?: number
+          last_view?: string | null
+          product_id: string
+          total_views?: number
+          updated_at?: string
+          whatsapp_clicks?: number
+        }
+        Update: {
+          id?: string
+          instagram_clicks?: number
+          last_view?: string | null
+          product_id?: string
+          total_views?: number
+          updated_at?: string
+          whatsapp_clicks?: number
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
@@ -98,11 +161,64 @@ export type Database = {
         }
         Relationships: []
       }
+      store_analytics: {
+        Row: {
+          id: string
+          last_visit: string | null
+          store_id: string
+          total_catalog_views: number
+          total_instagram_clicks: number
+          total_product_views: number
+          total_whatsapp_clicks: number
+          unique_visitors: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          last_visit?: string | null
+          store_id: string
+          total_catalog_views?: number
+          total_instagram_clicks?: number
+          total_product_views?: number
+          total_whatsapp_clicks?: number
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          last_visit?: string | null
+          store_id?: string
+          total_catalog_views?: number
+          total_instagram_clicks?: number
+          total_product_views?: number
+          total_whatsapp_clicks?: number
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_product_analytics: {
+        Args: {
+          end_date_param?: string
+          start_date_param?: string
+          store_id_param: string
+        }
+        Returns: {
+          conversion_rate: number
+          instagram_clicks: number
+          product_id: string
+          product_image: string
+          product_name: string
+          product_price: number
+          total_views: number
+          whatsapp_clicks: number
+        }[]
+      }
       get_public_store_info: {
         Args: { store_url_param: string }
         Returns: {
@@ -131,6 +247,20 @@ export type Database = {
           name: string
           price: number
           updated_at: string
+        }[]
+      }
+      get_store_analytics: {
+        Args: {
+          end_date_param?: string
+          start_date_param?: string
+          store_id_param: string
+        }
+        Returns: {
+          total_catalog_views: number
+          total_instagram_clicks: number
+          total_product_views: number
+          total_whatsapp_clicks: number
+          unique_visitors: number
         }[]
       }
     }

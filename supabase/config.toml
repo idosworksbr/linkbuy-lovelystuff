@@ -100,6 +100,9 @@ enable_confirmations = false
 [edge-functions]
 verify_jwt = false
 
+[functions.analytics-tracker]
+verify_jwt = false
+
 [functions.catalog]
 verify_jwt = false
 

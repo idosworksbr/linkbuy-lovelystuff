@@ -8,12 +8,25 @@ import DashboardLayout from "@/components/DashboardLayout";
 import ProductForm from "@/components/ProductForm";
 import { useNavigate } from "react-router-dom";
 import { useProducts, Product } from "@/hooks/useProducts";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const { products, loading, updateProduct, deleteProduct } = useProducts();
+  const { storeAnalytics, loading: analyticsLoading } = useAnalytics();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M'
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'k'
+    }
+    return num.toString()
+  }
 
   const handleDeleteProduct = async (id: string) => {
     await deleteProduct(id);
@@ -92,15 +105,27 @@ const Dashboard = () => {
           
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Visualizações</CardDescription>
-              <CardTitle className="text-3xl">1.2k</CardTitle>
+              <CardDescription>Visualizações do Catálogo</CardDescription>
+              {analyticsLoading ? (
+                <Skeleton className="h-9 w-16" />
+              ) : (
+                <CardTitle className="text-3xl">
+                  {formatNumber(storeAnalytics?.total_catalog_views || 0)}
+                </CardTitle>
+              )}
             </CardHeader>
           </Card>
           
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Pedidos WhatsApp</CardDescription>
-              <CardTitle className="text-3xl">47</CardTitle>
+              <CardDescription>Cliques no WhatsApp</CardDescription>
+              {analyticsLoading ? (
+                <Skeleton className="h-9 w-16" />
+              ) : (
+                <CardTitle className="text-3xl">
+                  {formatNumber(storeAnalytics?.total_whatsapp_clicks || 0)}
+                </CardTitle>
+              )}
             </CardHeader>
           </Card>
         </div>
