@@ -296,33 +296,45 @@ const Catalog = () => {
               {isWhatsAppAvailable() ? 'Mensagem' : 'WhatsApp indisponível'}
             </Button>
           </div>
-
-          {/* Custom Links Section */}
-          {catalogData.customLinks && catalogData.customLinks.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {catalogData.customLinks.map((link) => {
-                const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || Link2;
-                
-                return (
-                  <Button
-                    key={link.id}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCustomLinkClick(link)}
-                    className={`${themeClasses.buttonOutline} rounded-lg text-xs transition-colors flex items-center gap-1`}
-                  >
-                    <IconComponent className="h-3 w-3" />
-                    {link.title}
-                  </Button>
-                );
-              })}
-            </div>
-          )}
         </div>
 
-        {/* Grid Icon */}
-        <div className={`flex justify-center py-3 ${themeClasses.accent}`}>
-          <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
+        {/* Navigation Tabs Section - Similar to Instagram */}
+        <div className={`border-b ${themeClasses.header}`}>
+          {/* Tab Icons */}
+          <div className="flex justify-center gap-8 py-3">
+            <div className="flex flex-col items-center cursor-pointer">
+              <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
+            </div>
+            {catalogData.customLinks && catalogData.customLinks.length > 0 && (
+              <div className="flex flex-col items-center cursor-pointer">
+                <Link2 className={`h-6 w-6 ${themeClasses.textMuted}`} />
+              </div>
+            )}
+          </div>
+          
+          {/* Custom Links Content */}
+          {catalogData.customLinks && catalogData.customLinks.length > 0 && (
+            <div className="px-4 pb-4">
+              <div className="flex flex-wrap gap-2">
+                {catalogData.customLinks.map((link) => {
+                  const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || ExternalLink;
+                  
+                  return (
+                    <Button
+                      key={link.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCustomLinkClick(link)}
+                      className={`${themeClasses.buttonOutline} rounded-full text-xs transition-colors flex items-center gap-1 px-3 py-1`}
+                    >
+                      <IconComponent className="h-3 w-3" />
+                      {link.title}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Products Grid */}
