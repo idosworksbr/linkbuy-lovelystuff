@@ -64,6 +64,7 @@ const Catalog = () => {
   const [catalogData, setCatalogData] = useState<CatalogData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'products' | 'links'>('products');
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'overlay';
   const themeClasses = useThemeClasses(theme);
@@ -300,98 +301,139 @@ const Catalog = () => {
 
         {/* Navigation Tabs Section - Similar to Instagram */}
         <div className={`border-b ${themeClasses.header}`}>
-          {/* Tab Icons */}
+          {/* Tab Buttons */}
           <div className="flex justify-center gap-8 py-3">
-            <div className="flex flex-col items-center cursor-pointer">
+            <button 
+              onClick={() => setActiveTab('products')}
+              className={`flex flex-col items-center cursor-pointer transition-colors ${
+                activeTab === 'products' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
+              }`}
+            >
               <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
-            </div>
+              {activeTab === 'products' && (
+                <div className={`w-6 h-0.5 bg-current mt-1 ${themeClasses.textMuted}`}></div>
+              )}
+            </button>
+            
             {catalogData.customLinks && catalogData.customLinks.length > 0 && (
-              <div className="flex flex-col items-center cursor-pointer">
+              <button 
+                onClick={() => setActiveTab('links')}
+                className={`flex flex-col items-center cursor-pointer transition-colors ${
+                  activeTab === 'links' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
+                }`}
+              >
                 <Link2 className={`h-6 w-6 ${themeClasses.textMuted}`} />
+                {activeTab === 'links' && (
+                  <div className={`w-6 h-0.5 bg-current mt-1 ${themeClasses.textMuted}`}></div>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Content Area with Swipe Support */}
+        <div className={`${themeClasses.accent} overflow-hidden`}>
+          <div 
+            className="flex transition-transform duration-300 ease-in-out"
+            style={{ 
+              transform: `translateX(-${activeTab === 'products' ? 0 : 100}%)`,
+              width: catalogData.customLinks && catalogData.customLinks.length > 0 ? '200%' : '100%'
+            }}
+          >
+            {/* Products Tab */}
+            <div className="w-full flex-shrink-0 p-1">
+              {products.length > 0 ? (
+                <div className="grid grid-cols-3 gap-1">
+                  {products.map((product, index) => (
+                    <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden" style={{
+                      animationDelay: `${index * 50}ms`
+                    }}>
+                      {product.images && product.images.length > 0 ? (
+                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                          <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
+                        </div>
+                      )}
+                      
+                      {layout === 'overlay' ? (
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                          <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                            <h3 className="text-xs font-medium line-clamp-2 mb-1">
+                              {product.name}
+                            </h3>
+                            <p className="text-xs font-bold">
+                              R$ {product.price.toFixed(2).replace('.', ',')}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+                          <div className="absolute bottom-0 left-0 right-0 p-2">
+                            <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
+                              textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                            }}>
+                              {product.name}
+                            </h3>
+                            <p style={{
+                              textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                            }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
+                              R$ {product.price.toFixed(2).replace('.', ',')}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2`}>
+                  <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <Grid3X3 className={`h-8 w-8 ${themeClasses.textMuted}`} />
+                  </div>
+                  <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum produto ainda</h3>
+                  <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou produtos ao catálogo.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Links Tab */}
+            {catalogData.customLinks && catalogData.customLinks.length > 0 && (
+              <div className="w-full flex-shrink-0 p-4">
+                {catalogData.customLinks.length > 0 ? (
+                  <div className="space-y-3">
+                    {catalogData.customLinks.map((link, index) => {
+                      const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || ExternalLink;
+                      
+                      return (
+                        <Button
+                          key={link.id}
+                          onClick={() => handleCustomLinkClick(link)}
+                          className={`w-full ${themeClasses.buttonOutline} rounded-lg h-12 text-sm font-medium transition-all hover:scale-105 animate-fade-in`}
+                          variant="outline"
+                          style={{
+                            animationDelay: `${index * 100}ms`
+                          }}
+                        >
+                          <IconComponent className="h-5 w-5 mr-3" />
+                          {link.title}
+                          <ExternalLink className="h-4 w-4 ml-auto opacity-50" />
+                        </Button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className={`text-center py-16 ${themeClasses.card} rounded-lg`}>
+                    <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                      <Link2 className={`h-8 w-8 ${themeClasses.textMuted}`} />
+                    </div>
+                    <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum link ainda</h3>
+                    <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou links personalizados.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
-          
-          {/* Custom Links Content */}
-          {catalogData.customLinks && catalogData.customLinks.length > 0 && (
-            <div className="px-4 pb-4">
-              <div className="flex flex-wrap gap-2">
-                {catalogData.customLinks.map((link) => {
-                  const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || ExternalLink;
-                  
-                  return (
-                    <Button
-                      key={link.id}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCustomLinkClick(link)}
-                      className={`${themeClasses.buttonOutline} rounded-full text-xs transition-colors flex items-center gap-1 px-3 py-1`}
-                    >
-                      <IconComponent className="h-3 w-3" />
-                      {link.title}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Products Grid */}
-        <div className={`p-1 ${themeClasses.accent}`}>
-          {products.length > 0 ? (
-            <div className="grid grid-cols-3 gap-1">
-              {products.map((product, index) => (
-                <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden" style={{
-                  animationDelay: `${index * 50}ms`
-                }}>
-                  {product.images && product.images.length > 0 ? (
-                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                      <span className="text-gray-400 text-xs text-center p-2">Sem imagem</span>
-                    </div>
-                  )}
-                  
-                  {layout === 'overlay' ? (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-                        <h3 className="text-xs font-medium line-clamp-2 mb-1">
-                          {product.name}
-                        </h3>
-                        <p className="text-xs font-bold">
-                          R$ {product.price.toFixed(2).replace('.', ',')}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
-                          textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                        }}>
-                          {product.name}
-                        </h3>
-                        <p style={{
-                          textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                        }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
-                          R$ {product.price.toFixed(2).replace('.', ',')}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2`}>
-              <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                <Grid3X3 className={`h-8 w-8 ${themeClasses.textMuted}`} />
-              </div>
-              <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum produto ainda</h3>
-              <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou produtos ao catálogo.</p>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
