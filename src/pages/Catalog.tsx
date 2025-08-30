@@ -346,9 +346,7 @@ const Catalog = () => {
                 <div className="grid grid-cols-3 gap-1">
                   {products.map((product, index) => (
                     <div key={product.id} onClick={() => handleProductClick(product)} className="relative aspect-square cursor-pointer group animate-fade-in bg-white rounded-sm overflow-hidden w-full" style={{
-                      animationDelay: `${index * 50}ms`,
-                      minHeight: '120px',
-                      maxHeight: '120px'
+                      animationDelay: `${index * 50}ms`
                     }}>
                       {product.images && product.images.length > 0 ? (
                         <img 
