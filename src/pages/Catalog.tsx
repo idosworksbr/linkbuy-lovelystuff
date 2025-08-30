@@ -340,7 +340,7 @@ const Catalog = () => {
               width: catalogData.customLinks && catalogData.customLinks.length > 0 ? '200%' : '100%'
             }}
           >
-            {/* Products Tab */}
+            {/* Products Tab - 3 columns grid */}
             <div className="w-full flex-shrink-0 p-1">
               {products.length > 0 ? (
                 <div className="grid grid-cols-3 gap-1">
@@ -397,28 +397,32 @@ const Catalog = () => {
               )}
             </div>
 
-            {/* Links Tab */}
+            {/* Links Tab - Single column list */}
             {catalogData.customLinks && catalogData.customLinks.length > 0 && (
               <div className="w-full flex-shrink-0 p-4">
                 {catalogData.customLinks.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="flex flex-col gap-3">
                     {catalogData.customLinks.map((link, index) => {
                       const IconComponent = (icons as any)[link.icon || 'ExternalLink'] || ExternalLink;
                       
                       return (
-                        <Button
+                        <div
                           key={link.id}
                           onClick={() => handleCustomLinkClick(link)}
-                          className={`w-full ${themeClasses.buttonOutline} rounded-lg h-12 text-sm font-medium transition-all hover:scale-105 animate-fade-in`}
-                          variant="outline"
+                          className={`w-full ${themeClasses.card} rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] animate-fade-in border flex items-center gap-3 group`}
                           style={{
                             animationDelay: `${index * 100}ms`
                           }}
                         >
-                          <IconComponent className="h-5 w-5 mr-3" />
-                          {link.title}
-                          <ExternalLink className="h-4 w-4 ml-auto opacity-50" />
-                        </Button>
+                          <div className={`w-12 h-12 rounded-full ${themeClasses.accent} flex items-center justify-center flex-shrink-0`}>
+                            <IconComponent className={`h-6 w-6 ${themeClasses.textMuted}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`font-medium ${themeClasses.text} truncate`}>{link.title}</h3>
+                            <p className={`text-sm ${themeClasses.textMuted} truncate`}>Clique para acessar</p>
+                          </div>
+                          <ExternalLink className={`h-5 w-5 ${themeClasses.textMuted} opacity-50 group-hover:opacity-100 transition-opacity flex-shrink-0`} />
+                        </div>
                       );
                     })}
                   </div>
