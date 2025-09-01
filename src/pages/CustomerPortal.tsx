@@ -22,6 +22,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { usePlans } from "@/hooks/usePlans";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { CancellationDialog } from "@/components/CancellationDialog";
 
 interface PaymentHistory {
   id: string;
@@ -40,6 +41,7 @@ const CustomerPortal = () => {
   const { toast } = useToast();
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showCancellationDialog, setShowCancellationDialog] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -97,6 +99,13 @@ const CustomerPortal = () => {
   const currentPlan = profile?.subscription_plan || 'free';
   const isSubscribed = subscription?.subscribed || false;
   const hasExpired = isExpired(profile);
+  const isCancelled = subscription?.subscription_end && new Date(subscription.subscription_end) > new Date();
+
+  const handleCancelSubscription = async () => {
+    await cancelSubscription(false);
+    setShowCancellationDialog(false);
+    await checkSubscription();
+  };
 
   return (
     <DashboardLayout>
@@ -155,7 +164,7 @@ const CustomerPortal = () => {
                 )}
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {isSubscribed && (
                   <>
                     <Button onClick={openCustomerPortal} className="gap-2" variant="outline">
@@ -163,7 +172,7 @@ const CustomerPortal = () => {
                       Gerenciar no Stripe
                     </Button>
                     <Button 
-                      onClick={() => cancelSubscription(false)} 
+                      onClick={() => setShowCancellationDialog(true)} 
                       variant="outline"
                       className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
                     >
@@ -190,18 +199,18 @@ const CustomerPortal = () => {
             )}
 
             {/* Cancellation Notice */}
-            {isSubscribed && profile?.subscription_expires_at && !hasExpired && (
+            {isCancelled && subscription?.subscription_end && (
               <div className="pt-4 border-t">
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-medium text-orange-800 mb-1">
-                        Informação sobre cancelamento
+                      <h4 className="font-medium text-red-800 mb-1">
+                        Assinatura Cancelada
                       </h4>
-                      <p className="text-sm text-orange-700">
-                        Se você cancelar sua assinatura, ela permanecerá ativa até{' '}
-                        <strong>{new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}</strong>.
+                      <p className="text-sm text-red-700">
+                        Sua assinatura foi cancelada e encerrará em{' '}
+                        <strong>{new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}</strong>.
                         Após essa data, sua conta retornará ao plano gratuito.
                       </p>
                     </div>
@@ -276,38 +285,36 @@ const CustomerPortal = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <h4 className="font-medium">Gerenciar Assinatura</h4>
                 <p className="text-sm text-muted-foreground">
-                  Altere seu plano, atualize forma de pagamento ou cancele sua assinatura
+                  Altere seu plano, atualize forma de pagamento ou gerencie sua assinatura
                 </p>
                 {isSubscribed ? (
-                  <Button variant="outline" onClick={openCustomerPortal}>
+                  <Button variant="outline" onClick={openCustomerPortal} className="w-full sm:w-auto">
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Abrir Stripe Portal
+                    Abrir Portal do Stripe
                   </Button>
                 ) : (
-                  <Button variant="outline" onClick={() => window.location.href = '/dashboard/plans'}>
+                  <Button variant="outline" onClick={() => window.location.href = '/dashboard/plans'} className="w-full sm:w-auto">
                     <Crown className="h-4 w-4 mr-2" />
-                    Ver Planos
+                    Ver Planos Disponíveis
                   </Button>
                 )}
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">Suporte</h4>
-                <p className="text-sm text-muted-foreground">
-                  Precisa de ajuda? Entre em contato com nosso suporte
-                </p>
-                <Button variant="outline">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Contatar Suporte
-                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <CancellationDialog
+        open={showCancellationDialog}
+        onOpenChange={setShowCancellationDialog}
+        onConfirmCancel={handleCancelSubscription}
+        planName={getPlanName(currentPlan)}
+        expirationDate={profile?.subscription_expires_at ? new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR') : undefined}
+      />
     </DashboardLayout>
   );
 };
