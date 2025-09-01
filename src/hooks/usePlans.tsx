@@ -50,7 +50,7 @@ export const defaultPlans: PlanPricing[] = [
   },
   {
     name: "Pro+",
-    stripeId: "price_1S2d2UCTueMWV5IwJ1K8V7gH",
+    stripeId: "price_1S2dYWCTueMWV5IwSDVN59wL",
     price: "Carregando...", 
     features: [
       "Tudo do Free e Pro",
@@ -62,7 +62,7 @@ export const defaultPlans: PlanPricing[] = [
   },
   {
     name: "Selo Verificado",
-    stripeId: "price_1S2d2xCTueMWV5IwZvE9X5bK",
+    stripeId: "price_1S2dd5CTueMWV5Iwbi073tsC",
     price: "Carregando...",
     verified: true,
     features: [
@@ -71,7 +71,7 @@ export const defaultPlans: PlanPricing[] = [
   },
   {
     name: "Pro+ Verificado",
-    stripeId: "price_1S2d3QCTueMWV5IwL9M4H2rN",
+    stripeId: "price_1S2db1CTueMWV5IwrNdtAKyy",
     price: "Carregando...",
     features: [
       "Toda a plataforma inclusa",
