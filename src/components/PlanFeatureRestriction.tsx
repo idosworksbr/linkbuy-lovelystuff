@@ -41,7 +41,7 @@ export const PlanFeatureRestriction = ({
         </div>
         
         <Button 
-          onClick={() => navigate('/dashboard/settings?tab=plans')}
+          onClick={() => navigate('/dashboard/plans')}
           className="gap-2"
         >
           <Crown className="h-4 w-4" />

@@ -637,10 +637,7 @@ const Settings = () => {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => toast({
-                          title: "Recurso premium",
-                          description: "Disponível no plano Pro+",
-                        })}
+                        onClick={() => window.location.href = '/dashboard/plans'}
                       >
                         <Crown className="h-3 w-3 mr-1" />
                         Pro+
@@ -667,10 +664,7 @@ const Settings = () => {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => toast({
-                          title: "Recurso premium",
-                          description: "Disponível nos planos Verificado ou Pro+ Verificado",
-                        })}
+                        onClick={() => window.location.href = '/dashboard/plans'}
                       >
                         <Crown className="h-3 w-3 mr-1" />
                         Verificado
