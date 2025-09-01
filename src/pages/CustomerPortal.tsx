@@ -46,7 +46,7 @@ const CustomerPortal = () => {
       checkSubscription();
       loadPaymentHistory();
     }
-  }, [profile, checkSubscription]);
+  }, [profile]);
 
   const loadPaymentHistory = async () => {
     setLoadingHistory(true);

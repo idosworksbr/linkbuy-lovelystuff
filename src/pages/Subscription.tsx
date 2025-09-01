@@ -20,7 +20,7 @@ const Subscription = () => {
     if (profile) {
       checkSubscription();
     }
-  }, [profile, checkSubscription]);
+  }, [profile]);
 
   const handleRefreshStatus = async () => {
     await checkSubscription();

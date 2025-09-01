@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -14,10 +14,12 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const isCheckingRef = useRef(false);
 
-  const checkSubscription = async () => {
-    if (!user) return;
+  const checkSubscription = useCallback(async () => {
+    if (!user || isCheckingRef.current) return;
     
+    isCheckingRef.current = true;
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
@@ -46,8 +48,9 @@ export const useSubscription = () => {
       });
     } finally {
       setLoading(false);
+      isCheckingRef.current = false;
     }
-  };
+  }, [user, toast]);
 
   const createCheckout = async (priceId: string) => {
     if (!user) {
