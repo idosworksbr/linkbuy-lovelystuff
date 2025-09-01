@@ -700,7 +700,16 @@ const Settings = () => {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Selo de verificado</Label>
+                      <div className="flex items-center gap-2">
+                        <Label>Selo de verificado</Label>
+                        {formData.is_verified && (
+                          <img 
+                            src="/lovable-uploads/0b16b51f-a5ac-4326-b699-6209a7d083da.png" 
+                            alt="Verificado" 
+                            className="w-4 h-4 object-contain"
+                          />
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         Exibe um selo azul ao lado do nome da loja para maior credibilidade
                       </p>
