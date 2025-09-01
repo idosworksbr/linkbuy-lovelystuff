@@ -61,12 +61,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       active: location.pathname === "/dashboard/analytics"
     },
     {
-      label: "Planos",
-      icon: CreditCard,
-      path: "/dashboard/plans",
-      active: location.pathname === "/dashboard/plans"
-    },
-    {
       label: "Links Personalizados",
       icon: Link2,
       path: "/dashboard/custom-links",

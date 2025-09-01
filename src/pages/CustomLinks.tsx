@@ -10,6 +10,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import DashboardLayout from "@/components/DashboardLayout";
 import { useCustomLinks, CustomLink } from "@/hooks/useCustomLinks";
 import { useToast } from "@/hooks/use-toast";
+import { usePlans } from "@/hooks/usePlans";
+import { useProfile } from "@/hooks/useProfile";
+import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 
 // Popular icon options for links
 const iconOptions = [
@@ -28,6 +31,8 @@ const iconOptions = [
 const CustomLinks = () => {
   const { customLinks, loading, createCustomLink, updateCustomLink, deleteCustomLink } = useCustomLinks();
   const { toast } = useToast();
+  const { profile } = useProfile();
+  const { canAccessFeature } = usePlans();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -152,6 +157,27 @@ const CustomLinks = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <p className="text-muted-foreground">Carregando links personalizados...</p>
           </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Check if user has access to custom links feature (Pro plan or higher)
+  if (!canAccessFeature(profile, 'custom_links')) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6 max-w-4xl mx-auto">
+          <div>
+            <h1 className="text-3xl font-bold">Links Personalizados</h1>
+            <p className="text-muted-foreground">
+              Adicione links personalizados que aparecerão no seu catálogo
+            </p>
+          </div>
+          <PlanFeatureRestriction 
+            requiredPlan="pro"
+            featureName="Links Personalizados"
+            description="Esta funcionalidade está disponível a partir do plano Pro. Faça upgrade para adicionar links personalizados ao seu catálogo."
+          />
         </div>
       </DashboardLayout>
     );
