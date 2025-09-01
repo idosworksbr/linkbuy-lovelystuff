@@ -29,6 +29,9 @@ verify_jwt = false
 [functions.product-detail]
 verify_jwt = false
 
+[functions.cancel-subscription]
+verify_jwt = true
+
 [functions.custom-links]
 verify_jwt = true
 

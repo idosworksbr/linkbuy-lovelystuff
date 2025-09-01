@@ -13,7 +13,8 @@ import {
   Receipt, 
   Download,
   RefreshCw,
-  Settings
+  Settings,
+  XCircle
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
@@ -34,7 +35,7 @@ interface PaymentHistory {
 
 const CustomerPortal = () => {
   const { profile, loading: profileLoading } = useProfile();
-  const { subscription, loading: subscriptionLoading, checkSubscription, openCustomerPortal } = useSubscription();
+  const { subscription, loading: subscriptionLoading, checkSubscription, openCustomerPortal, cancelSubscription } = useSubscription();
   const { plans, getPlanName, isExpired } = usePlans();
   const { toast } = useToast();
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
@@ -154,12 +155,24 @@ const CustomerPortal = () => {
                 )}
               </div>
               
-              {isSubscribed && (
-                <Button onClick={openCustomerPortal} className="gap-2">
-                  <Settings className="h-4 w-4" />
-                  Gerenciar no Stripe
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {isSubscribed && (
+                  <>
+                    <Button onClick={openCustomerPortal} className="gap-2" variant="outline">
+                      <Settings className="h-4 w-4" />
+                      Gerenciar no Stripe
+                    </Button>
+                    <Button 
+                      onClick={() => cancelSubscription(false)} 
+                      variant="outline"
+                      className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Cancelar Assinatura
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
 
             {currentPlan !== 'free' && (
@@ -172,6 +185,27 @@ const CustomerPortal = () => {
                       <span>{feature}</span>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cancellation Notice */}
+            {isSubscribed && profile?.subscription_expires_at && !hasExpired && (
+              <div className="pt-4 border-t">
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-orange-800 mb-1">
+                        Informação sobre cancelamento
+                      </h4>
+                      <p className="text-sm text-orange-700">
+                        Se você cancelar sua assinatura, ela permanecerá ativa até{' '}
+                        <strong>{new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}</strong>.
+                        Após essa data, sua conta retornará ao plano gratuito.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

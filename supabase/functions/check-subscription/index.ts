@@ -13,6 +13,23 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Retry function with exponential backoff for rate limits
+const retryWithBackoff = async (fn: () => Promise<any>, maxRetries: number = 3): Promise<any> => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (error?.type === 'StripeRateLimitError' && i < maxRetries - 1) {
+        const delay = Math.pow(2, i) * 1000; // Exponential backoff
+        logStep(`Rate limit hit, retrying in ${delay}ms`, { attempt: i + 1 });
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -46,7 +63,11 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    
+    // Use retry logic for Stripe API calls to handle rate limits
+    const customers = await retryWithBackoff(() => 
+      stripe.customers.list({ email: user.email, limit: 1 })
+    );
     
     if (customers.data.length === 0) {
       logStep("No customer found, updating unsubscribed state");
@@ -68,11 +89,13 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
+    const subscriptions = await retryWithBackoff(() => 
+      stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      })
+    );
     const hasActiveSub = subscriptions.data.length > 0;
     let subscriptionTier = null;
     let subscriptionEnd = null;

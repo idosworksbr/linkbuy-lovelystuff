@@ -22,12 +22,23 @@ export const useSubscription = () => {
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Check subscription error:', error);
+        throw error;
+      }
       
       setSubscription(data);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking subscription:', error);
+      
+      // Don't show toast for rate limit errors - just log them
+      if (error?.message?.includes("rate limit")) {
+        console.warn('Rate limit reached - subscription check will retry later');
+        return;
+      }
+      
+      // Only show toast for other types of errors
       toast({
         title: "Erro ao verificar assinatura",
         description: "Não foi possível verificar o status da assinatura.",
@@ -77,15 +88,66 @@ export const useSubscription = () => {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('customer-portal');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Customer portal error:', error);
+        throw error;
+      }
       
       // Open customer portal in a new tab
       window.open(data.url, '_blank');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error opening customer portal:', error);
+      
+      // Show more specific error messages
+      let errorMessage = "Não foi possível abrir o portal do cliente.";
+      if (error?.message?.includes("No Stripe customer")) {
+        errorMessage = "Você ainda não possui uma conta no Stripe. Assine um plano primeiro.";
+      } else if (error?.message?.includes("rate limit")) {
+        errorMessage = "Muitas solicitações. Aguarde um momento e tente novamente.";
+      }
+      
       toast({
         title: "Erro ao abrir portal",
-        description: "Não foi possível abrir o portal do cliente.",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelSubscription = async (cancelImmediately: boolean = false) => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('cancel-subscription', {
+        body: { cancelImmediately }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Assinatura cancelada",
+        description: data.message,
+        variant: "default",
+      });
+
+      // Refresh subscription status
+      await checkSubscription();
+      
+      return data;
+    } catch (error: any) {
+      console.error('Error canceling subscription:', error);
+      
+      let errorMessage = "Não foi possível cancelar a assinatura.";
+      if (error?.message?.includes("No active subscription")) {
+        errorMessage = "Você não possui uma assinatura ativa para cancelar.";
+      }
+      
+      toast({
+        title: "Erro ao cancelar",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -105,5 +167,6 @@ export const useSubscription = () => {
     checkSubscription,
     createCheckout,
     openCustomerPortal,
+    cancelSubscription,
   };
 };
