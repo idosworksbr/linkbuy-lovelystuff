@@ -117,12 +117,59 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .eq('status', 'active');
 
-    // Processar cada assinatura ativa
+    // Primeiro, identificar se existe Pro+ Verificado nas assinaturas
+    const hasProPlusVerified = subscriptions.data.some(sub => {
+      const priceId = sub.items.data[0].price.id;
+      return mapPriceIdToSubscriptionType(priceId) === 'pro_plus_verified';
+    });
+
+    // Se tem Pro+ Verificado, cancelar todas as outras assinaturas PRIMEIRO
+    if (hasProPlusVerified) {
+      logStep("Pro+ Verified detected, canceling all other subscriptions");
+      
+      for (const subscription of subscriptions.data) {
+        const priceId = subscription.items.data[0].price.id;
+        const subscriptionType = mapPriceIdToSubscriptionType(priceId);
+        
+        // Cancelar tudo que não seja Pro+ Verificado
+        if (subscriptionType !== 'pro_plus_verified') {
+          logStep("Canceling redundant subscription", { 
+            subscriptionId: subscription.id, 
+            type: subscriptionType 
+          });
+          
+          try {
+            await retryWithBackoff(() => 
+              stripe.subscriptions.cancel(subscription.id)
+            );
+            logStep("Successfully canceled subscription", { subscriptionId: subscription.id });
+          } catch (error) {
+            logStep("Error canceling subscription", { 
+              subscriptionId: subscription.id, 
+              error: error.message 
+            });
+          }
+        }
+      }
+      
+      // Recarregar as assinaturas ativas após os cancelamentos
+      const updatedSubscriptions = await retryWithBackoff(() => 
+        stripe.subscriptions.list({
+          customer: customerId,
+          status: "active",
+          limit: 100,
+        })
+      );
+      
+      logStep("Reloaded subscriptions after cancellations", { count: updatedSubscriptions.data.length });
+      subscriptions.data = updatedSubscriptions.data;
+    }
+
+    // Processar cada assinatura ativa restante
     for (const subscription of subscriptions.data) {
       const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       const subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
       
-      // Pegar o primeiro item da assinatura (pode ter múltiplos, mas vamos considerar o primeiro)
       const priceId = subscription.items.data[0].price.id;
       const subscriptionType = mapPriceIdToSubscriptionType(priceId);
       
@@ -132,36 +179,6 @@ serve(async (req) => {
         subscriptionType, 
         endDate: subscriptionEnd 
       });
-
-      // Verificar se assinou Pro+ Verificado (plano completo)
-      if (subscriptionType === 'pro_plus_verified') {
-        // Se assinou Pro+ Verificado, cancelar outras assinaturas separadas no Stripe
-        const otherSubscriptions = subscriptions.data.filter(sub => sub.id !== subscription.id);
-        for (const otherSub of otherSubscriptions) {
-          const otherPriceId = otherSub.items.data[0].price.id;
-          const otherType = mapPriceIdToSubscriptionType(otherPriceId);
-          
-          if (['pro_plus', 'verified', 'pro'].includes(otherType)) {
-            logStep("Canceling redundant subscription", { 
-              subscriptionId: otherSub.id, 
-              type: otherType 
-            });
-            
-            try {
-              await retryWithBackoff(() => 
-                stripe.subscriptions.cancel(otherSub.id)
-              );
-            } catch (error) {
-              logStep("Error canceling subscription", { 
-                subscriptionId: otherSub.id, 
-                error: error.message 
-              });
-            }
-          }
-        }
-        
-        logStep("Canceled separate subscriptions due to Pro+ Verified");
-      }
 
       // Upsert a assinatura na tabela user_subscriptions
       await supabaseClient.from("user_subscriptions").upsert({

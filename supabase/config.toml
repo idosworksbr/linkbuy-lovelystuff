@@ -35,6 +35,9 @@ verify_jwt = true
 [functions.cancel-redundant-subscriptions]
 verify_jwt = true
 
+[functions.cancel-all-subscriptions]
+verify_jwt = true
+
 [functions.custom-links]
 verify_jwt = true
 

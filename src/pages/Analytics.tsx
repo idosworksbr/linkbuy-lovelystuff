@@ -158,18 +158,18 @@ const Analytics = () => {
         </div>
 
         {/* Overview Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Visualizações do Catálogo</CardTitle>
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Visualizações do Catálogo</CardTitle>
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent>
               {analyticsLoading ? (
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 sm:h-8 w-12 sm:w-16" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{formatNumber(storeAnalytics?.total_catalog_views || 0)}</div>
+                  <div className="text-lg sm:text-2xl font-bold">{formatNumber(storeAnalytics?.total_catalog_views || 0)}</div>
                   <p className="text-xs text-muted-foreground">
                     visitantes únicos: {storeAnalytics?.unique_visitors || 0}
                   </p>
@@ -180,42 +180,42 @@ const Analytics = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Produtos Visualizados</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Produtos Visualizados</CardTitle>
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent>
               {analyticsLoading ? (
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 sm:h-8 w-12 sm:w-16" />
               ) : (
-                <div className="text-2xl font-bold">{formatNumber(storeAnalytics?.total_product_views || 0)}</div>
+                <div className="text-lg sm:text-2xl font-bold">{formatNumber(storeAnalytics?.total_product_views || 0)}</div>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cliques WhatsApp</CardTitle>
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Cliques WhatsApp</CardTitle>
+              <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent>
               {analyticsLoading ? (
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 sm:h-8 w-12 sm:w-16" />
               ) : (
-                <div className="text-2xl font-bold">{formatNumber(storeAnalytics?.total_whatsapp_clicks || 0)}</div>
+                <div className="text-lg sm:text-2xl font-bold">{formatNumber(storeAnalytics?.total_whatsapp_clicks || 0)}</div>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cliques Instagram</CardTitle>
-              <Instagram className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Cliques Instagram</CardTitle>
+              <Instagram className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent>
               {analyticsLoading ? (
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 sm:h-8 w-12 sm:w-16" />
               ) : (
-                <div className="text-2xl font-bold">{formatNumber(storeAnalytics?.total_instagram_clicks || 0)}</div>
+                <div className="text-lg sm:text-2xl font-bold">{formatNumber(storeAnalytics?.total_instagram_clicks || 0)}</div>
               )}
             </CardContent>
           </Card>
@@ -224,8 +224,8 @@ const Analytics = () => {
         {/* Product Analytics Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Performance por Produto</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Performance por Produto</CardTitle>
+            <CardDescription className="text-sm">
               Métricas detalhadas de cada produto do seu catálogo
             </CardDescription>
           </CardHeader>
@@ -234,56 +234,56 @@ const Analytics = () => {
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="flex items-center space-x-4">
-                    <Skeleton className="h-16 w-16 rounded" />
+                    <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded" />
                     <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-3 sm:h-4 w-32 sm:w-48" />
+                      <Skeleton className="h-2 sm:h-3 w-24 sm:w-32" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : productAnalytics.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {productAnalytics.map((product) => (
-                  <div key={product.product_id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
+                  <div key={product.product_id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg space-y-3 sm:space-y-0">
+                    <div className="flex items-center space-x-3 sm:space-x-4">
                       {product.product_image ? (
                         <img 
                           src={product.product_image} 
                           alt={product.product_name}
-                          className="h-16 w-16 object-cover rounded"
+                          className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded flex-shrink-0"
                         />
                       ) : (
-                        <div className="h-16 w-16 bg-muted rounded flex items-center justify-center">
+                        <div className="h-12 w-12 sm:h-16 sm:w-16 bg-muted rounded flex items-center justify-center flex-shrink-0">
                           <span className="text-muted-foreground text-xs">Sem imagem</span>
                         </div>
                       )}
-                      <div>
-                        <h3 className="font-medium">{product.product_name}</h3>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium text-sm sm:text-base leading-tight break-words">{product.product_name}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           R$ {product.product_price.toFixed(2)}
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-4 text-sm">
+                    <div className="flex items-center justify-around sm:justify-center sm:space-x-4 text-xs sm:text-sm border-t sm:border-t-0 pt-3 sm:pt-0">
                       <div className="text-center">
-                        <div className="font-medium">{product.total_views}</div>
-                        <div className="text-muted-foreground">Visualizações</div>
+                        <div className="font-medium text-sm sm:text-base">{product.total_views}</div>
+                        <div className="text-muted-foreground text-xs">Views</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-medium">{product.whatsapp_clicks}</div>
-                        <div className="text-muted-foreground">WhatsApp</div>
+                        <div className="font-medium text-sm sm:text-base">{product.whatsapp_clicks}</div>
+                        <div className="text-muted-foreground text-xs">WhatsApp</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-medium">{product.instagram_clicks}</div>
-                        <div className="text-muted-foreground">Instagram</div>
+                        <div className="font-medium text-sm sm:text-base">{product.instagram_clicks}</div>
+                        <div className="text-muted-foreground text-xs">Instagram</div>
                       </div>
                       <div className="text-center">
-                        <Badge variant={product.conversion_rate > 5 ? "default" : "secondary"}>
+                        <Badge variant={product.conversion_rate > 5 ? "default" : "secondary"} className="text-xs">
                           {product.conversion_rate.toFixed(1)}%
                         </Badge>
-                        <div className="text-muted-foreground text-xs">Conversão</div>
+                        <div className="text-muted-foreground text-xs mt-1">Conversão</div>
                       </div>
                     </div>
                   </div>
@@ -292,8 +292,8 @@ const Analytics = () => {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum dado disponível para o período selecionado</p>
-                <p className="text-sm">Compartilhe seu catálogo para começar a receber dados</p>
+                <p className="text-sm sm:text-base">Nenhum dado disponível para o período selecionado</p>
+                <p className="text-xs sm:text-sm">Compartilhe seu catálogo para começar a receber dados</p>
               </div>
             )}
           </CardContent>
