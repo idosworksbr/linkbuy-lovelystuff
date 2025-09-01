@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,10 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
 import { usePlans } from "@/hooks/usePlans";
+import { useSubscription } from "@/hooks/useSubscription";
 import { PlanCard } from "@/components/PlanCard";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 import { useSearchParams } from "react-router-dom";
@@ -20,6 +22,7 @@ const Settings = () => {
   const { profile, loading, updateProfile } = useProfile();
   const { toast } = useToast();
   const { plans, canAccessFeature, getPlanName } = usePlans();
+  const { openCustomerPortal } = useSubscription();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'profile';
   const [isLoading, setIsLoading] = useState(false);
@@ -157,10 +160,8 @@ const Settings = () => {
   };
 
   const handleSelectPlan = (planName: string) => {
-    toast({
-      title: "Em breve!",
-      description: `A funcionalidade de upgrade para ${planName} será implementada em breve.`,
-    });
+    // Redirect to the dedicated Plans page for checkout
+    window.location.href = '/dashboard/plans';
   };
 
   if (loading) {
@@ -730,23 +731,57 @@ const Settings = () => {
           {/* Tab de Planos */}
           <TabsContent value="plans" className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2">Escolha seu plano</h2>
+              <h2 className="text-2xl font-bold mb-2">Gerenciar Assinatura</h2>
               <p className="text-muted-foreground">
-                Desbloqueie recursos premium para seu catálogo online
+                Gerencie seu plano atual e explore outras opções
               </p>
               {profile && (
                 <div className="mt-4 p-4 bg-muted rounded-lg">
-                  <p className="text-sm">
-                    <strong>Plano atual:</strong> {getPlanName(profile.subscription_plan)}
-                    {profile.subscription_expires_at && (
-                      <span className="text-muted-foreground">
-                        {" "}• Expira em {new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}
-                      </span>
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <p className="text-sm">
+                      <strong>Plano atual:</strong> {getPlanName(profile.subscription_plan)}
+                    </p>
+                    {profile.subscription_plan !== 'free' && (
+                      <Badge variant="default" className="bg-green-100 text-green-800">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Ativo
+                      </Badge>
                     )}
-                  </p>
+                  </div>
+                  {profile.subscription_expires_at && (
+                    <p className="text-xs text-muted-foreground">
+                      Expira em {new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
+
+            {/* Customer Portal for Subscribers */}
+            {profile?.subscription_plan !== 'free' && (
+              <Card className="border-blue-200 bg-blue-50 mb-6">
+                <CardContent className="pt-6">
+                  <div className="text-center space-y-4">
+                    <CreditCard className="h-8 w-8 text-blue-600 mx-auto" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-900">
+                        Gerenciar Assinatura
+                      </h3>
+                      <p className="text-blue-700 text-sm mt-1">
+                        Acesse o portal do cliente para alterar forma de pagamento, ver faturas ou cancelar sua assinatura.
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={openCustomerPortal} 
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Portal do Cliente
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {plans.map((plan) => (

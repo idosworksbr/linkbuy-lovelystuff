@@ -13,6 +13,7 @@ import AddProduct from "./pages/AddProduct";
 import CustomLinks from "@/pages/CustomLinks";
 import Settings from "@/pages/Settings";
 import Plans from "@/pages/Plans";
+import Subscription from "@/pages/Subscription";
 import Analytics from "./pages/Analytics";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
@@ -58,6 +59,11 @@ const App = () => (
             <Route path="/dashboard/plans" element={
               <ProtectedRoute>
                 <Plans />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/subscription" element={
+              <ProtectedRoute>
+                <Subscription />
               </ProtectedRoute>
             } />
             <Route path="/catalog/:storeUrl" element={<Catalog />} />
