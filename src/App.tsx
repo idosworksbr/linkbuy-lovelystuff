@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import AddProduct from "./pages/AddProduct";
 import CustomLinks from "@/pages/CustomLinks";
 import Settings from "@/pages/Settings";
+import Plans from "@/pages/Plans";
 import Analytics from "./pages/Analytics";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
@@ -52,6 +53,11 @@ const App = () => (
             <Route path="/dashboard/settings" element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/plans" element={
+              <ProtectedRoute>
+                <Plans />
               </ProtectedRoute>
             } />
             <Route path="/catalog/:storeUrl" element={<Catalog />} />
