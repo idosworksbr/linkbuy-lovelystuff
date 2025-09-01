@@ -55,12 +55,21 @@ interface CatalogData {
   };
 }
 
+interface StoreAnalytics {
+  total_catalog_views: number;
+  total_product_views: number;
+  total_whatsapp_clicks: number;
+  total_instagram_clicks: number;
+  unique_visitors: number;
+}
+
 const Catalog = () => {
   const { storeUrl } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { trackEvent } = useAnalyticsTracker();
   const [catalogData, setCatalogData] = useState<CatalogData | null>(null);
+  const [storeAnalytics, setStoreAnalytics] = useState<StoreAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'products' | 'links'>('products');
@@ -123,6 +132,9 @@ const Catalog = () => {
         // Track catalog view
         if (data.store.id) {
           trackEvent('catalog_view', data.store.id);
+          
+          // Fetch store analytics to show real metrics
+          fetchStoreAnalytics(data.store.id);
         }
         
         toast({
@@ -144,6 +156,31 @@ const Catalog = () => {
     };
     fetchCatalogData();
   }, [storeUrl, toast]);
+
+  const fetchStoreAnalytics = async (storeId: string) => {
+    try {
+      const response = await fetch('https://rpkawimruhfqhxbpavce.supabase.co/rest/v1/rpc/get_store_analytics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa2F3aW1ydWhmcWh4YnBhdmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTcwOTEsImV4cCI6MjA3MTIzMzA5MX0.XaMLFfKuOWDTuz4UMYv6tiKFlP3sYBeftAhhvvlNtdc'
+        },
+        body: JSON.stringify({
+          store_id_param: storeId
+        })
+      });
+      
+      if (response.ok) {
+        const analyticsData = await response.json();
+        if (analyticsData && analyticsData.length > 0) {
+          setStoreAnalytics(analyticsData[0]);
+        }
+      }
+    } catch (error) {
+      console.log('Error fetching analytics:', error);
+      // Não mostramos erro pois analytics é opcional
+    }
+  };
 
   const handleWhatsAppContact = () => {
     if (!catalogData?.store) return;
@@ -414,12 +451,16 @@ const Catalog = () => {
                   <div className={themeClasses.textMuted}>Produtos</div>
                 </div>
                 <div className="text-center">
-                  <div className={`font-semibold ${themeClasses.text}`}>1.2k</div>
-                  <div className={themeClasses.textMuted}>Seguidores</div>
+                  <div className={`font-semibold ${themeClasses.text}`}>
+                    {storeAnalytics?.total_catalog_views || 0}
+                  </div>
+                  <div className={themeClasses.textMuted}>Visualizações</div>
                 </div>
                 <div className="text-center">
-                  <div className={`font-semibold ${themeClasses.text}`}>180</div>
-                  <div className={themeClasses.textMuted}>Seguindo</div>
+                  <div className={`font-semibold ${themeClasses.text}`}>
+                    {storeAnalytics?.total_whatsapp_clicks || 0}
+                  </div>
+                  <div className={themeClasses.textMuted}>Conversas</div>
                 </div>
               </div>
             </div>
