@@ -30,28 +30,6 @@ const Analytics = () => {
     to: undefined
   })
 
-  // Verificar acesso ao analytics
-  if (!canAccessFeature(profile, 'analytics')) {
-    return (
-      <DashboardLayout>
-        <div className="space-y-6 max-w-6xl mx-auto">
-          <div>
-            <h1 className="text-3xl font-bold">Analytics</h1>
-            <p className="text-muted-foreground">
-              Acompanhe o desempenho da sua loja
-            </p>
-          </div>
-          
-          <PlanFeatureRestriction 
-            requiredPlan="pro_plus"
-            featureName="Analytics Avançado"
-            description="O acesso ao analytics está disponível exclusivamente no plano Pro+. Upgrade para ver métricas detalhadas da sua loja."
-          />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   // Calculate date range based on filter
   const getDateRange = () => {
     const now = new Date()
@@ -75,8 +53,32 @@ const Analytics = () => {
   }
 
   const { startDate, endDate } = getDateRange()
+  
+  // Always call hooks - never conditionally
   const { storeAnalytics, loading: analyticsLoading } = useAnalytics(startDate, endDate)
   const { productAnalytics, loading: productLoading } = useProductAnalytics(startDate, endDate)
+
+  // Check access after all hooks are called
+  if (!canAccessFeature(profile, 'analytics')) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6 max-w-6xl mx-auto">
+          <div>
+            <h1 className="text-3xl font-bold">Analytics</h1>
+            <p className="text-muted-foreground">
+              Acompanhe o desempenho da sua loja
+            </p>
+          </div>
+          
+          <PlanFeatureRestriction 
+            requiredPlan="pro_plus"
+            featureName="Analytics Avançado"
+            description="O acesso ao analytics está disponível exclusivamente no plano Pro+. Upgrade para ver métricas detalhadas da sua loja."
+          />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
