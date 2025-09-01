@@ -8,9 +8,19 @@ export interface PlanFeatures {
   verified?: boolean;
 }
 
-export const plans: PlanFeatures[] = [
+export interface PlanPricing {
+  name: string;
+  stripeId: string;
+  price: string;
+  features: string[];
+  popular?: boolean;
+  verified?: boolean;
+}
+
+export const plans: PlanPricing[] = [
   {
     name: "Free",
+    stripeId: "",
     price: "Grátis",
     features: [
       "Produtos ilimitados",
@@ -23,6 +33,7 @@ export const plans: PlanFeatures[] = [
   },
   {
     name: "Pro",
+    stripeId: "price_1S2d1xCTueMWV5IwvR6OudJR",
     price: "R$ 19,90/mês",
     popular: true,
     features: [
@@ -37,6 +48,7 @@ export const plans: PlanFeatures[] = [
   },
   {
     name: "Pro+",
+    stripeId: "price_1S2d2UCTueMWV5IwJ1K8V7gH",
     price: "R$ 39,90/mês", 
     features: [
       "Tudo do Free e Pro",
@@ -48,6 +60,7 @@ export const plans: PlanFeatures[] = [
   },
   {
     name: "Selo Verificado",
+    stripeId: "price_1S2d2xCTueMWV5IwZvE9X5bK",
     price: "R$ 9,90/mês",
     verified: true,
     features: [
@@ -56,6 +69,7 @@ export const plans: PlanFeatures[] = [
   },
   {
     name: "Pro+ Verificado",
+    stripeId: "price_1S2d3QCTueMWV5IwL9M4H2rN",
     price: "R$ 49,90/mês",
     features: [
       "Toda a plataforma inclusa",

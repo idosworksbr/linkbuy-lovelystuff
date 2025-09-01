@@ -16,6 +16,7 @@ import { usePlans } from "@/hooks/usePlans";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PlanCard } from "@/components/PlanCard";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
+import { ImageUploadField } from "@/components/ImageUploadField";
 import { useSearchParams } from "react-router-dom";
 
 const Settings = () => {
@@ -220,32 +221,21 @@ const Settings = () => {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="profile_photo_url">URL da Foto de Perfil</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="profile_photo_url"
-                        value={formData.profile_photo_url}
-                        onChange={(e) => handleInputChange('profile_photo_url', e.target.value)}
-                        placeholder="https://exemplo.com/foto.jpg"
-                      />
-                      <Button type="button" variant="outline" size="icon">
-                        <Camera className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {formData.profile_photo_url && (
-                      <div className="mt-2">
-                        <img 
-                          src={formData.profile_photo_url} 
-                          alt="Prévia" 
-                          className="w-16 h-16 rounded-full object-cover border"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <ImageUploadField
+                    id="profile_photo_url"
+                    label="Foto de Perfil"
+                    value={formData.profile_photo_url}
+                    onChange={(url) => handleInputChange('profile_photo_url', url)}
+                    uploadOptions={{
+                      bucket: 'profile-photos',
+                      maxSize: 5 * 1024 * 1024, // 5MB
+                      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+                    }}
+                    previewClassName="w-16 h-16 rounded-full object-cover"
+                    placeholder="https://exemplo.com/foto.jpg"
+                    description="Foto que aparecerá no seu catálogo (máx. 5MB)"
+                    allowUrlInput={true}
+                  />
                 </CardContent>
               </Card>
 
@@ -584,28 +574,21 @@ const Settings = () => {
 
                           {formData.background_type === 'image' && (
                             <div className="space-y-2">
-                              <Label htmlFor="background_image_url">URL da Imagem de Fundo da Grade</Label>
-                              <Input
+                              <ImageUploadField
                                 id="background_image_url"
+                                label="URL da Imagem de Fundo da Grade"
                                 value={formData.background_image_url}
-                                onChange={(e) => handleInputChange('background_image_url', e.target.value)}
+                                onChange={(url) => handleInputChange('background_image_url', url)}
+                                uploadOptions={{
+                                  bucket: 'background-images',
+                                  maxSize: 10 * 1024 * 1024, // 10MB
+                                  allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+                                }}
+                                previewClassName="w-24 h-32 object-cover"
                                 placeholder="https://exemplo.com/imagem-fundo.jpg"
+                                description="Imagem de fundo aplicada apenas na área da grade de produtos/links (recomendado: 800x600px, máx. 10MB)"
+                                allowUrlInput={true}
                               />
-                              <p className="text-xs text-muted-foreground">
-                                Imagem de fundo aplicada apenas na área da grade de produtos/links (recomendado: 800x600px)
-                              </p>
-                              {formData.background_image_url && (
-                                <div className="mt-2">
-                                  <img 
-                                    src={formData.background_image_url} 
-                                    alt="Prévia do fundo" 
-                                    className="w-24 h-32 object-cover border rounded"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
-                                </div>
-                              )}
                             </div>
                           )}
                         </>
