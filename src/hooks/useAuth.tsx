@@ -4,6 +4,25 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface ProfileUpdateData {
+  name?: string;
+  store_name?: string;
+  store_description?: string;
+  profile_photo_url?: string;
+  background_color?: string;
+  background_type?: string;
+  background_image_url?: string;
+  custom_background_enabled?: boolean;
+  store_url?: string;
+  whatsapp_number?: number;
+  custom_whatsapp_message?: string;
+  instagram_url?: string;
+  catalog_theme?: string;
+  catalog_layout?: string;
+  hide_footer?: boolean;
+  product_grid_layout?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -11,7 +30,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  updateProfile: (data: any) => Promise<void>;
+  updateProfile: (data: ProfileUpdateData) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,10 +62,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
+    const redirectUrl = `${window.location.origin}/dashboard`;
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           name: name,
         },
@@ -101,12 +123,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateProfile = async (data: any) => {
+  const updateProfile = async (data: ProfileUpdateData) => {
     if (!user) return;
+
+    // Input validation for security
+    const sanitizedData = { ...data };
+    
+    // Validate whatsapp_number if provided
+    if (sanitizedData.whatsapp_number && (sanitizedData.whatsapp_number < 1000000000 || sanitizedData.whatsapp_number > 999999999999999)) {
+      toast({
+        title: "Erro de validação",
+        description: "Número do WhatsApp deve ter entre 10 e 15 dígitos.",
+        variant: "destructive",
+      });
+      throw new Error("Invalid WhatsApp number format");
+    }
+
+    // Validate store_url if provided
+    if (sanitizedData.store_url && !/^[a-z0-9-]+$/.test(sanitizedData.store_url)) {
+      toast({
+        title: "Erro de validação", 
+        description: "URL da loja deve conter apenas letras minúsculas, números e hífens.",
+        variant: "destructive",
+      });
+      throw new Error("Invalid store URL format");
+    }
 
     const { error } = await supabase
       .from('profiles')
-      .update(data)
+      .update(sanitizedData)
       .eq('id', user.id);
 
     if (error) {
