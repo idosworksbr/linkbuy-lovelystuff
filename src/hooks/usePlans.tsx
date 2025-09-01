@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import { Profile } from "./useProfile";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PlanFeatures {
   name: string;
@@ -17,7 +19,7 @@ export interface PlanPricing {
   verified?: boolean;
 }
 
-export const plans: PlanPricing[] = [
+export const defaultPlans: PlanPricing[] = [
   {
     name: "Free",
     stripeId: "",
@@ -34,7 +36,7 @@ export const plans: PlanPricing[] = [
   {
     name: "Pro",
     stripeId: "price_1S2d1xCTueMWV5IwvR6OudJR",
-    price: "R$ 19,90/mês",
+    price: "Carregando...",
     popular: true,
     features: [
       "Tudo do Free",
@@ -49,7 +51,7 @@ export const plans: PlanPricing[] = [
   {
     name: "Pro+",
     stripeId: "price_1S2d2UCTueMWV5IwJ1K8V7gH",
-    price: "R$ 39,90/mês", 
+    price: "Carregando...", 
     features: [
       "Tudo do Free e Pro",
       "Configurações avançadas",
@@ -61,7 +63,7 @@ export const plans: PlanPricing[] = [
   {
     name: "Selo Verificado",
     stripeId: "price_1S2d2xCTueMWV5IwZvE9X5bK",
-    price: "R$ 9,90/mês",
+    price: "Carregando...",
     verified: true,
     features: [
       "Selo de verificado para catálogo"
@@ -70,7 +72,7 @@ export const plans: PlanPricing[] = [
   {
     name: "Pro+ Verificado",
     stripeId: "price_1S2d3QCTueMWV5IwL9M4H2rN",
-    price: "R$ 49,90/mês",
+    price: "Carregando...",
     features: [
       "Toda a plataforma inclusa",
       "Todos os recursos Pro+",
@@ -80,6 +82,53 @@ export const plans: PlanPricing[] = [
 ];
 
 export const usePlans = () => {
+  const [plans, setPlans] = useState<PlanPricing[]>(defaultPlans);
+
+  useEffect(() => {
+    const fetchRealPrices = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-stripe-prices');
+        
+        if (error) {
+          console.error('Error fetching Stripe prices:', error);
+          return;
+        }
+
+        const stripePrices = data.prices;
+        
+        setPlans(prevPlans => 
+          prevPlans.map(plan => {
+            // Não alterar o plano Free
+            if (plan.stripeId === "") return plan;
+
+            const stripePrice = stripePrices.find((p: any) => p.id === plan.stripeId);
+            if (!stripePrice) return plan;
+
+            // Formatar preço baseado nos dados do Stripe
+            const amount = stripePrice.unit_amount / 100;
+            const currency = stripePrice.currency.toUpperCase();
+            const interval = stripePrice.recurring?.interval || 'month';
+            
+            const formattedPrice = new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: currency === 'USD' ? 'BRL' : currency, // Converter USD para BRL na exibição
+            }).format(amount);
+
+            const intervalText = interval === 'month' ? 'mês' : 'ano';
+
+            return {
+              ...plan,
+              price: `${formattedPrice}/${intervalText}`
+            };
+          })
+        );
+      } catch (error) {
+        console.error('Error updating plan prices:', error);
+      }
+    };
+
+    fetchRealPrices();
+  }, []);
   const canAccessFeature = (profile: Profile | null, feature: string): boolean => {
     if (!profile) return false;
 
