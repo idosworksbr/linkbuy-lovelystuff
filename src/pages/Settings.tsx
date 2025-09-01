@@ -17,6 +17,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { PlanCard } from "@/components/PlanCard";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { MultipleSubscriptionsInfo } from "@/components/MultipleSubscriptionsInfo";
 import { useSearchParams } from "react-router-dom";
 
 const Settings = () => {
@@ -712,27 +713,31 @@ const Settings = () => {
               <p className="text-muted-foreground">
                 Gerencie seu plano atual e explore outras opções
               </p>
-              {profile && (
-                <div className="mt-4 p-4 bg-muted rounded-lg">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <p className="text-sm">
-                      <strong>Plano atual:</strong> {getPlanName(profile.subscription_plan)}
-                    </p>
-                    {profile.subscription_plan !== 'free' && (
-                      <Badge variant="default" className="bg-green-100 text-green-800">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Ativo
-                      </Badge>
-                    )}
-                  </div>
-                  {profile.subscription_expires_at && (
-                    <p className="text-xs text-muted-foreground">
-                      Expira em {new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}
-                    </p>
+            </div>
+
+            {/* Informações das assinaturas ativas */}
+            <MultipleSubscriptionsInfo />
+
+            {profile && (
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <p className="text-sm">
+                    <strong>Plano atual:</strong> {getPlanName(profile.subscription_plan)}
+                  </p>
+                  {profile.subscription_plan !== 'free' && (
+                    <Badge variant="default" className="bg-green-100 text-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Ativo
+                    </Badge>
                   )}
                 </div>
-              )}
-            </div>
+                {profile.subscription_expires_at && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Expira em {new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Customer Portal for Subscribers */}
             {profile?.subscription_plan !== 'free' && (

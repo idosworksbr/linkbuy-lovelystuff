@@ -13,6 +13,18 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Mapear price_id para tipo de assinatura
+const mapPriceIdToSubscriptionType = (priceId: string): string => {
+  const priceMap: { [key: string]: string } = {
+    'price_1S2d1xCTueMWV5IwvR6OudJR': 'pro',             // PLANO PRO
+    'price_1S2dYWCTueMWV5IwSDVN59wL': 'pro_plus',        // PLANO PRO+
+    'price_1S2dd5CTueMWV5Iwbi073tsC': 'verified',        // SELO VERIFICADO AVULSO
+    'price_1S2db1CTueMWV5IwrNdtAKyy': 'pro_plus_verified' // PLANO PRO+ VERIFICADO
+  };
+  
+  return priceMap[priceId] || 'pro'; // Default para 'pro' se não encontrar
+};
+
 // Retry function with exponential backoff for rate limits
 const retryWithBackoff = async (fn: () => Promise<any>, maxRetries: number = 3): Promise<any> => {
   for (let i = 0; i < maxRetries; i++) {
@@ -70,16 +82,14 @@ serve(async (req) => {
     );
     
     if (customers.data.length === 0) {
-      logStep("No customer found, updating unsubscribed state");
-      await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: null,
-        subscribed: false,
-        subscription_tier: null,
-        subscription_end: null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
+      logStep("No customer found, clearing all subscriptions");
+      // Limpar todas as assinaturas ativas do usuário
+      await supabaseClient
+        .from("user_subscriptions")
+        .update({ status: 'expired' })
+        .eq('user_id', user.id)
+        .eq('status', 'active');
+      
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -89,54 +99,112 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Buscar todas as assinaturas ativas do cliente
     const subscriptions = await retryWithBackoff(() => 
       stripe.subscriptions.list({
         customer: customerId,
         status: "active",
-        limit: 1,
+        limit: 100, // Buscar até 100 assinaturas ativas
       })
     );
-    const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionTier = null;
-    let subscriptionEnd = null;
 
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+    logStep("Active subscriptions found", { count: subscriptions.data.length });
+
+    // Marcar todas as assinaturas existentes como expiradas primeiro
+    await supabaseClient
+      .from("user_subscriptions")
+      .update({ status: 'expired' })
+      .eq('user_id', user.id)
+      .eq('status', 'active');
+
+    // Processar cada assinatura ativa
+    for (const subscription of subscriptions.data) {
+      const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      const subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
       
-      // Determine subscription tier from price ID
+      // Pegar o primeiro item da assinatura (pode ter múltiplos, mas vamos considerar o primeiro)
       const priceId = subscription.items.data[0].price.id;
+      const subscriptionType = mapPriceIdToSubscriptionType(priceId);
       
-      // Map price IDs to subscription tiers
-      const priceIdToTier: Record<string, string> = {
-        'price_1S2d1xCTueMWV5IwvR6OudJR': 'pro', // PLANO PRO
-        'price_1S2dYWCTueMWV5IwSDVN59wL': 'pro_plus', // PLANO PRO+
-        'price_1S2db1CTueMWV5IwrNdtAKyy': 'pro_plus_verified', // PLANO PRO+ VERIFICADO  
-        'price_1S2dd5CTueMWV5Iwbi073tsC': 'verified', // SELO VERIFICADO AVULSO MENSAL
-      };
-      
-      subscriptionTier = priceIdToTier[priceId] || 'free';
-      logStep("Determined subscription tier", { priceId, subscriptionTier });
-    } else {
-      logStep("No active subscription found");
+      logStep("Processing subscription", { 
+        subscriptionId: subscription.id, 
+        priceId, 
+        subscriptionType, 
+        endDate: subscriptionEnd 
+      });
+
+      // Verificar se assinou Pro+ Verificado (plano completo)
+      if (subscriptionType === 'pro_plus_verified') {
+        // Se assinou Pro+ Verificado, cancelar outras assinaturas separadas no Stripe
+        const otherSubscriptions = subscriptions.data.filter(sub => sub.id !== subscription.id);
+        for (const otherSub of otherSubscriptions) {
+          const otherPriceId = otherSub.items.data[0].price.id;
+          const otherType = mapPriceIdToSubscriptionType(otherPriceId);
+          
+          if (['pro_plus', 'verified', 'pro'].includes(otherType)) {
+            logStep("Canceling redundant subscription", { 
+              subscriptionId: otherSub.id, 
+              type: otherType 
+            });
+            
+            try {
+              await retryWithBackoff(() => 
+                stripe.subscriptions.cancel(otherSub.id)
+              );
+            } catch (error) {
+              logStep("Error canceling subscription", { 
+                subscriptionId: otherSub.id, 
+                error: error.message 
+              });
+            }
+          }
+        }
+        
+        logStep("Canceled separate subscriptions due to Pro+ Verified");
+      }
+
+      // Upsert a assinatura na tabela user_subscriptions
+      await supabaseClient.from("user_subscriptions").upsert({
+        user_id: user.id,
+        subscription_type: subscriptionType,
+        stripe_subscription_id: subscription.id,
+        stripe_price_id: priceId,
+        status: 'active',
+        current_period_start: subscriptionStart,
+        current_period_end: subscriptionEnd,
+        updated_at: new Date().toISOString(),
+      }, { 
+        onConflict: 'user_id,subscription_type',
+        ignoreDuplicates: false 
+      });
     }
 
-    await supabaseClient.from("subscribers").upsert({
-      email: user.email,
-      user_id: user.id,
-      stripe_customer_id: customerId,
-      subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'email' });
+    // Buscar as assinaturas ativas finais para retornar o status
+    const { data: activeSubscriptions } = await supabaseClient
+      .from("user_subscriptions")
+      .select("subscription_type, current_period_end")
+      .eq('user_id', user.id)
+      .eq('status', 'active');
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    const hasActiveSubscriptions = activeSubscriptions && activeSubscriptions.length > 0;
+    const subscriptionTypes = activeSubscriptions?.map(sub => sub.subscription_type) || [];
+    const maxEndDate = activeSubscriptions?.reduce((max, sub) => 
+      new Date(sub.current_period_end) > new Date(max) ? sub.current_period_end : max, 
+      activeSubscriptions[0]?.current_period_end || null
+    );
+
+    logStep("Updated database with subscription info", { 
+      subscribed: hasActiveSubscriptions, 
+      subscriptionTypes,
+      maxEndDate 
+    });
+
+    // O trigger sync_user_subscriptions_to_profile() já atualizará o perfil automaticamente
+    
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd
+      subscribed: hasActiveSubscriptions,
+      subscription_types: subscriptionTypes,
+      subscription_end: maxEndDate
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

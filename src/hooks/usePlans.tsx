@@ -66,7 +66,9 @@ export const defaultPlans: PlanPricing[] = [
     price: "Carregando...",
     verified: true,
     features: [
-      "Selo de verificado para catálogo"
+      "Selo de verificado para catálogo",
+      "Pode ser combinado com outros planos",
+      "Aumenta credibilidade da loja"
     ]
   },
   {
@@ -133,8 +135,8 @@ export const usePlans = () => {
   const canAccessFeature = (profile: Profile | null, feature: string): boolean => {
     if (!profile) return false;
 
-    const plan = profile.subscription_plan;
-    const isVerified = profile.is_verified;
+    const plan = profile.subscription_plan || 'free';
+    const isVerified = profile.is_verified || false;
 
     switch (feature) {
       // Free features - always available
@@ -146,25 +148,26 @@ export const usePlans = () => {
       case 'profile_photo':
         return true;
 
-      // Pro features
+      // Pro features - disponível em planos Pro, Pro+, Pro+ Verificado, e também PRO + Verificado separado
       case 'custom_whatsapp_message':
       case 'catalog_theme':
       case 'custom_background':
       case 'grid_layout':
       case 'bio_message':
       case 'custom_links':
-        return ['pro', 'pro_plus', 'pro_plus_verified'].includes(plan);
+        return ['pro', 'pro_plus', 'pro_plus_verified'].includes(plan) ||
+               (plan === 'pro' && isVerified); // PRO + Verificado separado tem acesso aos recursos PRO
 
-      // Pro+ features
+      // Pro+ features - apenas Pro+ e Pro+ Verificado
       case 'advanced_settings':
       case 'hide_footer':
       case 'custom_store_url':
       case 'analytics':
         return ['pro_plus', 'pro_plus_verified'].includes(plan);
 
-      // Verified features
+      // Verified features - acessível se o usuário for verificado (independente do plano)
       case 'verified_badge':
-        return isVerified || ['verified', 'pro_plus_verified'].includes(plan);
+        return isVerified;
 
       default:
         return false;
