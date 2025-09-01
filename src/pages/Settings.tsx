@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,16 +18,21 @@ import { PlanCard } from "@/components/PlanCard";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { MultipleSubscriptionsInfo } from "@/components/MultipleSubscriptionsInfo";
+import { CancellationDialog } from "@/components/CancellationDialog";
 import { useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
   const { profile, loading, updateProfile } = useProfile();
   const { toast } = useToast();
   const { plans, canAccessFeature, getPlanName } = usePlans();
-  const { openCustomerPortal } = useSubscription();
+  const { subscription, loading: subscriptionLoading, checkSubscription, openCustomerPortal, cancelSubscription } = useSubscription();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'profile';
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showCancellationDialog, setShowCancellationDialog] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -70,8 +75,14 @@ const Settings = () => {
         hide_footer: (profile as any).hide_footer || false,
         is_verified: (profile as any).is_verified || false
       });
+      
+      // Load portal data when profile is available
+      if (initialTab === 'portal') {
+        checkSubscription();
+        loadPaymentHistory();
+      }
     }
-  }, [profile]);
+  }, [profile, initialTab]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -166,6 +177,46 @@ const Settings = () => {
     window.location.href = '/dashboard/plans';
   };
 
+  // Portal functions
+  const loadPaymentHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('payment-history');
+      if (error) throw error;
+      setPaymentHistory(data?.payments || []);
+    } catch (error) {
+      console.error('Error loading payment history:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleRefreshStatus = async () => {
+    await checkSubscription();
+    await loadPaymentHistory();
+    toast({
+      title: "Status atualizado",
+      description: "Informações de assinatura e pagamentos atualizadas com sucesso.",
+    });
+  };
+
+  const formatCurrency = (amount: number, currency: string = 'BRL') => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: currency === 'usd' ? 'USD' : 'BRL'
+    }).format(amount / 100);
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleDateString('pt-BR');
+  };
+
+  const handleCancelSubscription = async () => {
+    await cancelSubscription(false);
+    setShowCancellationDialog(false);
+    await checkSubscription();
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -190,10 +241,11 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="visual">Visual</TabsTrigger>
             <TabsTrigger value="plans">Planos</TabsTrigger>
+            <TabsTrigger value="portal">Portal</TabsTrigger>
           </TabsList>
 
           {/* Tab de Perfil e Loja */}
@@ -776,7 +828,215 @@ const Settings = () => {
               ))}
             </div>
           </TabsContent>
+
+          {/* Tab de Portal do Cliente */}
+          <TabsContent value="portal" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Portal do Cliente</h2>
+                <p className="text-muted-foreground">
+                  Gerencie sua assinatura e histórico de pagamentos
+                </p>
+              </div>
+              <Button variant="outline" onClick={handleRefreshStatus}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Atualizar
+              </Button>
+            </div>
+
+            {/* Current Subscription Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5" />
+                  Status da Assinatura Atual
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">{getPlanName(profile?.subscription_plan || 'free')}</h3>
+                      {subscription?.subscribed && profile?.subscription_expires_at && new Date(profile.subscription_expires_at) > new Date() ? (
+                        <Badge variant="default" className="bg-green-100 text-green-800">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Ativo
+                        </Badge>
+                      ) : profile?.subscription_expires_at && new Date(profile.subscription_expires_at) < new Date() ? (
+                        <Badge variant="destructive">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          Expirado
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">
+                          Gratuito
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {profile?.subscription_expires_at && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {new Date(profile.subscription_expires_at) < new Date() ? 'Expirou em: ' : 'Próxima cobrança: '}
+                          {new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    {subscription?.subscribed && (
+                      <>
+                        <Button onClick={openCustomerPortal} className="gap-2" variant="outline">
+                          <ExternalLink className="h-4 w-4" />
+                          Gerenciar no Stripe
+                        </Button>
+                        <Button 
+                          onClick={() => setShowCancellationDialog(true)} 
+                          variant="outline"
+                          className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Cancelar Assinatura
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {(profile?.subscription_plan && profile.subscription_plan !== 'free') && (
+                  <div className="pt-4 border-t">
+                    <h4 className="font-medium mb-3">Recursos inclusos no seu plano:</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {plans.find(p => p.name.toLowerCase().replace(/\s+/g, '_').replace('+', '_plus') === profile.subscription_plan?.replace('_plus', '_plus'))?.features?.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cancellation Notice */}
+                {subscription?.subscription_end && new Date(subscription.subscription_end) > new Date() && (
+                  <div className="pt-4 border-t">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium text-red-800 mb-1">
+                            Assinatura Cancelada
+                          </h4>
+                          <p className="text-sm text-red-700">
+                            Sua assinatura foi cancelada e encerrará em{' '}
+                            <strong>{new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}</strong>.
+                            Após essa data, sua conta retornará ao plano gratuito.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Payment History */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5" />
+                  Histórico de Pagamentos
+                </CardTitle>
+                <CardDescription>
+                  Visualize todas as suas transações e faturas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loadingHistory ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-2"></div>
+                    <span>Carregando histórico...</span>
+                  </div>
+                ) : paymentHistory.length > 0 ? (
+                  <div className="space-y-4">
+                    {paymentHistory.map((payment) => (
+                      <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {formatCurrency(payment.amount, payment.currency)}
+                            </span>
+                            <Badge 
+                              variant={payment.status === 'paid' ? 'default' : 'secondary'}
+                              className={payment.status === 'paid' ? 'bg-green-100 text-green-800' : ''}
+                            >
+                              {payment.status === 'paid' ? 'Pago' : 'Pendente'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(payment.created)} • {payment.description || 'Assinatura'}
+                          </p>
+                        </div>
+                        {payment.invoice_url && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={payment.invoice_url} target="_blank" rel="noopener noreferrer">
+                              <Download className="h-4 w-4 mr-2" />
+                              Fatura
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhum pagamento encontrado</p>
+                    <p className="text-sm">Seus pagamentos aparecerão aqui quando realizados</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ações Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Gerenciar Assinatura</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Altere seu plano, atualize forma de pagamento ou gerencie sua assinatura
+                    </p>
+                    {subscription?.subscribed ? (
+                      <Button variant="outline" onClick={openCustomerPortal} className="w-full sm:w-auto">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Abrir Portal do Stripe
+                      </Button>
+                    ) : (
+                      <Button variant="outline" onClick={() => window.location.href = '/dashboard/plans'} className="w-full sm:w-auto">
+                        <Crown className="h-4 w-4 mr-2" />
+                        Ver Planos Disponíveis
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
+
+        <CancellationDialog
+          open={showCancellationDialog}
+          onOpenChange={setShowCancellationDialog}
+          onConfirmCancel={handleCancelSubscription}
+          planName={getPlanName(profile?.subscription_plan || 'free')}
+          expirationDate={profile?.subscription_expires_at ? new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR') : undefined}
+        />
       </div>
     </DashboardLayout>
   );
