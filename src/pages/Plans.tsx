@@ -12,12 +12,12 @@ export default function Plans() {
   const { subscription, loading, checkSubscription, createCheckout, openCustomerPortal } = useSubscription();
   const { toast } = useToast();
 
-  // Temporary price IDs - these will be configured in Stripe later
+  // Stripe price IDs for subscription plans
   const priceIds = {
-    "Pro": "price_pro_temp", // To be replaced with actual Stripe price ID
-    "Pro+": "price_pro_plus_temp", // To be replaced with actual Stripe price ID
-    "Selo Verificado": "price_verified_temp", // To be replaced with actual Stripe price ID
-    "Pro+ Verificado": "price_pro_plus_verified_temp", // To be replaced with actual Stripe price ID
+    "Pro": "price_1S2d1xCTueMWV5IwvR6OudJR",
+    "Pro+": "price_1S2dYWCTueMWV5IwSDVN59wL",
+    "Selo Verificado": "price_1S2dd5CTueMWV5Iwbi073tsC",
+    "Pro+ Verificado": "price_1S2db1CTueMWV5IwrNdtAKyy",
   };
 
   const handleSelectPlan = (planName: string) => {
