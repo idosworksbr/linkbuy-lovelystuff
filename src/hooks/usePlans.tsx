@@ -73,6 +73,7 @@ export const defaultPlans: PlanPricing[] = [
     name: "Pro+ Verificado",
     stripeId: "price_1S2db1CTueMWV5IwrNdtAKyy",
     price: "Carregando...",
+    verified: true,
     features: [
       "Toda a plataforma inclusa",
       "Todos os recursos Pro+",
