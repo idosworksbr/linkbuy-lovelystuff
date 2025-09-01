@@ -89,6 +89,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "custom_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_store_catalog"
+            referencedColumns: ["id"]
+          },
         ]
       }
       product_analytics: {
@@ -235,6 +242,33 @@ export type Database = {
         }
         Relationships: []
       }
+      public_access_log: {
+        Row: {
+          access_type: string | null
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          store_url: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_type?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          store_url?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_type?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          store_url?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       store_analytics: {
         Row: {
           id: string
@@ -348,7 +382,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_store_catalog: {
+        Row: {
+          background_color: string | null
+          background_image_url: string | null
+          background_type: string | null
+          catalog_layout: string | null
+          catalog_theme: string | null
+          created_at: string | null
+          custom_background_enabled: boolean | null
+          hide_footer: boolean | null
+          id: string | null
+          is_verified: boolean | null
+          product_grid_layout: string | null
+          profile_photo_url: string | null
+          store_description: string | null
+          store_name: string | null
+          store_url: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          background_image_url?: string | null
+          background_type?: string | null
+          catalog_layout?: string | null
+          catalog_theme?: string | null
+          created_at?: string | null
+          custom_background_enabled?: boolean | null
+          hide_footer?: boolean | null
+          id?: string | null
+          is_verified?: boolean | null
+          product_grid_layout?: string | null
+          profile_photo_url?: string | null
+          store_description?: string | null
+          store_name?: string | null
+          store_url?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          background_image_url?: string | null
+          background_type?: string | null
+          catalog_layout?: string | null
+          catalog_theme?: string | null
+          created_at?: string | null
+          custom_background_enabled?: boolean | null
+          hide_footer?: boolean | null
+          id?: string | null
+          is_verified?: boolean | null
+          product_grid_layout?: string | null
+          profile_photo_url?: string | null
+          store_description?: string | null
+          store_name?: string | null
+          store_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_product_analytics: {
@@ -388,17 +475,14 @@ export type Database = {
           catalog_theme: string
           created_at: string
           custom_background_enabled: boolean
-          custom_whatsapp_message: string
           hide_footer: boolean
           id: string
-          instagram_url: string
           is_verified: boolean
           product_grid_layout: string
           profile_photo_url: string
           store_description: string
           store_name: string
           store_url: string
-          whatsapp_number: number
         }[]
       }
       get_public_store_products: {
