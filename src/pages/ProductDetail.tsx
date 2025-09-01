@@ -49,7 +49,11 @@ const ProductDetail = () => {
     const customMessage = product.store.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.';
     const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`;
     const message = encodeURIComponent(productMessage);
-    const whatsappUrl = `https://wa.me/55${product.store.whatsapp_number}?text=${message}`;
+    
+    // Smart WhatsApp URL generation - check if number already includes country code
+    const phoneStr = product.store.whatsapp_number.toString();
+    const cleanPhone = phoneStr.startsWith('55') ? phoneStr : `55${phoneStr}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
     
     window.open(whatsappUrl, '_blank');
   };

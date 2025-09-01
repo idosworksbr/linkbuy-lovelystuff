@@ -161,7 +161,11 @@ const Catalog = () => {
     
     const phoneNumber = catalogData.store.whatsapp_number;
     const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.');
-    const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${message}`;
+    
+    // Smart WhatsApp URL generation - check if number already includes country code
+    const phoneStr = phoneNumber.toString();
+    const cleanPhone = phoneStr.startsWith('55') ? phoneStr : `55${phoneStr}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 

@@ -82,21 +82,19 @@ serve(async (req) => {
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
-      // Determine subscription tier from price
+      // Determine subscription tier from price ID
       const priceId = subscription.items.data[0].price.id;
-      const price = await stripe.prices.retrieve(priceId);
-      const amount = price.unit_amount || 0;
       
-      if (amount <= 999) {
-        subscriptionTier = "verified";
-      } else if (amount <= 1999) {
-        subscriptionTier = "pro";
-      } else if (amount <= 3999) {
-        subscriptionTier = "pro_plus";
-      } else {
-        subscriptionTier = "pro_plus_verified";
-      }
-      logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
+      // Map price IDs to subscription tiers
+      const priceIdToTier: Record<string, string> = {
+        'price_1S2d1xCTueMWV5IwvR6OudJR': 'pro', // PLANO PRO
+        'price_1S2dYWCTueMWV5IwSDVN59wL': 'pro_plus', // PLANO PRO+
+        'price_1S2db1CTueMWV5IwrNdtAKyy': 'pro_plus_verified', // PLANO PRO+ VERIFICADO  
+        'price_1S2dd5CTueMWV5Iwbi073tsC': 'verified', // SELO VERIFICADO AVULSO MENSAL
+      };
+      
+      subscriptionTier = priceIdToTier[priceId] || 'free';
+      logStep("Determined subscription tier", { priceId, subscriptionTier });
     } else {
       logStep("No active subscription found");
     }
