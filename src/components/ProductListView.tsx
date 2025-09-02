@@ -171,10 +171,125 @@ export const ProductListView = ({
         </div>
       </Card>
 
-      {/* Products Table */}
+      {/* Products Table - Mobile Cards / Desktop Table */}
       <Card>
-        <div className="rounded-md border">
-          <Table>
+        {/* Mobile View - Cards */}
+        <div className="block md:hidden">
+          <div className="space-y-4 p-4">
+            {filteredProducts.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center gap-2">
+                  <Package className="h-8 w-8 text-muted-foreground" />
+                  <p className="text-muted-foreground">
+                    {search || statusFilter !== "all" || categoryFilter !== "all"
+                      ? "Nenhum produto encontrado com os filtros aplicados"
+                      : "Nenhum produto encontrado"
+                    }
+                  </p>
+                </div>
+              </div>
+            ) : (
+              filteredProducts.map((product) => (
+                <Card key={product.id} className="p-4">
+                  <div className="flex gap-4">
+                    {/* Product Image */}
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
+                      {product.images && product.images.length > 0 ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package className="h-6 w-6 text-muted-foreground" />
+                      )}
+                    </div>
+                    
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium truncate">{product.name}</h3>
+                          {product.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-1">
+                              {product.description}
+                            </p>
+                          )}
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onView(product)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Visualizar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onEdit(product)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => onDelete(product.id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      
+                      {/* Price and Status */}
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2">
+                          {product.discount && product.discount > 0 ? (
+                            <>
+                              <span className="font-medium text-green-600 text-sm">
+                                {formatPrice(getDiscountedPrice(product.price, product.discount))}
+                              </span>
+                              <Badge variant="destructive" className="text-xs">
+                                -{product.discount}%
+                              </Badge>
+                            </>
+                          ) : (
+                            <span className="font-medium text-sm">
+                              {formatPrice(product.price)}
+                            </span>
+                          )}
+                        </div>
+                        <Badge 
+                          variant={product.status === 'active' ? 'default' : 'secondary'}
+                          className={`text-xs ${product.status === 'active' ? 'bg-green-100 text-green-800' : ''}`}
+                        >
+                          {product.status === 'active' ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </div>
+                      
+                      {/* Category and Code */}
+                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                        <span>{getCategoryName(product.category_id)}</span>
+                        {product.code && (
+                          <>
+                            <span>•</span>
+                            <span className="font-mono">{product.code}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Desktop View - Table */}
+        <div className="hidden md:block">
+          <div className="rounded-md border">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">Produto</TableHead>
@@ -312,7 +427,8 @@ export const ProductListView = ({
                 ))
               )}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         </div>
         
         {filteredProducts.length > 0 && (

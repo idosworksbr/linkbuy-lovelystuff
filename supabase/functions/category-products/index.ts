@@ -70,12 +70,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get products for this category
+    // Get products for this category - only active products
     const { data: productsData, error: productsError } = await supabaseClient
       .from('products')
       .select('*')
       .eq('user_id', store.id)
       .eq('category_id', category_id)
+      .eq('status', 'active')
       .order('created_at', { ascending: false });
 
     if (productsError) {

@@ -17,7 +17,6 @@ import { Loader2, ArrowLeft, ArrowRight, CheckCircle, Upload, X, ChevronLeft, Ch
 const onboardingSchema = z.object({
   // Informações da loja
   store_name: z.string().min(1, "Nome da loja é obrigatório"),
-  store_description: z.string().optional(),
   niche: z.string().min(1, "Nicho é obrigatório"),
   
   // Contatos
@@ -71,12 +70,12 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const { completeOnboarding, loading } = useOnboarding();
   const { toast } = useToast();
   const totalSteps = 4;
+  const [canSkipProduct, setCanSkipProduct] = useState(false);
 
   const form = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       store_name: "",
-      store_description: "",
       niche: "",
       whatsapp_number: "",
       instagram_url: "",
@@ -134,8 +133,45 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   };
 
   const nextStep = () => {
+    if (currentStep === 2) {
+      // After step 2 (contacts), enable skipping
+      setCanSkipProduct(true);
+    }
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const skipToFinish = async () => {
+    // Complete onboarding without product
+    const data = form.getValues();
+    const onboardingData = {
+      storeName: data.store_name,
+      storeDescription: '', // Premium feature
+      niche: data.niche,
+      whatsappNumber: data.whatsapp_number || '',
+      instagramUrl: data.instagram_url || '',
+      categoryName: 'Geral',
+      categoryDescription: '',
+      productName: '',
+      productDescription: '',
+      productPrice: 0,
+    };
+    
+    const files = {
+      profileImage: profilePhoto || undefined,
+      categoryImage: categoryImageFile || undefined,
+      productImages: undefined,
+    };
+    
+    const success = await completeOnboarding(onboardingData, files);
+    if (success) {
+      onComplete({
+        ...data,
+        profile_photo: profilePhoto || undefined,
+        category_image: categoryImageFile || undefined,
+        product_images: undefined,
+      });
     }
   };
 
@@ -148,7 +184,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const handleSubmit = async (data: OnboardingFormData) => {
     const onboardingData = {
       storeName: data.store_name,
-      storeDescription: data.store_description || '',
+      storeDescription: '', // Premium feature
       niche: data.niche,
       whatsappNumber: data.whatsapp_number || '',
       instagramUrl: data.instagram_url || '',
@@ -243,26 +279,11 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="store_description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descrição da Loja (Opcional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Conte um pouco sobre sua loja..."
-                          className="min-h-[80px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Esta descrição aparecerá no seu catálogo
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>Dica:</strong> A descrição da loja é uma funcionalidade premium. Você poderá adicioná-la após fazer upgrade para um plano pago.
+                  </p>
+                </div>
 
                 {/* Foto de Perfil */}
                 <div className="space-y-2">
@@ -580,6 +601,19 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Anterior
+                </Button>
+              )}
+              
+              {/* Skip button - show after step 2 for product step */}
+              {canSkipProduct && currentStep > 2 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={skipToFinish}
+                  disabled={isLoading || loading}
+                  className="text-muted-foreground"
+                >
+                  Pular por agora
                 </Button>
               )}
               

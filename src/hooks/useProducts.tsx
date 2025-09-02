@@ -15,6 +15,13 @@ export interface Product {
   created_at: string;
   updated_at: string;
   display_order?: number;
+  code?: string | null;
+  weight?: string | null;
+  cost?: number | null;
+  discount?: number | null;
+  status?: 'active' | 'inactive';
+  discount_animation_enabled?: boolean;
+  discount_animation_color?: string;
 }
 
 export const useProducts = () => {
@@ -36,7 +43,12 @@ export const useProducts = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      // Ensure status field is properly typed
+      const typedProducts = (data || []).map(product => ({
+        ...product,
+        status: (product.status || 'active') as 'active' | 'inactive'
+      }));
+      setProducts(typedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -72,14 +84,24 @@ export const useProducts = () => {
           images: productData.images,
           category_id: productData.category_id || null,
           display_order: nextOrder,
-          user_id: user.id
+          user_id: user.id,
+          code: productData.code || null,
+          weight: productData.weight || null,
+          cost: productData.cost || null,
+          discount: productData.discount || null,
+          status: productData.status || 'active',
+          discount_animation_enabled: productData.discount_animation_enabled || false,
+          discount_animation_color: productData.discount_animation_color || '#ff0000',
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setProducts(prev => [data, ...prev]);
+      setProducts(prev => [{
+        ...data,
+        status: (data.status || 'active') as 'active' | 'inactive'
+      }, ...prev]);
       toast({
         title: "Produto criado!",
         description: "Seu produto foi adicionado ao catálogo.",
@@ -108,7 +130,10 @@ export const useProducts = () => {
 
       if (error) throw error;
 
-      setProducts(prev => prev.map(p => p.id === id ? data : p));
+      setProducts(prev => prev.map(p => p.id === id ? {
+        ...data,
+        status: (data.status || 'active') as 'active' | 'inactive'
+      } : p));
       toast({
         title: "Produto atualizado!",
         description: "As alterações foram salvas.",

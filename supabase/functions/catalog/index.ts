@@ -70,6 +70,7 @@ Deno.serve(async (req) => {
     const categories = categoriesResult.data || [];
 
     // Get all products with category information in a single query to avoid duplicates
+    // Only show active products in public catalog
     const { data: allProducts, error: productsError } = await supabaseClient
       .from('products')
       .select(`
@@ -77,6 +78,7 @@ Deno.serve(async (req) => {
         categories!products_category_id_fkey(id, name, image_url)
       `)
       .eq('user_id', store.id)
+      .eq('status', 'active')
       .order('created_at', { ascending: false });
 
     if (productsError) {

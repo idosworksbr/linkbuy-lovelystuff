@@ -62,13 +62,14 @@ serve(async (req) => {
     const store = storeInfo[0]
     console.log('✅ Loja encontrada:', store.store_name)
 
-    // Buscar produto específico
+    // Buscar produto específico - somente produtos ativos
     console.log('📦 Buscando produto específico:', product_id)
     const { data: productData, error: productError } = await supabaseClient
       .from('products')
       .select('*')
       .eq('id', product_id)
       .eq('user_id', store.id)
+      .eq('status', 'active')
       .single()
 
     if (productError || !productData) {

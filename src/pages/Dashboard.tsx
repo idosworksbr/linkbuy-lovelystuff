@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Image, List, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,8 +25,15 @@ const Dashboard = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const navigate = useNavigate();
 
-  // Check if user needs onboarding
-  const needsOnboarding = !profile?.store_name || products.length === 0;
+  // Check if user needs onboarding and show automatically for first-time users
+  const needsOnboarding = !profile?.store_name;
+  
+  // Auto-show onboarding for new users
+  useEffect(() => {
+    if (needsOnboarding && !loading && profile && !showOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, [needsOnboarding, loading, profile, showOnboarding]);
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -57,6 +64,13 @@ const Dashboard = () => {
           price: parseFloat(data.price),
           images: data.images || [],
           category_id: data.category_id || null,
+          code: data.code || null,
+          weight: data.weight || null,
+          cost: data.cost ? parseFloat(data.cost) : null,
+          discount: data.discount ? parseFloat(data.discount) : null,
+          status: data.status || 'active',
+          discount_animation_enabled: data.discount_animation_enabled || false,
+          discount_animation_color: data.discount_animation_color || '#ff0000',
         } as any);
         setEditingProduct(null);
     } catch (error) {
