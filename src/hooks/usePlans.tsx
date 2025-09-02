@@ -195,6 +195,10 @@ export const usePlans = () => {
       case 'verified_badge':
         return isVerified;
 
+      // Premium animations - apenas Pro+ e Pro+ Verificado
+      case 'premium_animations':
+        return ['pro_plus', 'pro_plus_verified'].includes(plan);
+
       default:
         return false;
     }

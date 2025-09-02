@@ -164,39 +164,60 @@ export type Database = {
       products: {
         Row: {
           category_id: string | null
+          code: string | null
+          cost: number | null
           created_at: string
           description: string | null
+          discount: number | null
+          discount_animation_color: string | null
+          discount_animation_enabled: boolean | null
           display_order: number | null
           id: string
           images: string[] | null
           name: string
           price: number
+          status: string | null
           updated_at: string
           user_id: string
+          weight: string | null
         }
         Insert: {
           category_id?: string | null
+          code?: string | null
+          cost?: number | null
           created_at?: string
           description?: string | null
+          discount?: number | null
+          discount_animation_color?: string | null
+          discount_animation_enabled?: boolean | null
           display_order?: number | null
           id?: string
           images?: string[] | null
           name: string
           price: number
+          status?: string | null
           updated_at?: string
           user_id: string
+          weight?: string | null
         }
         Update: {
           category_id?: string | null
+          code?: string | null
+          cost?: number | null
           created_at?: string
           description?: string | null
+          discount?: number | null
+          discount_animation_color?: string | null
+          discount_animation_enabled?: boolean | null
           display_order?: number | null
           id?: string
           images?: string[] | null
           name?: string
           price?: number
+          status?: string | null
           updated_at?: string
           user_id?: string
+          weight?: string | null
         }
         Relationships: [
           {
@@ -223,6 +244,7 @@ export type Database = {
           instagram_url: string | null
           is_verified: boolean | null
           name: string
+          niche: string | null
           product_grid_layout: string | null
           profile_photo_url: string | null
           store_description: string | null
@@ -249,6 +271,7 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           name: string
+          niche?: string | null
           product_grid_layout?: string | null
           profile_photo_url?: string | null
           store_description?: string | null
@@ -275,6 +298,7 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           name?: string
+          niche?: string | null
           product_grid_layout?: string | null
           profile_photo_url?: string | null
           store_description?: string | null

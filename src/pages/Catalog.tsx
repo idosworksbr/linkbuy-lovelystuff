@@ -472,7 +472,7 @@ const Catalog = () => {
         <div className={`px-4 pt-8 pb-6 border-b ${themeClasses.header}`}>
           {/* Owner Controls */}
           {isOwner && (
-            <div className="absolute top-4 right-4 z-10 flex gap-2">
+            <div className="absolute top-4 right-4 z-10 flex gap-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -480,8 +480,9 @@ const Catalog = () => {
                 className={`p-2 rounded-full transition-colors ${
                   isEditMode ? 'bg-blue-500 text-white' : 'hover:bg-black/10'
                 }`}
+                title={isEditMode ? "Sair do modo de edição" : "Entrar no modo de edição"}
               >
-                <Edit3 className="h-5 w-5" />
+                <Edit3 className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
@@ -489,8 +490,9 @@ const Catalog = () => {
                 onClick={() => setShowEditDialog(true)}
                 className="p-2 hover:bg-black/10 rounded-full transition-colors"
                 disabled={!canAccessFeature(profile, 'customization')}
+                title="Personalizar catálogo"
               >
-                <Grid3X3 className="h-5 w-5" />
+                <icons.Settings className="h-4 w-4" />
               </Button>
               <ShareButton storeUrl={storeUrl || ''} storeName={catalogData?.store.store_name || ''} />
             </div>
@@ -551,17 +553,23 @@ const Catalog = () => {
 
           {store.store_description && <p className={`text-sm ${themeClasses.textMuted} mb-4 leading-relaxed`}>{store.store_description}</p>}
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button onClick={handleInstagramFollow} className={`flex-1 ${themeClasses.button} rounded-lg h-9 text-sm font-medium transition-colors`} disabled={!isInstagramAvailable()}>
-              <Instagram className="h-4 w-4 mr-2" />
-              {isInstagramAvailable() ? 'Seguir' : 'Instagram indisponível'}
-            </Button>
-            <Button variant="outline" className={`flex-1 ${themeClasses.buttonOutline} rounded-lg h-9 text-sm font-medium transition-colors`} onClick={handleWhatsAppContact} disabled={!isWhatsAppAvailable()}>
-              <MessageCircle className="h-4 w-4 mr-2" />
-              {isWhatsAppAvailable() ? 'Mensagem' : 'WhatsApp indisponível'}
-            </Button>
-          </div>
+          {/* Action Buttons - Only show if configured */}
+          {(isWhatsAppAvailable() || isInstagramAvailable()) && (
+            <div className="flex gap-2">
+              {isInstagramAvailable() && (
+                <Button onClick={handleInstagramFollow} className={`flex-1 ${themeClasses.button} rounded-lg h-9 text-sm font-medium transition-colors`}>
+                  <Instagram className="h-4 w-4 mr-2" />
+                  Seguir
+                </Button>
+              )}
+              {isWhatsAppAvailable() && (
+                <Button variant="outline" className={`flex-1 ${themeClasses.buttonOutline} rounded-lg h-9 text-sm font-medium transition-colors`} onClick={handleWhatsAppContact}>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Mensagem
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Category Stories Section - Instagram Style */}
@@ -647,17 +655,17 @@ const Catalog = () => {
             )}
             
             {categories && categories.length > 0 && (
-              <button 
-                onClick={() => setActiveTab('categories')}
-                className={`flex flex-col items-center cursor-pointer transition-colors ${
-                  activeTab === 'categories' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
-                }`}
-              >
-                <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
-                {activeTab === 'categories' && (
-                  <div className={`w-6 h-0.5 bg-current mt-1 ${themeClasses.textMuted}`}></div>
-                )}
-              </button>
+            <button 
+              onClick={() => setActiveTab('categories')}
+              className={`flex flex-col items-center cursor-pointer transition-colors ${
+                activeTab === 'categories' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
+              }`}
+            >
+              <icons.List className={`h-6 w-6 ${themeClasses.textMuted}`} />
+              {activeTab === 'categories' && (
+                <div className={`w-6 h-0.5 bg-current mt-1 ${themeClasses.textMuted}`}></div>
+              )}
+            </button>
             )}
           </div>
         </div>
@@ -687,7 +695,7 @@ const Catalog = () => {
             ) : (
               <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2 bg-white/90 backdrop-blur-sm`}>
                 <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                  <Grid3X3 className={`h-8 w-8 ${themeClasses.textMuted}`} />
+                  <icons.List className={`h-8 w-8 ${themeClasses.textMuted}`} />
                 </div>
                 <h3 className={`font-medium ${themeClasses.text} mb-2`}>Nenhum produto ainda</h3>
                 <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou produtos ao catálogo.</p>
@@ -749,13 +757,13 @@ const Catalog = () => {
             }}
           >
             <div className="text-center py-8">
-              <Button 
-                onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
-                className={`${themeClasses.button} rounded-full px-8 py-3 text-sm font-medium hover:scale-105 transition-all shadow-lg`}
-              >
-                <Grid3X3 className="h-4 w-4 mr-2" />
-                Ver Todas as Categorias
-              </Button>
+                <Button 
+                  onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
+                  className={`${themeClasses.button} rounded-full px-8 py-3 text-sm font-medium hover:scale-105 transition-all shadow-lg`}
+                >
+                  <icons.List className="h-4 w-4 mr-2" />
+                  Ver Todas as Categorias
+                </Button>
               <p className={`text-sm ${themeClasses.textMuted} mt-3`}>
                 Explore produtos organizados por categoria
               </p>
@@ -798,9 +806,29 @@ const Catalog = () => {
 
         {/* Footer */}
         {!store.hide_footer && (
-          <div className={`text-center py-6 text-xs ${themeClasses.textMuted} ${themeClasses.accent}`}>
-            <p className="text-xs">Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
-            <p className="mt-1 text-xs font-thin">Última atualização: {new Date(catalogData.meta.generated_at).toLocaleString('pt-BR')}</p>
+          <div className={`py-6 ${themeClasses.accent}`}>
+            {/* Analytics - Only show if social media is configured */}
+            {storeAnalytics && (isWhatsAppAvailable() || isInstagramAvailable()) && (
+              <div className="mb-4 p-3 mx-4 bg-black/5 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  {isWhatsAppAvailable() && (
+                    <div className="text-center">
+                      <div className="font-semibold text-green-600">{storeAnalytics.total_whatsapp_clicks}</div>
+                      <div className="text-gray-600">Conversas</div>
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <div className="font-semibold text-blue-600">{storeAnalytics.unique_visitors}</div>
+                    <div className="text-gray-600">Visitantes</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className={`text-center text-xs ${themeClasses.textMuted}`}>
+              <p className="text-xs">Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
+              <p className="mt-1 text-xs font-thin">Última atualização: {new Date(catalogData.meta.generated_at).toLocaleString('pt-BR')}</p>
+            </div>
           </div>
         )}
       </div>
