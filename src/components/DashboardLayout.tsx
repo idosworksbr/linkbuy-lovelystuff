@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, Package, Settings, User, LogOut, ExternalLink, BarChart3, Link2, Crown } from "lucide-react";
+import { Home, Package, Settings, User, LogOut, ExternalLink, BarChart3, Link2, Crown, FolderOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -65,6 +65,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       icon: Link2,
       path: "/dashboard/custom-links",
       active: location.pathname === "/dashboard/custom-links"
+    },
+    {
+      label: "Categorias",
+      icon: FolderOpen,
+      path: "/dashboard/categories",
+      active: location.pathname === "/dashboard/categories"
     },
     {
       label: "Configurações",
