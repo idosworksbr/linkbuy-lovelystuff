@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -12,13 +11,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Usar service role para acesso público aos dados do catálogo
+    // Usar service role para acessar dados públicos de catálogos
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
           persistSession: false,
+          autoRefreshToken: false
         }
       }
     )
