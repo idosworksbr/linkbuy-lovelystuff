@@ -42,7 +42,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
       name: product?.name || "",
       price: product?.price?.toString() || "",
       description: product?.description || "",
-      category_id: product?.category_id || "",
+      category_id: product?.category_id || "none",
     },
   });
 
@@ -87,7 +87,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
     onSubmit({
       ...data,
       images: imagePreviews,
-      category_id: data.category_id || undefined,
+      category_id: data.category_id === "none" ? undefined : data.category_id,
     });
   };
 
@@ -201,7 +201,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Sem categoria</SelectItem>
+                      <SelectItem value="none">Sem categoria</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
