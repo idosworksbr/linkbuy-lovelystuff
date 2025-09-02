@@ -1,16 +1,18 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, X, ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Progress } from '@/components/ui/progress';
+import { ImageUploadField } from '@/components/ImageUploadField';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, ArrowLeft, ArrowRight, CheckCircle, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const onboardingSchema = z.object({
   // Informações da loja
@@ -66,7 +68,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const [categoryImagePreview, setCategoryImagePreview] = useState<string>("");
   const [productImages, setProductImages] = useState<File[]>([]);
   const [productImagePreviews, setProductImagePreviews] = useState<string[]>([]);
-  
+  const { completeOnboarding, loading } = useOnboarding();
   const { toast } = useToast();
   const totalSteps = 4;
 
@@ -143,13 +145,35 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
     }
   };
 
-  const handleSubmit = (data: OnboardingFormData) => {
-    onComplete({
-      ...data,
-      profile_photo: profilePhoto || undefined,
-      category_image: categoryImageFile || undefined,
-      product_images: productImages.length > 0 ? productImages : undefined,
-    });
+  const handleSubmit = async (data: OnboardingFormData) => {
+    const onboardingData = {
+      storeName: data.store_name,
+      storeDescription: data.store_description || '',
+      niche: data.niche,
+      whatsappNumber: data.whatsapp_number || '',
+      instagramUrl: data.instagram_url || '',
+      categoryName: data.category_name,
+      categoryDescription: '',
+      productName: data.product_name,
+      productDescription: data.product_description,
+      productPrice: parseFloat(data.product_price),
+    };
+    
+    const files = {
+      profileImage: profilePhoto || undefined,
+      categoryImage: categoryImageFile || undefined,
+      productImages: productImages.length > 0 ? productImages : undefined,
+    };
+    
+    const success = await completeOnboarding(onboardingData, files);
+    if (success) {
+      onComplete({
+        ...data,
+        profile_photo: profilePhoto || undefined,
+        category_image: categoryImageFile || undefined,
+        product_images: productImages.length > 0 ? productImages : undefined,
+      });
+    }
   };
 
   const progress = (currentStep / totalSteps) * 100;
@@ -552,7 +576,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                   variant="outline"
                   onClick={prevStep}
                   className="flex-1"
-                  disabled={isLoading}
+                  disabled={isLoading || loading}
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Anterior
@@ -564,7 +588,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                   type="button"
                   onClick={nextStep}
                   className="flex-1"
-                  disabled={isLoading}
+                  disabled={isLoading || loading}
                 >
                   Próximo
                   <ChevronRight className="h-4 w-4 ml-2" />
@@ -573,9 +597,9 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                 <Button
                   type="submit"
                   className="flex-1 btn-hero"
-                  disabled={isLoading}
+                  disabled={isLoading || loading}
                 >
-                  {isLoading ? "Criando loja..." : "Finalizar Configuração"}
+                  {(isLoading || loading) ? "Criando loja..." : "Finalizar Configuração"}
                 </Button>
               )}
             </div>

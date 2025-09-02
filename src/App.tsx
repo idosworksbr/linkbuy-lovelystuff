@@ -14,6 +14,8 @@ import CustomLinks from "@/pages/CustomLinks";
 import Settings from "@/pages/Settings";
 import Plans from "@/pages/Plans";
 import Subscription from "@/pages/Subscription";
+import CustomerPortal from "@/pages/CustomerPortal";
+import CatalogDemo from "@/pages/CatalogDemo";
 import Analytics from "./pages/Analytics";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
@@ -82,6 +84,7 @@ const App = () => (
             <Route path="/catalogo/:storeUrl/categorias" element={<AllCategories />} />
             <Route path="/catalogo/:storeUrl/categoria/:categoryId" element={<CategoryProducts />} />
             <Route path="/catalogo/:storeUrl/produto/:productId" element={<ProductDetail />} />
+            <Route path="/demo-catalogo" element={<CatalogDemo />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
