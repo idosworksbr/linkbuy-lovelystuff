@@ -70,10 +70,19 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/dashboard/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+            
+            {/* Rotas do catálogo em inglês */}
             <Route path="/catalog/:storeUrl" element={<Catalog />} />
             <Route path="/catalog/:storeUrl/categories" element={<AllCategories />} />
             <Route path="/catalog/:storeUrl/category/:categoryId" element={<CategoryProducts />} />
             <Route path="/catalog/:storeUrl/product/:productId" element={<ProductDetail />} />
+            
+            {/* Rotas do catálogo em português (aliases) */}
+            <Route path="/catalogo/:storeUrl" element={<Catalog />} />
+            <Route path="/catalogo/:storeUrl/categorias" element={<AllCategories />} />
+            <Route path="/catalogo/:storeUrl/categoria/:categoryId" element={<CategoryProducts />} />
+            <Route path="/catalogo/:storeUrl/produto/:productId" element={<ProductDetail />} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -1,22 +1,32 @@
-
 import { useState } from "react";
-import { Plus, Edit, Trash2, Image } from "lucide-react";
+import { Plus, Edit, Trash2, Image, List, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DashboardLayout from "@/components/DashboardLayout";
-import ProductForm from "@/components/ProductForm";
+import ProductFormAdvanced from "@/components/ProductFormAdvanced";
+import { ProductListView } from "@/components/ProductListView";
+import { OnboardingForm } from "@/components/OnboardingForm";
 import { useNavigate } from "react-router-dom";
 import { useProducts, Product } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
+import { useProfile } from "@/hooks/useProfile";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
-  const { products, loading, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, updateProduct, deleteProduct, createProduct } = useProducts();
+  const { categories } = useCategories();
+  const { profile } = useProfile();
   const { storeAnalytics, loading: analyticsLoading } = useAnalytics();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const navigate = useNavigate();
+
+  // Check if user needs onboarding
+  const needsOnboarding = !profile?.store_name || products.length === 0;
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -46,53 +56,73 @@ const Dashboard = () => {
           description: data.description,
           price: parseFloat(data.price),
           images: data.images || [],
-          category_id: data.category_id || null
-        });
-      setEditingProduct(null);
+          category_id: data.category_id || null,
+        } as any);
+        setEditingProduct(null);
     } catch (error) {
-      console.error('Error updating product:', error);
+        console.error('Error updating product:', error);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const handleOnboardingComplete = async (data: any) => {
+    setIsLoading(true);
+    try {
+      // TODO: Process onboarding data
+      // Create category, product, update profile, etc.
+      console.log('Onboarding data:', data);
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCancelEdit = () => {
-    setEditingProduct(null);
+  const handleViewProduct = (product: Product) => {
+    if (profile?.store_url) {
+      navigate(`/catalog/${profile.store_url}/product/${product.id}`);
+    }
   };
-
-  const handleAddProduct = () => {
-    navigate("/dashboard/add-product");
-  };
-
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-whatsapp mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Carregando produtos...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Onboarding Dialog */}
+        {showOnboarding && (
+          <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <OnboardingForm
+                onComplete={handleOnboardingComplete}
+                isLoading={isLoading}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Meu Catálogo</h1>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">
-              Gerencie seus produtos e organize seu catálogo
+              Gerencie seus produtos e acompanhe o desempenho da sua loja
             </p>
           </div>
-          
-          <Button className="btn-hero" onClick={handleAddProduct}>
-            <Plus className="h-4 w-4 mr-2" />
-            Adicionar Produto
-          </Button>
+          <div className="flex gap-2">
+            {needsOnboarding && (
+              <Button 
+                onClick={() => setShowOnboarding(true)}
+                variant="outline"
+              >
+                Configurar Loja
+              </Button>
+            )}
+            <Button onClick={() => navigate("/dashboard/add-product")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Produto
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -131,84 +161,131 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Products Grid */}
-        {products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <Card key={product.id} className="dashboard-card group">
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-muted rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                    {product.images && product.images.length > 0 ? (
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Image className="h-12 w-12 text-muted-foreground" />
-                    )}
-                    
-                    {/* Action buttons on hover */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="secondary"
-                        onClick={() => handleEditProduct(product)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => handleDeleteProduct(product.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h3 className="font-semibold line-clamp-1">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {product.description}
-                    </p>
-                    <p className="text-lg font-bold text-whatsapp">
-                      R$ {product.price.toFixed(2).replace('.', ',')}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="dashboard-card text-center py-12">
-            <CardContent>
-              <Image className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <CardTitle className="mb-2">Nenhum produto cadastrado</CardTitle>
-              <CardDescription className="mb-4">
-                Comece adicionando seu primeiro produto ao catálogo
-              </CardDescription>
-              <Button className="btn-hero" onClick={handleAddProduct}>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Primeiro Produto
+        {/* Products Section */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold">Produtos</h2>
+              <p className="text-sm text-muted-foreground">
+                {products.length} produto(s) cadastrado(s)
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="h-4 w-4" />
               </Button>
-            </CardContent>
-          </Card>
-        )}
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : products.length > 0 ? (
+            <>
+              {viewMode === 'list' ? (
+                <ProductListView
+                  products={products as any}
+                  categories={categories}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                  onView={handleViewProduct}
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <Card key={product.id} className="group hover:shadow-lg transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="aspect-square bg-muted rounded-lg mb-4 overflow-hidden">
+                          {product.images && product.images.length > 0 ? (
+                            <img
+                              src={product.images[0]}
+                              alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Image className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <h3 className="font-semibold mb-2 truncate">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                          {product.description}
+                        </p>
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="font-bold text-lg">
+                            R$ {product.price?.toFixed(2).replace('.', ',')}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditProduct(product)}
+                            className="flex-1"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteProduct(product.id)}
+                            className="text-red-600 hover:text-red-700 hover:border-red-300"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="font-semibold mb-2">Nenhum produto ainda</h3>
+                <p className="text-muted-foreground mb-4">
+                  Comece adicionando seu primeiro produto ao catálogo
+                </p>
+                <Button onClick={() => navigate("/dashboard/add-product")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Primeiro Produto
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Edit Product Dialog */}
-        <Dialog open={!!editingProduct} onOpenChange={handleCancelEdit}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
-            {editingProduct && (
-              <ProductForm
-                product={editingProduct}
+        {editingProduct && (
+          <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <ProductFormAdvanced
+                product={editingProduct as any}
                 onSubmit={handleUpdateProduct}
-                onCancel={handleCancelEdit}
+                onCancel={() => setEditingProduct(null)}
                 isLoading={isLoading}
               />
-            )}
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -8,6 +8,7 @@ import { useAnalyticsTracker } from "@/hooks/useAnalytics";
 import { CatalogEditDialog } from "@/components/CatalogEditDialog";
 import { ShareButton } from "@/components/ShareButton";
 import { DragDropProductGrid } from "@/components/DragDropProductGrid";
+import { DiscountAnimation } from "@/components/DiscountAnimation";
 import { useCatalogEdit } from "@/hooks/useCatalogEdit";
 import { useReorderItems } from "@/hooks/useReorderItems";
 import { useProfile } from "@/hooks/useProfile";
@@ -43,6 +44,9 @@ interface Product {
   created_at: string;
   category_id?: string | null;
   display_order?: number;
+  discount?: number;
+  discount_animation_enabled?: boolean;
+  discount_animation_color?: string;
 }
 
 interface Category {
@@ -414,8 +418,8 @@ const Catalog = () => {
       );
     }
 
-    // Layout padrão (default)
-    return (
+    // Layout padrão (default) com animação de desconto
+    const productWithAnimation = (
       <div 
         key={product.id} 
         onClick={() => handleProductClick(product)} 
@@ -457,6 +461,21 @@ const Catalog = () => {
         )}
       </div>
     );
+
+    // Aplicar animação de desconto se habilitada
+    if (product.discount && product.discount > 0 && product.discount_animation_enabled) {
+      return (
+        <DiscountAnimation
+          enabled={true}
+          color={product.discount_animation_color || '#ff0000'}
+          className="rounded-sm"
+        >
+          {productWithAnimation}
+        </DiscountAnimation>
+      );
+    }
+
+    return productWithAnimation;
   };
 
   return (
@@ -806,25 +825,7 @@ const Catalog = () => {
 
         {/* Footer */}
         {!store.hide_footer && (
-          <div className={`py-6 ${themeClasses.accent}`}>
-            {/* Analytics - Only show if social media is configured */}
-            {storeAnalytics && (isWhatsAppAvailable() || isInstagramAvailable()) && (
-              <div className="mb-4 p-3 mx-4 bg-black/5 rounded-lg">
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  {isWhatsAppAvailable() && (
-                    <div className="text-center">
-                      <div className="font-semibold text-green-600">{storeAnalytics.total_whatsapp_clicks}</div>
-                      <div className="text-gray-600">Conversas</div>
-                    </div>
-                  )}
-                  <div className="text-center">
-                    <div className="font-semibold text-blue-600">{storeAnalytics.unique_visitors}</div>
-                    <div className="text-gray-600">Visitantes</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
+          <div className={`py-6 ${themeClasses.accent}`}>            
             <div className={`text-center text-xs ${themeClasses.textMuted}`}>
               <p className="text-xs">Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
               <p className="mt-1 text-xs font-thin">Última atualização: {new Date(catalogData.meta.generated_at).toLocaleString('pt-BR')}</p>
