@@ -55,11 +55,24 @@ serve(async (req) => {
   );
 
   try {
-    logStep("Function started - v3");
+    logStep("Function started - v4");
 
+    // Enhanced environment validation
+    logStep("Validating environment configuration");
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key verified");
+    
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not found");
+      logStep("Available Stripe env vars", Object.keys(Deno.env.toObject()).filter(key => key.includes('STRIPE')));
+      throw new Error("STRIPE_SECRET_KEY is not configured in environment");
+    }
+    
+    if (!stripeKey.startsWith('sk_')) {
+      logStep("ERROR: Invalid Stripe key format", { keyPrefix: stripeKey.substring(0, 10) });
+      throw new Error("STRIPE_SECRET_KEY has invalid format");
+    }
+    
+    logStep("Stripe key validated", { keyPrefix: stripeKey.substring(0, 7) + '...' });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");

@@ -6,50 +6,76 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Enhanced logging function
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[GET-STRIPE-PRICES] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('[get-stripe-prices] Função iniciada - v3');
+  logStep("Function started - v4");
 
   try {
+    // Enhanced environment validation
+    logStep("Checking environment variables");
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    
     if (!stripeKey) {
-      console.error('[get-stripe-prices] STRIPE_SECRET_KEY não configurada');
+      logStep("ERROR: STRIPE_SECRET_KEY not found in environment");
+      logStep("Available env vars", Object.keys(Deno.env.toObject()).filter(key => key.includes('STRIPE')));
       throw new Error("STRIPE_SECRET_KEY is not configured");
     }
-    console.log('[get-stripe-prices] Stripe key encontrada');
+    
+    if (!stripeKey.startsWith('sk_')) {
+      logStep("ERROR: Invalid Stripe key format");
+      throw new Error("Invalid STRIPE_SECRET_KEY format");
+    }
+    
+    logStep("Stripe key validated successfully", { keyPrefix: stripeKey.substring(0, 7) + '...' });
 
-    console.log('[get-stripe-prices] Inicializando cliente Stripe...');
+    logStep("Initializing Stripe client");
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
 
-    console.log('[get-stripe-prices] Buscando preços ativos...');
-    // Buscar todos os preços ativos
+    logStep("Testing Stripe connectivity");
+    // Test Stripe connection first
+    try {
+      await stripe.customers.list({ limit: 1 });
+      logStep("Stripe connectivity test successful");
+    } catch (testError) {
+      logStep("ERROR: Stripe connectivity test failed", { error: testError.message });
+      throw new Error(`Stripe connection failed: ${testError.message}`);
+    }
+
+    logStep("Fetching active prices from Stripe");
     const prices = await stripe.prices.list({
       active: true,
       expand: ["data.product"],
+      limit: 100, // Add explicit limit
     });
 
-    console.log(`[get-stripe-prices] ${prices.data.length} preços encontrados`);
+    logStep("Prices retrieved successfully", { count: prices.data.length });
 
-    // Mapear preços para formato mais limpo
-    const formattedPrices = prices.data.map(price => {
+    // Enhanced price formatting with validation
+    const formattedPrices = prices.data.map((price, index) => {
       const formatted = {
         id: price.id,
         unit_amount: price.unit_amount,
         currency: price.currency,
         recurring: price.recurring,
-        product_name: (price.product as any)?.name || "",
+        product_name: (price.product as any)?.name || `Product ${index + 1}`,
       };
-      console.log('[get-stripe-prices] Preço formatado:', formatted);
+      logStep(`Price ${index + 1} formatted`, formatted);
       return formatted;
     });
 
-    console.log('[get-stripe-prices] Preços processados com sucesso');
+    logStep("All prices processed successfully", { totalPrices: formattedPrices.length });
 
     return new Response(JSON.stringify({ prices: formattedPrices }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -57,10 +83,22 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('[get-stripe-prices] Erro na função:', errorMessage);
-    console.error('[get-stripe-prices] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace available';
     
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    logStep("CRITICAL ERROR in get-stripe-prices", { 
+      message: errorMessage,
+      stack: errorStack,
+      type: error instanceof Error ? error.constructor.name : typeof error
+    });
+    
+    // Return detailed error for debugging
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? {
+        stack: errorStack,
+        type: error instanceof Error ? error.constructor.name : typeof error
+      } : undefined
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
