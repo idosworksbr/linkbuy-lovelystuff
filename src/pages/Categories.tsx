@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCategories, Category } from "@/hooks/useCategories";
@@ -249,6 +249,9 @@ const Categories = () => {
               <DialogTitle>
                 {editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
               </DialogTitle>
+              <DialogDescription>
+                {editingCategory ? 'Edite as informações da categoria.' : 'Crie uma nova categoria para organizar seus produtos.'}
+              </DialogDescription>
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4">
