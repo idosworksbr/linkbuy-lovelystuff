@@ -90,14 +90,24 @@ export const usePlans = () => {
   useEffect(() => {
     const fetchRealPrices = async () => {
       try {
+        console.log('[usePlans] Iniciando busca de preços do Stripe...');
         const { data, error } = await supabase.functions.invoke('get-stripe-prices');
         
         if (error) {
-          console.error('Error fetching Stripe prices:', error);
+          console.error('[usePlans] Erro ao buscar preços do Stripe:', error);
+          console.error('[usePlans] Detalhes do erro:', JSON.stringify(error, null, 2));
+          return;
+        }
+
+        console.log('[usePlans] Resposta da função get-stripe-prices:', data);
+
+        if (!data || !data.prices) {
+          console.error('[usePlans] Resposta inválida da função - sem dados de preços');
           return;
         }
 
         const stripePrices = data.prices;
+        console.log('[usePlans] Preços encontrados no Stripe:', stripePrices);
         
         setPlans(prevPlans => 
           prevPlans.map(plan => {
@@ -105,28 +115,40 @@ export const usePlans = () => {
             if (plan.stripeId === "") return plan;
 
             const stripePrice = stripePrices.find((p: any) => p.id === plan.stripeId);
-            if (!stripePrice) return plan;
+            if (!stripePrice) {
+              console.warn(`[usePlans] Preço não encontrado para o plano ${plan.name} (ID: ${plan.stripeId})`);
+              return plan;
+            }
+
+            console.log(`[usePlans] Processando preço para ${plan.name}:`, stripePrice);
 
             // Formatar preço baseado nos dados do Stripe
             const amount = stripePrice.unit_amount / 100;
             const currency = stripePrice.currency.toUpperCase();
             const interval = stripePrice.recurring?.interval || 'month';
             
+            // Usar a moeda real do Stripe sem conversão automática
             const formattedPrice = new Intl.NumberFormat('pt-BR', {
               style: 'currency',
-              currency: currency === 'USD' ? 'BRL' : currency, // Converter USD para BRL na exibição
+              currency: currency, // Usar a moeda real do Stripe
             }).format(amount);
 
             const intervalText = interval === 'month' ? 'mês' : 'ano';
+            const finalPrice = `${formattedPrice}/${intervalText}`;
+
+            console.log(`[usePlans] Preço formatado para ${plan.name}: ${finalPrice}`);
 
             return {
               ...plan,
-              price: `${formattedPrice}/${intervalText}`
+              price: finalPrice
             };
           })
         );
+
+        console.log('[usePlans] Preços atualizados com sucesso');
       } catch (error) {
-        console.error('Error updating plan prices:', error);
+        console.error('[usePlans] Erro inesperado ao atualizar preços:', error);
+        console.error('[usePlans] Stack trace:', error instanceof Error ? error.stack : 'N/A');
       }
     };
 
