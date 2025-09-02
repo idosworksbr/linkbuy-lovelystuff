@@ -11,9 +11,15 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Usar service role para acesso público aos dados do catálogo
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false,
+        }
+      }
     )
 
     const { store_url, category_id } = await req.json();
