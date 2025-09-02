@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,8 @@ const Settings = () => {
     catalog_layout: 'bottom' as 'overlay' | 'bottom',
     product_grid_layout: 'default' as 'default' | 'round' | 'instagram',
     hide_footer: false,
-    is_verified: false
+    is_verified: false,
+    show_all_products_in_feed: false
   });
 
   useEffect(() => {
@@ -73,7 +74,8 @@ const Settings = () => {
         catalog_layout: profile.catalog_layout || 'bottom',
         product_grid_layout: (profile as any).product_grid_layout || 'default',
         hide_footer: (profile as any).hide_footer || false,
-        is_verified: (profile as any).is_verified || false
+        is_verified: (profile as any).is_verified || false,
+        show_all_products_in_feed: (profile as any).show_all_products_in_feed || false
       });
       
       // Load portal data when profile is available
@@ -732,6 +734,43 @@ const Settings = () => {
                         Verificado
                       </Button>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Configurações de Catálogo */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Grid3X3 className="h-5 w-5" />
+                    Configurações do Feed de Produtos
+                  </CardTitle>
+                  <CardDescription>
+                    Configure como os produtos são exibidos no feed principal do catálogo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Exibir todos os produtos no feed principal</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Quando ativado, exibe todos os produtos no feed principal. Quando desativado, exibe apenas produtos sem categoria no feed, deixando os categorizados apenas em suas respectivas seções.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={formData.show_all_products_in_feed}
+                      onChange={(e) => setFormData(prev => ({ ...prev, show_all_products_in_feed: e.target.checked }))}
+                      className="h-4 w-4"
+                    />
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+                    <h4 className="font-medium mb-2">💡 Como usar esta configuração:</h4>
+                    <ul className="space-y-1 text-muted-foreground">
+                      <li><strong>• Ativado:</strong> Ideal para lojas com poucos produtos ou que querem máxima visibilidade</li>
+                      <li><strong>• Desativado:</strong> Ideal para lojas organizadas por categorias, mantém o feed principal limpo</li>
+                    </ul>
                   </div>
                 </CardContent>
               </Card>

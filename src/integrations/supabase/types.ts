@@ -247,6 +247,7 @@ export type Database = {
           niche: string | null
           product_grid_layout: string | null
           profile_photo_url: string | null
+          show_all_products_in_feed: boolean
           store_description: string | null
           store_name: string
           store_url: string
@@ -274,6 +275,7 @@ export type Database = {
           niche?: string | null
           product_grid_layout?: string | null
           profile_photo_url?: string | null
+          show_all_products_in_feed?: boolean
           store_description?: string | null
           store_name: string
           store_url: string
@@ -301,6 +303,7 @@ export type Database = {
           niche?: string | null
           product_grid_layout?: string | null
           profile_photo_url?: string | null
+          show_all_products_in_feed?: boolean
           store_description?: string | null
           store_name?: string
           store_url?: string

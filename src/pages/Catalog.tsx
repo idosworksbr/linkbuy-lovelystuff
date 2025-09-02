@@ -13,6 +13,7 @@ import { useCatalogEdit } from "@/hooks/useCatalogEdit";
 import { useReorderItems } from "@/hooks/useReorderItems";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlans } from "@/hooks/usePlans";
+import { getProductPrices } from "@/lib/priceUtils";
 
 interface StoreProfile {
   id: string;
@@ -376,7 +377,17 @@ const Catalog = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
             <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
               <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
-              <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through opacity-70">R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p className="text-xs font-bold">R$ {prices.formattedFinalPrice}</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -411,7 +422,17 @@ const Catalog = () => {
             {/* Informações abaixo da imagem */}
             <div className="text-center">
               <h3 className="text-xs font-medium text-gray-800 line-clamp-2 mb-1">{product.name}</h3>
-              <p className="text-xs font-bold text-green-600">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center justify-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through text-gray-400">R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p className="text-xs font-bold text-green-600">R$ {prices.formattedFinalPrice}</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -442,7 +463,17 @@ const Catalog = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
             <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
               <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
-              <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through opacity-70">R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p className="text-xs font-bold">R$ {prices.formattedFinalPrice}</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         ) : (
@@ -451,11 +482,23 @@ const Catalog = () => {
               <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
                 textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
               }}>{product.name}</h3>
-              <p style={{
-                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-              }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
-                R$ {product.price.toFixed(2).replace('.', ',')}
-              </p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through text-gray-600 drop-shadow-lg" style={{
+                        textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                      }}>R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p style={{
+                      textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                    }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
+                      R$ {prices.formattedFinalPrice}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}

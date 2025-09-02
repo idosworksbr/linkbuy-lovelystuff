@@ -5,6 +5,7 @@ import { useProductDetail } from "@/hooks/useProductDetail";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useState, useEffect } from "react";
 import { useAnalyticsTracker } from "@/hooks/useAnalytics";
+import { getProductPrices } from "@/lib/priceUtils";
 
 const NewProductDetail = () => {
   const { storeUrl, productId } = useParams();
@@ -46,7 +47,8 @@ const NewProductDetail = () => {
     trackEvent('whatsapp_click', product.store.id, product.id);
 
     const customMessage = product.store.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.';
-    const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`;
+    const prices = getProductPrices(product);
+    const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${prices.formattedFinalPrice}`;
     const message = encodeURIComponent(productMessage);
     
     // Smart WhatsApp URL generation - check if number already includes country code
@@ -192,9 +194,26 @@ const NewProductDetail = () => {
               
               {/* Price Tag */}
               <div className="text-center mb-4">
-                <span className="bg-green-500 text-white px-4 py-2 rounded-full text-lg font-bold shadow-lg transform -rotate-2 inline-block">
-                  R$ {product.price.toFixed(2).replace('.', ',')}
-                </span>
+                {(() => {
+                  const prices = getProductPrices(product);
+                  return (
+                    <div className="flex flex-col items-center gap-2">
+                      {prices.hasDiscount && (
+                        <span className="text-sm text-gray-500 line-through transform rotate-1">
+                          R$ {prices.formattedOriginalPrice}
+                        </span>
+                      )}
+                      <span className="bg-green-500 text-white px-4 py-2 rounded-full text-lg font-bold shadow-lg transform -rotate-2 inline-block">
+                        R$ {prices.formattedFinalPrice}
+                        {prices.hasDiscount && (
+                          <span className="ml-2 text-xs bg-red-500 px-2 py-1 rounded-full">
+                            -{prices.discountPercentage}%
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
               
               {/* Small description if available */}

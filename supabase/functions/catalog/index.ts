@@ -79,7 +79,15 @@ Deno.serve(async (req) => {
       `)
       .eq('user_id', store.id)
       .eq('status', 'active')
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
+    
+    // Filter products based on store's feed configuration
+    let feedProducts = allProducts || [];
+    if (!store.show_all_products_in_feed) {
+      // Show only products without category in the main feed
+      feedProducts = (allProducts || []).filter(product => !product.category_id);
+    }
 
     if (productsError) {
       console.error('Error fetching products:', productsError);
@@ -100,11 +108,11 @@ Deno.serve(async (req) => {
         catalog_theme: store.catalog_theme || 'light',
         catalog_layout: store.catalog_layout || 'bottom'  // Fixed: bottom shows title/price visible
       },
-      products: allProducts || [],
+      products: feedProducts,
       categories,
       customLinks,
       meta: {
-        total_products: allProducts?.length || 0,
+        total_products: feedProducts.length,
         total_custom_links: customLinks.length,
         total_categories: categories.length,
         generated_at: new Date().toISOString()
