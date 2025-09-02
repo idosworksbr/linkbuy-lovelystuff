@@ -12,7 +12,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('[get-stripe-prices] Função iniciada - v2');
+  console.log('[get-stripe-prices] Função iniciada - v3');
 
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");

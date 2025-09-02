@@ -12,7 +12,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('[create-checkout] Função iniciada - v2');
+  console.log('[create-checkout] Função iniciada - v3');
 
   // Create a Supabase client using the anon key for authentication
   const supabaseClient = createClient(
