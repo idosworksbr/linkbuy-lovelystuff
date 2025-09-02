@@ -329,7 +329,7 @@ const Settings = () => {
                       <>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground whitespace-nowrap">
-                            linkbuy.com/catalog/
+                            mylinkbuy.com/catalog/
                           </span>
                           <Input
                             id="store_url"
