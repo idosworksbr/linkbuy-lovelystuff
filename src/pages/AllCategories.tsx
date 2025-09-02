@@ -15,7 +15,7 @@ interface Product {
   price: number;
   images: string[];
   category_id: string | null;
-  category?: {
+  categories?: {
     id: string;
     name: string;
     image_url: string | null;
@@ -232,9 +232,9 @@ const AllCategories = () => {
                     )}
                     
                     {/* Category Badge */}
-                    {product.category && (
+                    {product.categories && (
                       <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                        {product.category.name}
+                        {product.categories.name}
                       </div>
                     )}
                   </div>

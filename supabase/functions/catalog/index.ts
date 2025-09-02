@@ -45,19 +45,10 @@ Deno.serve(async (req) => {
     const store = storeData[0];
 
     // Get data for this store in parallel
-    const [productsResult, customLinksResult, categoriesResult] = await Promise.all([
-      supabaseClient.rpc('get_public_store_products', { store_url_param: storeUrl }),
+    const [customLinksResult, categoriesResult] = await Promise.all([
       supabaseClient.rpc('get_public_custom_links', { store_url_param: storeUrl }),
       supabaseClient.rpc('get_public_store_categories', { store_url_param: storeUrl })
     ]);
-
-    if (productsResult.error) {
-      console.error('Error fetching products:', productsResult.error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch products' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     if (customLinksResult.error) {
       console.error('Error fetching custom links:', customLinksResult.error);
@@ -69,9 +60,45 @@ Deno.serve(async (req) => {
       // Don't fail the request if categories fail, just continue
     }
 
-    const products = productsResult.data || [];
     const customLinks = customLinksResult.data || [];
     const categories = categoriesResult.data || [];
+
+    // Get detailed products with category information
+    const { data: productsWithCategories, error: productsWithCategoriesError } = await supabaseClient
+      .from('products')
+      .select(`
+        *,
+        categories(id, name, image_url)
+      `)
+      .eq('user_id', store.id)
+      .order('created_at', { ascending: false });
+
+    // Also get products without categories
+    const { data: uncategorizedProducts, error: uncategorizedError } = await supabaseClient
+      .from('products')
+      .select('*')
+      .eq('user_id', store.id)
+      .is('category_id', null)
+      .order('created_at', { ascending: false });
+
+    if (productsWithCategoriesError) {
+      console.error('Error fetching products with categories:', productsWithCategoriesError);
+    }
+
+    if (uncategorizedError) {
+      console.error('Error fetching uncategorized products:', uncategorizedError);
+    }
+
+    // Combine all products
+    const allProducts = [
+      ...(productsWithCategories || []),
+      ...(uncategorizedProducts || [])
+    ];
+
+    console.log('Products with categories count:', productsWithCategories?.length || 0);
+    console.log('Uncategorized products count:', uncategorizedProducts?.length || 0);
+    console.log('Total products count:', allProducts.length);
+    console.log('Categories count:', categories.length);
 
     const response = {
       store: {
@@ -85,11 +112,11 @@ Deno.serve(async (req) => {
         catalog_theme: store.catalog_theme || 'light',
         catalog_layout: store.catalog_layout || 'bottom'  // Fixed: bottom shows title/price visible
       },
-      products,
+      products: allProducts,
       categories,
       customLinks,
       meta: {
-        total_products: products.length,
+        total_products: allProducts.length,
         total_custom_links: customLinks.length,
         total_categories: categories.length,
         generated_at: new Date().toISOString()
