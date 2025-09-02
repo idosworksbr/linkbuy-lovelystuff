@@ -518,6 +518,17 @@ export type Database = {
           url: string
         }[]
       }
+      get_public_store_categories: {
+        Args: { store_url_param: string }
+        Returns: {
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean
+          name: string
+          product_count: number
+        }[]
+      }
       get_public_store_info: {
         Args: { store_url_param: string }
         Returns: {
