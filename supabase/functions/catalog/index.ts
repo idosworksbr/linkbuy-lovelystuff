@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
       .from('products')
       .select(`
         *,
-        categories(id, name, image_url)
+        categories!products_category_id_fkey(id, name, image_url)
       `)
       .eq('user_id', store.id)
       .order('created_at', { ascending: false });
