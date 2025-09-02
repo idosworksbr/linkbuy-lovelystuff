@@ -430,7 +430,7 @@ const Catalog = () => {
       backgroundImage={store.background_image_url}
       backgroundType={store.background_type}
     >
-      <div className={`max-w-md mx-auto ${themeClasses.card} min-h-screen shadow-lg relative`}>
+      <div className={`max-w-md mx-auto lg:max-w-2xl xl:max-w-4xl ${themeClasses.card} min-h-screen shadow-lg relative`}>
         
         {/* Header Profile Section */}
         <div className={`px-4 pt-8 pb-6 border-b ${themeClasses.header}`}>
@@ -606,7 +606,7 @@ const Catalog = () => {
             }}
           >
             {uncategorizedProducts.length > 0 ? (
-              <div className={gridLayout === 'instagram' ? 'grid grid-cols-3' : gridLayout === 'round' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-3 gap-1'}>
+              <div className={gridLayout === 'instagram' ? 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8' : gridLayout === 'round' ? 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 gap-2' : 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 gap-1'}>
                 {uncategorizedProducts.map((product, index) => renderProduct(product, index))}
               </div>
             ) : (

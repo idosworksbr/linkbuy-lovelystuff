@@ -108,7 +108,7 @@ const NewProductDetail = () => {
 
   return (
     <CatalogTheme theme={theme} backgroundColor={product.store.background_color}>
-      <div className="max-w-md mx-auto relative min-h-screen">
+      <div className="max-w-md mx-auto lg:max-w-2xl xl:max-w-4xl relative min-h-screen">
         
         {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b ${themeClasses.header}`}>
