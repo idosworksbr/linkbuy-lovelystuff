@@ -435,14 +435,17 @@ export type Database = {
           catalog_theme: string | null
           created_at: string | null
           custom_background_enabled: boolean | null
+          custom_whatsapp_message: string | null
           hide_footer: boolean | null
           id: string | null
+          instagram_url: string | null
           is_verified: boolean | null
           product_grid_layout: string | null
           profile_photo_url: string | null
           store_description: string | null
           store_name: string | null
           store_url: string | null
+          whatsapp_number: number | null
         }
         Insert: {
           background_color?: string | null
@@ -452,14 +455,17 @@ export type Database = {
           catalog_theme?: string | null
           created_at?: string | null
           custom_background_enabled?: boolean | null
+          custom_whatsapp_message?: string | null
           hide_footer?: boolean | null
           id?: string | null
+          instagram_url?: string | null
           is_verified?: boolean | null
           product_grid_layout?: string | null
           profile_photo_url?: string | null
           store_description?: string | null
           store_name?: string | null
           store_url?: string | null
+          whatsapp_number?: number | null
         }
         Update: {
           background_color?: string | null
@@ -469,14 +475,17 @@ export type Database = {
           catalog_theme?: string | null
           created_at?: string | null
           custom_background_enabled?: boolean | null
+          custom_whatsapp_message?: string | null
           hide_footer?: boolean | null
           id?: string | null
+          instagram_url?: string | null
           is_verified?: boolean | null
           product_grid_layout?: string | null
           profile_photo_url?: string | null
           store_description?: string | null
           store_name?: string | null
           store_url?: string | null
+          whatsapp_number?: number | null
         }
         Relationships: []
       }
@@ -519,14 +528,17 @@ export type Database = {
           catalog_theme: string
           created_at: string
           custom_background_enabled: boolean
+          custom_whatsapp_message: string
           hide_footer: boolean
           id: string
+          instagram_url: string
           is_verified: boolean
           product_grid_layout: string
           profile_photo_url: string
           store_description: string
           store_name: string
           store_url: string
+          whatsapp_number: number
         }[]
       }
       get_public_store_products: {
