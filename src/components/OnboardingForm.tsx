@@ -24,7 +24,6 @@ const onboardingSchema = z.object({
   
   // Primeira categoria
   category_name: z.string().min(1, "Nome da categoria é obrigatório"),
-  category_image: z.string().optional(),
   
   // Primeiro produto
   product_name: z.string().min(1, "Nome do produto é obrigatório"),
@@ -52,8 +51,8 @@ const niches = [
 
 interface OnboardingFormProps {
   onComplete: (data: OnboardingFormData & { 
-    profile_photo?: File | null;
-    category_image?: File | null;
+    profile_photo?: File | undefined;
+    category_image?: File | undefined;
     product_images?: File[];
   }) => void;
   isLoading?: boolean;
@@ -149,7 +148,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
       ...data,
       profile_photo: profilePhoto || undefined,
       category_image: categoryImageFile || undefined,
-      product_images: productImages,
+      product_images: productImages.length > 0 ? productImages : undefined,
     });
   };
 
