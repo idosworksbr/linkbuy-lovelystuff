@@ -28,6 +28,7 @@ interface StoreProfile {
   background_image_url?: string | null;
   background_type?: 'color' | 'image';
   product_grid_layout?: 'default' | 'round' | 'instagram';
+  catalog_layout?: 'overlay' | 'bottom';
   hide_footer?: boolean;
 }
 
@@ -50,6 +51,7 @@ const CategoryProducts = () => {
   const [error, setError] = useState<string | null>(null);
   
   const theme = categoryData?.store.catalog_theme || 'light';
+  const layout = categoryData?.store.catalog_layout || 'bottom';
   const themeClasses = useThemeClasses(theme);
 
   useEffect(() => {
@@ -185,12 +187,27 @@ const CategoryProducts = () => {
           </div>
         )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-            <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
-            <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+        {layout === 'overlay' ? (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+              <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
+              <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-2">
+              <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
+                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+              }}>{product.name}</h3>
+              <p style={{
+                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+              }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
+                R$ {product.price.toFixed(2).replace('.', ',')}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
