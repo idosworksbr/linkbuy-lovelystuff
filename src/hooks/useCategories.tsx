@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Category {
   id: string;
@@ -23,10 +24,20 @@ export const useCategories = () => {
     if (!user) return;
     setLoading(true);
     try {
-      // Temporary implementation - will work after migration is applied
-      setCategories([]);
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      toast({
+        title: "Erro ao carregar categorias",
+        description: "Não foi possível carregar suas categorias.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -34,26 +45,95 @@ export const useCategories = () => {
 
   const createCategory = async (categoryData: Omit<Category, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
-    toast({
-      title: "Categoria criada!",
-      description: "Sua categoria foi adicionada com sucesso.",
-    });
-    return {} as Category;
+    
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert([{
+          ...categoryData,
+          user_id: user.id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Refresh categories list
+      fetchCategories();
+      
+      toast({
+        title: "Categoria criada!",
+        description: "Sua categoria foi adicionada com sucesso.",
+      });
+      
+      return data;
+    } catch (error) {
+      console.error('Error creating category:', error);
+      toast({
+        title: "Erro ao criar categoria",
+        description: "Não foi possível criar a categoria.",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const updateCategory = async (id: string, categoryData: Partial<Omit<Category, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
-    toast({
-      title: "Categoria atualizada!",
-      description: "As alterações foram salvas.",
-    });
-    return {} as Category;
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .update(categoryData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Refresh categories list
+      fetchCategories();
+      
+      toast({
+        title: "Categoria atualizada!",
+        description: "As alterações foram salvas.",
+      });
+      
+      return data;
+    } catch (error) {
+      console.error('Error updating category:', error);
+      toast({
+        title: "Erro ao atualizar categoria",
+        description: "Não foi possível atualizar a categoria.",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const deleteCategory = async (id: string) => {
-    toast({
-      title: "Categoria removida",
-      description: "A categoria foi removida com sucesso.",
-    });
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      // Refresh categories list
+      fetchCategories();
+      
+      toast({
+        title: "Categoria removida",
+        description: "A categoria foi removida com sucesso.",
+      });
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast({
+        title: "Erro ao remover categoria",
+        description: "Não foi possível remover a categoria.",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   useEffect(() => {
