@@ -16,10 +16,10 @@ const logStep = (step: string, details?: any) => {
 // Mapear price_id para tipo de assinatura
 const mapPriceIdToSubscriptionType = (priceId: string): string => {
   const priceMap: { [key: string]: string } = {
-    'price_1S2d1xCTueMWV5IwvR6OudJR': 'pro',             // PLANO PRO
-    'price_1S2dYWCTueMWV5IwSDVN59wL': 'pro_plus',        // PLANO PRO+
-    'price_1S2dd5CTueMWV5Iwbi073tsC': 'verified',        // SELO VERIFICADO AVULSO
-    'price_1S2db1CTueMWV5IwrNdtAKyy': 'pro_plus_verified' // PLANO PRO+ VERIFICADO
+    'price_1S2k58FhG2EqaMMaAifmR8iL': 'pro',             // PLANO PRO
+    'price_1S2k55FhG2EqaMMaNHnafbQR': 'pro_plus',        // PLANO PRO+
+    'price_1S2k51FhG2EqaMMaJqiDgzMI': 'verified',        // SELO VERIFICADO AVULSO
+    'price_1S2k54FhG2EqaMMa5PNk8gfV': 'pro_plus_verified' // PLANO PRO+ VERIFICADO
   };
   
   return priceMap[priceId] || 'pro'; // Default para 'pro' se não encontrar

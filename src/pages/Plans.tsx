@@ -30,10 +30,10 @@ export default function Plans() {
 
   // Stripe price IDs for subscription plans
   const priceIds = {
-    "Pro": "price_1S2d1xCTueMWV5IwvR6OudJR",
-    "Pro+": "price_1S2dYWCTueMWV5IwSDVN59wL",
-    "Selo Verificado": "price_1S2dd5CTueMWV5Iwbi073tsC",
-    "Pro+ Verificado": "price_1S2db1CTueMWV5IwrNdtAKyy",
+    "Pro": "price_1S2k58FhG2EqaMMaAifmR8iL",
+    "Pro+": "price_1S2k55FhG2EqaMMaNHnafbQR",
+    "Selo Verificado": "price_1S2k51FhG2EqaMMaJqiDgzMI",
+    "Pro+ Verificado": "price_1S2k54FhG2EqaMMa5PNk8gfV",
   };
 
   const handleSelectPlan = (planName: string) => {
