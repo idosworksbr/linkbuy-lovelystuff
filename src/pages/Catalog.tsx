@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram, ShieldCheck, Link2, icons } from "lucide-react";
+import { MessageCircle, Grid3X3, ArrowLeft, ExternalLink, Instagram, ShieldCheck, Link2, icons, Edit3, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useAnalyticsTracker } from "@/hooks/useAnalytics";
+import { CatalogEditDialog } from "@/components/CatalogEditDialog";
+import { ShareButton } from "@/components/ShareButton";
+import { DragDropProductGrid } from "@/components/DragDropProductGrid";
+import { useCatalogEdit } from "@/hooks/useCatalogEdit";
+import { useReorderItems } from "@/hooks/useReorderItems";
+import { useProfile } from "@/hooks/useProfile";
+import { usePlans } from "@/hooks/usePlans";
 
 interface StoreProfile {
   id: string;
@@ -35,6 +42,7 @@ interface Product {
   images: string[];
   created_at: string;
   category_id?: string | null;
+  display_order?: number;
 }
 
 interface Category {
@@ -85,9 +93,18 @@ const Catalog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'products' | 'links' | 'categories'>('products');
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'bottom';
   const themeClasses = useThemeClasses(theme);
+  
+  // Hooks para edição e reordenação
+  const { isEditMode, isOwner, toggleEditMode } = useCatalogEdit({ 
+    storeId: catalogData?.store.id || '' 
+  });
+  const { reorderProducts, reorderCategories } = useReorderItems();
+  const { profile, updateProfile } = useProfile();
+  const { canAccessFeature } = usePlans();
 
   // Função robusta para verificar se o WhatsApp está disponível
   const isWhatsAppAvailable = () => {
@@ -246,10 +263,29 @@ const Catalog = () => {
   };
 
   const handleProductClick = (product: Product) => {
+    if (isEditMode) return; // Não navegar se em modo de edição
+    
     if (catalogData?.store) {
       trackEvent('product_view', catalogData.store.id, product.id);
     }
     navigate(`/catalog/${storeUrl}/product/${product.id}`);
+  };
+
+  const handleProductReorder = (productIds: string[]) => {
+    reorderProducts(productIds);
+    
+    // Atualizar ordem local
+    if (catalogData) {
+      const reorderedProducts = productIds.map((id, index) => {
+        const product = catalogData.products.find(p => p.id === id);
+        return product ? { ...product, display_order: index + 1 } : null;
+      }).filter(Boolean) as Product[];
+      
+      setCatalogData({
+        ...catalogData,
+        products: reorderedProducts
+      });
+    }
   };
 
   if (loading) {
@@ -430,10 +466,43 @@ const Catalog = () => {
       backgroundImage={store.background_image_url}
       backgroundType={store.background_type}
     >
-      <div className={`max-w-md mx-auto lg:max-w-2xl xl:max-w-4xl ${themeClasses.card} min-h-screen shadow-lg relative`}>
+      <div className={`max-w-md mx-auto lg:max-w-xl xl:max-w-2xl ${themeClasses.card} min-h-screen shadow-lg relative`}>
         
         {/* Header Profile Section */}
         <div className={`px-4 pt-8 pb-6 border-b ${themeClasses.header}`}>
+          {/* Owner Controls */}
+          {isOwner && (
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleEditMode}
+                className={`p-2 rounded-full transition-colors ${
+                  isEditMode ? 'bg-blue-500 text-white' : 'hover:bg-black/10'
+                }`}
+              >
+                <Edit3 className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowEditDialog(true)}
+                className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                disabled={!canAccessFeature(profile, 'customization')}
+              >
+                <Grid3X3 className="h-5 w-5" />
+              </Button>
+              <ShareButton storeUrl={storeUrl || ''} storeName={catalogData?.store.store_name || ''} />
+            </div>
+          )}
+          
+          {/* Share button for non-owners */}
+          {!isOwner && (
+            <div className="absolute top-4 right-4 z-10">
+              <ShareButton storeUrl={storeUrl || ''} storeName={catalogData?.store.store_name || ''} />
+            </div>
+          )}
+          
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-200 flex-shrink-0">
               {store.profile_photo_url ? (
@@ -606,9 +675,15 @@ const Catalog = () => {
             }}
           >
             {uncategorizedProducts.length > 0 ? (
-              <div className={gridLayout === 'instagram' ? 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8' : gridLayout === 'round' ? 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 gap-2' : 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 gap-1'}>
-                {uncategorizedProducts.map((product, index) => renderProduct(product, index))}
-              </div>
+              <DragDropProductGrid
+                products={uncategorizedProducts}
+                onReorder={handleProductReorder}
+                isEditMode={isEditMode}
+                gridLayout={gridLayout}
+                themeClasses={themeClasses}
+                storeUrl={storeUrl || ''}
+                renderProduct={renderProduct}
+              />
             ) : (
               <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2 bg-white/90 backdrop-blur-sm`}>
                 <div className={`w-16 h-16 ${themeClasses.accent} rounded-full flex items-center justify-center mx-auto mb-4`}>
@@ -708,6 +783,17 @@ const Catalog = () => {
               <p className={`text-sm ${themeClasses.textMuted}`}>Esta loja ainda não adicionou links personalizados.</p>
             </div>
           </div>
+        )}
+
+        {/* Edit Dialog */}
+        {profile && (
+          <CatalogEditDialog
+            open={showEditDialog}
+            onOpenChange={setShowEditDialog}
+            profile={profile}
+            onUpdateProfile={updateProfile}
+            canAccessFeature={canAccessFeature}
+          />
         )}
 
         {/* Footer */}

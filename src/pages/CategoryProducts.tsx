@@ -246,7 +246,7 @@ const CategoryProducts = () => {
       backgroundImage={store.background_image_url}
       backgroundType={store.background_type}
     >
-      <div className={`max-w-md mx-auto lg:max-w-2xl xl:max-w-4xl ${themeClasses.card} min-h-screen shadow-lg`}>
+      <div className={`max-w-md mx-auto lg:max-w-xl xl:max-w-2xl ${themeClasses.card} min-h-screen shadow-lg`}>
         
         {/* Header */}
         <div className={`px-4 pt-6 pb-4 border-b ${themeClasses.header}`}>
@@ -288,7 +288,7 @@ const CategoryProducts = () => {
         {/* Products Grid */}
         <div className="p-1 animate-fade-in">
           {products.length > 0 ? (
-            <div className={gridLayout === 'instagram' ? 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8' : gridLayout === 'round' ? 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 gap-2' : 'grid grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 gap-1'}>
+            <div className={gridLayout === 'instagram' ? 'grid grid-cols-3 gap-1' : gridLayout === 'round' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-3 gap-1'}>
               {products.map((product, index) => renderProduct(product, index))}
             </div>
           ) : (

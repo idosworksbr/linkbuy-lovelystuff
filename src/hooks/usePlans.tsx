@@ -177,6 +177,10 @@ export const usePlans = () => {
       case 'grid_layout':
       case 'bio_message':
       case 'custom_links':
+      case 'themes':
+      case 'layouts':
+      case 'grid_layouts':
+      case 'customization':
         return ['pro', 'pro_plus', 'pro_plus_verified'].includes(plan) ||
                (plan === 'pro' && isVerified); // PRO + Verificado separado tem acesso aos recursos PRO
 

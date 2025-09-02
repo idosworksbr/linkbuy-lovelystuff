@@ -14,6 +14,7 @@ export interface Product {
   category_id?: string | null;
   created_at: string;
   updated_at: string;
+  display_order?: number;
 }
 
 export const useProducts = () => {
@@ -31,6 +32,7 @@ export const useProducts = () => {
         .from('products')
         .select('*')
         .eq('user_id', user.id)
+        .order('display_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -51,6 +53,16 @@ export const useProducts = () => {
     if (!user) return;
 
     try {
+      // Get the next display_order value
+      const { data: maxOrderData } = await supabase
+        .from('products')
+        .select('display_order')
+        .eq('user_id', user.id)
+        .order('display_order', { ascending: false })
+        .limit(1);
+
+      const nextOrder = (maxOrderData?.[0]?.display_order || 0) + 1;
+
       const { data, error } = await supabase
         .from('products')
         .insert({
@@ -59,6 +71,7 @@ export const useProducts = () => {
           price: productData.price,
           images: productData.images,
           category_id: productData.category_id || null,
+          display_order: nextOrder,
           user_id: user.id
         })
         .select()
