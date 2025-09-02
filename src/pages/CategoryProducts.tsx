@@ -197,12 +197,8 @@ const CategoryProducts = () => {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
             <div className="absolute bottom-0 left-0 right-0 p-2">
-              <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
-                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-              }}>{product.name}</h3>
-              <p style={{
-                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-              }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
+              <h3 className="text-xs font-medium line-clamp-2 mb-1 text-white drop-shadow-lg">{product.name}</h3>
+              <p className="drop-shadow-lg text-green-600 text-left font-semibold text-xs">
                 R$ {product.price.toFixed(2).replace('.', ',')}
               </p>
             </div>

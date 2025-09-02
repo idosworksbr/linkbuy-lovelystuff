@@ -4,8 +4,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, Package, Settings, User, LogOut, ExternalLink, BarChart3, Link2, Crown, FolderOpen } from "lucide-react";
+import { Home, Package, Settings, User, LogOut, ExternalLink, BarChart3, Link2, Crown, FolderOpen, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -19,6 +20,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -83,16 +85,65 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
+          <div className="flex justify-between items-center h-14">
+            {/* Logo and Mobile Menu */}
+            <div className="flex items-center space-x-4">
+              {/* Mobile Menu Button */}
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="md:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64 p-0">
+                  <div className="flex flex-col h-full">
+                    <div className="p-4 border-b">
+                      <h2 className="text-lg font-semibold text-gray-900">LinkBuy</h2>
+                    </div>
+                    <nav className="flex-1 p-4 space-y-2">
+                      {menuItems.map((item) => (
+                        <button
+                          key={item.path}
+                          onClick={() => {
+                            navigate(item.path);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`flex items-center space-x-3 w-full px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                            item.active
+                              ? "bg-blue-100 text-blue-700"
+                              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          }`}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </button>
+                      ))}
+                    </nav>
+                    <div className="p-4 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          handleViewCatalog();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center space-x-2"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span>Ver meu catálogo</span>
+                      </Button>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+
               <h1 className="text-xl font-bold text-gray-900">LinkBuy</h1>
             </div>
 
-            {/* Navigation */}
-            <nav className="hidden md:flex space-x-8">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-6">
               {menuItems.map((item) => (
                 <button
                   key={item.path}
@@ -110,7 +161,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </nav>
 
             {/* User Menu */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
                 size="sm"
@@ -155,35 +206,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Mobile Navigation */}
-          <div className="md:hidden">
-            <div className="pt-2 pb-3 space-y-1">
-              {menuItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={`flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    item.active
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleViewCatalog}
-                className="w-full mt-2 flex items-center justify-center space-x-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                <span>Ver meu catálogo</span>
-              </Button>
             </div>
           </div>
         </div>

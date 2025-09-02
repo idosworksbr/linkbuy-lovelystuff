@@ -63,8 +63,8 @@ Deno.serve(async (req) => {
     const customLinks = customLinksResult.data || [];
     const categories = categoriesResult.data || [];
 
-    // Get detailed products with category information
-    const { data: productsWithCategories, error: productsWithCategoriesError } = await supabaseClient
+    // Get all products with category information in a single query to avoid duplicates
+    const { data: allProducts, error: productsError } = await supabaseClient
       .from('products')
       .select(`
         *,
@@ -73,31 +73,11 @@ Deno.serve(async (req) => {
       .eq('user_id', store.id)
       .order('created_at', { ascending: false });
 
-    // Also get products without categories
-    const { data: uncategorizedProducts, error: uncategorizedError } = await supabaseClient
-      .from('products')
-      .select('*')
-      .eq('user_id', store.id)
-      .is('category_id', null)
-      .order('created_at', { ascending: false });
-
-    if (productsWithCategoriesError) {
-      console.error('Error fetching products with categories:', productsWithCategoriesError);
+    if (productsError) {
+      console.error('Error fetching products:', productsError);
     }
 
-    if (uncategorizedError) {
-      console.error('Error fetching uncategorized products:', uncategorizedError);
-    }
-
-    // Combine all products
-    const allProducts = [
-      ...(productsWithCategories || []),
-      ...(uncategorizedProducts || [])
-    ];
-
-    console.log('Products with categories count:', productsWithCategories?.length || 0);
-    console.log('Uncategorized products count:', uncategorizedProducts?.length || 0);
-    console.log('Total products count:', allProducts.length);
+    console.log('Total products count:', allProducts?.length || 0);
     console.log('Categories count:', categories.length);
 
     const response = {
@@ -112,11 +92,11 @@ Deno.serve(async (req) => {
         catalog_theme: store.catalog_theme || 'light',
         catalog_layout: store.catalog_layout || 'bottom'  // Fixed: bottom shows title/price visible
       },
-      products: allProducts,
+      products: allProducts || [],
       categories,
       customLinks,
       meta: {
-        total_products: allProducts.length,
+        total_products: allProducts?.length || 0,
         total_custom_links: customLinks.length,
         total_categories: categories.length,
         generated_at: new Date().toISOString()
