@@ -34,6 +34,16 @@ interface Product {
   price: number;
   images: string[];
   created_at: string;
+  category_id?: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  image_url: string | null;
+  display_order: number;
+  is_active: boolean;
+  product_count?: number;
 }
 
 interface CustomLink {
@@ -47,10 +57,12 @@ interface CustomLink {
 interface CatalogData {
   store: StoreProfile;
   products: Product[];
+  categories: Category[];
   customLinks: CustomLink[];
   meta: {
     total_products: number;
     total_custom_links: number;
+    total_categories: number;
     generated_at: string;
   };
 }
@@ -72,7 +84,7 @@ const Catalog = () => {
   const [storeAnalytics, setStoreAnalytics] = useState<StoreAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'products' | 'links'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'links' | 'categories'>('products');
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'overlay';
   const themeClasses = useThemeClasses(theme);
@@ -289,8 +301,11 @@ const Catalog = () => {
     );
   }
 
-  const { store, products, meta } = catalogData;
+  const { store, products, categories, meta } = catalogData;
   const gridLayout = store.product_grid_layout || 'default';
+  
+  // Filter products without category for main feed
+  const uncategorizedProducts = products.filter(product => !product.category_id);
 
   // Função para renderizar o produto baseado no layout
   const renderProduct = (product: Product, index: number) => {
@@ -481,6 +496,58 @@ const Catalog = () => {
           </div>
         </div>
 
+        {/* Category Stories Section - Instagram Style */}
+        {categories && categories.length > 0 && (
+          <div className={`px-4 py-3 border-b ${themeClasses.header}`}>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className={`text-sm font-semibold ${themeClasses.text}`}>Categorias</h2>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
+                className={`text-xs ${themeClasses.textMuted} hover:${themeClasses.text}`}
+              >
+                Ver todas
+              </Button>
+            </div>
+            
+            {/* Horizontal scroll for categories */}
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {categories.map((category, index) => (
+                <div 
+                  key={category.id}
+                  onClick={() => navigate(`/catalog/${storeUrl}/category/${category.id}`)}
+                  className="cursor-pointer flex-shrink-0 animate-fade-in group"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex flex-col items-center gap-1 w-16">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-400 via-pink-400 to-red-400 p-0.5 group-hover:scale-105 transition-transform">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-white p-0.5">
+                        {category.image_url ? (
+                          <img 
+                            src={category.image_url} 
+                            alt={category.name}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
+                            <span className="text-gray-400 text-xs font-bold">
+                              {category.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <span className={`text-xs ${themeClasses.text} truncate w-full text-center`}>
+                      {category.name}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Navigation Tabs Section - Similar to Instagram */}
         <div className={`border-b ${themeClasses.header}`}>
           {/* Tab Buttons */}
@@ -510,6 +577,20 @@ const Catalog = () => {
                 )}
               </button>
             )}
+            
+            {categories && categories.length > 0 && (
+              <button 
+                onClick={() => setActiveTab('categories')}
+                className={`flex flex-col items-center cursor-pointer transition-colors ${
+                  activeTab === 'categories' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
+                }`}
+              >
+                <Grid3X3 className={`h-6 w-6 ${themeClasses.textMuted}`} />
+                {activeTab === 'categories' && (
+                  <div className={`w-6 h-0.5 bg-current mt-1 ${themeClasses.textMuted}`}></div>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
@@ -525,9 +606,9 @@ const Catalog = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {products.length > 0 ? (
+            {uncategorizedProducts.length > 0 ? (
               <div className={gridLayout === 'instagram' ? 'grid grid-cols-3' : gridLayout === 'round' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-3 gap-1'}>
-                {products.map((product, index) => renderProduct(product, index))}
+                {uncategorizedProducts.map((product, index) => renderProduct(product, index))}
               </div>
             ) : (
               <div className={`text-center py-16 ${themeClasses.card} rounded-lg mx-2 bg-white/90 backdrop-blur-sm`}>
@@ -577,6 +658,33 @@ const Catalog = () => {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Categories Container */}
+        {activeTab === 'categories' && (
+          <div 
+            className={`p-4 animate-fade-in`}
+            style={{
+              backgroundColor: store.custom_background_enabled && store.background_type === 'color' ? store.background_color : undefined,
+              backgroundImage: store.custom_background_enabled && store.background_type === 'image' && store.background_image_url ? `url(${store.background_image_url})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            <div className="text-center py-8">
+              <Button 
+                onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
+                className={`${themeClasses.button} rounded-full px-8 py-3 text-sm font-medium hover:scale-105 transition-all shadow-lg`}
+              >
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                Ver Todas as Categorias
+              </Button>
+              <p className={`text-sm ${themeClasses.textMuted} mt-3`}>
+                Explore produtos organizados por categoria
+              </p>
             </div>
           </div>
         )}

@@ -11,18 +11,21 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const productSchema = z.object({
   name: z.string().min(1, "Nome do produto é obrigatório"),
   price: z.string().min(1, "Preço é obrigatório"),
   description: z.string().min(1, "Descrição é obrigatória"),
+  category_id: z.string().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
-  product?: Product;
-  onSubmit: (data: ProductFormData & { images?: string[] }) => void;
+  product?: Product & { category_id?: string };
+  onSubmit: (data: ProductFormData & { images?: string[]; category_id?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -31,6 +34,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>(product?.images || []);
   const { toast } = useToast();
+  const { categories } = useCategories();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -38,6 +42,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
       name: product?.name || "",
       price: product?.price?.toString() || "",
       description: product?.description || "",
+      category_id: product?.category_id || "",
     },
   });
 
@@ -82,6 +87,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
     onSubmit({
       ...data,
       images: imagePreviews,
+      category_id: data.category_id || undefined,
     });
   };
 
@@ -176,6 +182,33 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category */}
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria (Opcional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">Sem categoria</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

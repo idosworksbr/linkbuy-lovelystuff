@@ -11,6 +11,7 @@ export interface Product {
   description: string | null;
   price: number;
   images: string[];
+  category_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -57,6 +58,7 @@ export const useProducts = () => {
           description: productData.description,
           price: productData.price,
           images: productData.images,
+          category_id: productData.category_id || null,
           user_id: user.id
         })
         .select()

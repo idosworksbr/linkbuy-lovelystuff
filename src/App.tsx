@@ -18,6 +18,9 @@ import Analytics from "./pages/Analytics";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
+import AllCategories from "./pages/AllCategories";
+import CategoryProducts from "./pages/CategoryProducts";
+import Categories from "./pages/Categories";
 
 const queryClient = new QueryClient();
 
@@ -66,7 +69,10 @@ const App = () => (
                 <Subscription />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
             <Route path="/catalog/:storeUrl" element={<Catalog />} />
+            <Route path="/catalog/:storeUrl/categories" element={<AllCategories />} />
+            <Route path="/catalog/:storeUrl/category/:categoryId" element={<CategoryProducts />} />
             <Route path="/catalog/:storeUrl/product/:productId" element={<ProductDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

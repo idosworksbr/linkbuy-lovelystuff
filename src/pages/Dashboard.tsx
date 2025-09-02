@@ -41,12 +41,13 @@ const Dashboard = () => {
     
     setIsLoading(true);
     try {
-      await updateProduct(editingProduct.id, {
-        name: data.name,
-        description: data.description,
-        price: parseFloat(data.price),
-        images: data.images || []
-      });
+        await updateProduct(editingProduct.id, {
+          name: data.name,
+          description: data.description,
+          price: parseFloat(data.price),
+          images: data.images || [],
+          category_id: data.category_id || null
+        });
       setEditingProduct(null);
     } catch (error) {
       console.error('Error updating product:', error);
