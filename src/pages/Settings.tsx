@@ -48,7 +48,7 @@ const Settings = () => {
     custom_whatsapp_message: 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
     instagram_url: '',
     catalog_theme: 'light' as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset',
-    catalog_layout: 'overlay' as 'overlay' | 'bottom',
+    catalog_layout: 'bottom' as 'overlay' | 'bottom',
     product_grid_layout: 'default' as 'default' | 'round' | 'instagram',
     hide_footer: false,
     is_verified: false
@@ -70,7 +70,7 @@ const Settings = () => {
         custom_whatsapp_message: profile.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
         instagram_url: profile.instagram_url || '',
         catalog_theme: profile.catalog_theme || 'light',
-        catalog_layout: profile.catalog_layout || 'overlay',
+        catalog_layout: profile.catalog_layout || 'bottom',
         product_grid_layout: (profile as any).product_grid_layout || 'default',
         hide_footer: (profile as any).hide_footer || false,
         is_verified: (profile as any).is_verified || false
@@ -529,8 +529,8 @@ const Settings = () => {
                         <SelectValue placeholder="Selecione o layout" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="overlay">Titulo/Preço visível no feed</SelectItem>
-                        <SelectItem value="bottom">Titulo/Preço oculto no feed</SelectItem>
+                        <SelectItem value="bottom">Titulo/Preço visível no feed</SelectItem>
+                        <SelectItem value="overlay">Titulo/Preço oculto no feed</SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">

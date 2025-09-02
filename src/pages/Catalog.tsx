@@ -86,7 +86,7 @@ const Catalog = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'products' | 'links' | 'categories'>('products');
   const theme = catalogData?.store.catalog_theme || 'light';
-  const layout = catalogData?.store.catalog_layout || 'overlay';
+  const layout = catalogData?.store.catalog_layout || 'bottom';
   const themeClasses = useThemeClasses(theme);
 
   // Função robusta para verificar se o WhatsApp está disponível

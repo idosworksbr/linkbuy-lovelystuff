@@ -52,7 +52,7 @@ export const useProfile = () => {
       const profileData: Profile = {
         ...data,
         catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') || 'light',
-        catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'bottom',
         product_grid_layout: (data.product_grid_layout as 'default' | 'round' | 'instagram') || 'default',
         background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_background_enabled: data.custom_background_enabled || false,
@@ -86,7 +86,7 @@ export const useProfile = () => {
       const updatedProfile: Profile = {
         ...data,
         catalog_theme: (data.catalog_theme as 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') || 'light',
-        catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'overlay',
+        catalog_layout: (data.catalog_layout as 'overlay' | 'bottom') || 'bottom',
         product_grid_layout: (data.product_grid_layout as 'default' | 'round' | 'instagram') || 'default',
         background_type: (data.background_type as 'color' | 'image') || 'color',
         custom_background_enabled: data.custom_background_enabled || false,

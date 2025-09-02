@@ -44,30 +44,34 @@ Deno.serve(async (req) => {
 
     const store = storeData[0];
 
-    // Get products for this store
-    const { data: productsData, error: productsError } = await supabaseClient
-      .rpc('get_public_store_products', { store_url_param: storeUrl });
+    // Get data for this store in parallel
+    const [productsResult, customLinksResult, categoriesResult] = await Promise.all([
+      supabaseClient.rpc('get_public_store_products', { store_url_param: storeUrl }),
+      supabaseClient.rpc('get_public_custom_links', { store_url_param: storeUrl }),
+      supabaseClient.rpc('get_public_store_categories', { store_url_param: storeUrl })
+    ]);
 
-    if (productsError) {
-      console.error('Error fetching products:', productsError);
+    if (productsResult.error) {
+      console.error('Error fetching products:', productsResult.error);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch products' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const products = productsData || [];
-
-    // Get custom links for this store
-    const { data: customLinksData, error: customLinksError } = await supabaseClient
-      .rpc('get_public_custom_links', { store_url_param: storeUrl });
-
-    if (customLinksError) {
-      console.error('Error fetching custom links:', customLinksError);
-      // Don't fail the request if custom links fail, just log and continue
+    if (customLinksResult.error) {
+      console.error('Error fetching custom links:', customLinksResult.error);
+      // Don't fail the request if custom links fail, just continue
     }
 
-    const customLinks = customLinksData || [];
+    if (categoriesResult.error) {
+      console.error('Error fetching categories:', categoriesResult.error);
+      // Don't fail the request if categories fail, just continue
+    }
+
+    const products = productsResult.data || [];
+    const customLinks = customLinksResult.data || [];
+    const categories = categoriesResult.data || [];
 
     const response = {
       store: {
@@ -79,13 +83,15 @@ Deno.serve(async (req) => {
         is_verified: store.is_verified || false,
         custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.',
         catalog_theme: store.catalog_theme || 'light',
-        catalog_layout: store.catalog_layout || 'overlay'
+        catalog_layout: store.catalog_layout || 'bottom'  // Fixed: bottom shows title/price visible
       },
       products,
+      categories,
       customLinks,
       meta: {
         total_products: products.length,
         total_custom_links: customLinks.length,
+        total_categories: categories.length,
         generated_at: new Date().toISOString()
       }
     };
