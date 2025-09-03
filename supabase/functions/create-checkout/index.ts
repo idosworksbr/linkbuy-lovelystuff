@@ -18,12 +18,25 @@ serve(async (req) => {
     console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
   };
 
-  logStep("Function started - v4");
+  logStep("Function started - v5");
+
+  // Enhanced environment validation
+  logStep("Checking environment variables");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+  
+  logStep("Environment check", {
+    hasSupabaseUrl: !!supabaseUrl,
+    hasAnonKey: !!supabaseAnonKey,
+    hasStripeKey: !!stripeKey,
+    allEnvVars: Object.keys(Deno.env.toObject())
+  });
 
   // Create a Supabase client using the anon key for authentication
   const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    supabaseUrl ?? "",
+    supabaseAnonKey ?? ""
   );
 
   try {
@@ -54,7 +67,6 @@ serve(async (req) => {
 
     // Enhanced Stripe key validation
     logStep("Validating Stripe configuration");
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       logStep("ERROR: STRIPE_SECRET_KEY not found");
       logStep("Available Stripe env vars", Object.keys(Deno.env.toObject()).filter(key => key.includes('STRIPE')));

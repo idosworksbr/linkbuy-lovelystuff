@@ -55,15 +55,24 @@ serve(async (req) => {
   );
 
   try {
-    logStep("Function started - v4");
+    logStep("Function started - v5");
 
     // Enhanced environment validation
     logStep("Validating environment configuration");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    
+    logStep("Environment check", {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      hasStripeKey: !!stripeKey,
+      allEnvVars: Object.keys(Deno.env.toObject())
+    });
     
     if (!stripeKey) {
       logStep("ERROR: STRIPE_SECRET_KEY not found");
-      logStep("Available Stripe env vars", Object.keys(Deno.env.toObject()).filter(key => key.includes('STRIPE')));
+      logStep("Available env vars", Object.keys(Deno.env.toObject()));
       throw new Error("STRIPE_SECRET_KEY is not configured in environment");
     }
     

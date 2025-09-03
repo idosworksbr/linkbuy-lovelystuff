@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3 } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { PlanCard } from "@/components/PlanCard";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { StripeDebugPanel } from "@/components/StripeDebugPanel";
 import { MultipleSubscriptionsInfo } from "@/components/MultipleSubscriptionsInfo";
 import { CancellationDialog } from "@/components/CancellationDialog";
 import { useSearchParams } from "react-router-dom";
@@ -243,11 +244,15 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="visual">Visual</TabsTrigger>
             <TabsTrigger value="plans">Planos</TabsTrigger>
             <TabsTrigger value="portal">Portal</TabsTrigger>
+            <TabsTrigger value="debug" className="text-orange-600">
+              <Bug className="h-4 w-4 mr-1" />
+              Debug
+            </TabsTrigger>
           </TabsList>
 
           {/* Tab de Perfil e Loja */}
@@ -1075,6 +1080,11 @@ const Settings = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          {/* Debug Panel */}
+          <TabsContent value="debug" className="space-y-6">
+            <StripeDebugPanel />
           </TabsContent>
         </Tabs>
 

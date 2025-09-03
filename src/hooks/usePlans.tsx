@@ -91,11 +91,23 @@ export const usePlans = () => {
     const fetchRealPrices = async () => {
       try {
         console.log('[usePlans] Iniciando busca de preços do Stripe...');
-        const { data, error } = await supabase.functions.invoke('get-stripe-prices');
+        
+        // Adicionar timeout para evitar requests longos
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout na busca de preços')), 30000)
+        );
+        
+        const result = await Promise.race([
+          supabase.functions.invoke('get-stripe-prices'),
+          timeoutPromise
+        ]) as any;
+        
+        const { data, error } = result;
         
         if (error) {
           console.error('[usePlans] Erro ao buscar preços do Stripe:', error);
           console.error('[usePlans] Detalhes do erro:', JSON.stringify(error, null, 2));
+          console.error('[usePlans] Usando preços padrão devido ao erro');
           return;
         }
 

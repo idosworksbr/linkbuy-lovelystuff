@@ -22,28 +22,41 @@ export const useSubscription = () => {
     isCheckingRef.current = true;
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      console.log('[useSubscription] Verificando status da assinatura...');
+      
+      // Adicionar timeout para evitar requests longos
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout na verificação de assinatura')), 30000)
+      );
+      
+      const result = await Promise.race([
+        supabase.functions.invoke('check-subscription'),
+        timeoutPromise
+      ]) as any;
+      
+      const { data, error } = result;
       
       if (error) {
         console.error('Check subscription error:', error);
         throw error;
       }
       
+      console.log('[useSubscription] Status da assinatura:', data);
       setSubscription(data);
       return data;
     } catch (error: any) {
       console.error('Error checking subscription:', error);
       
       // Don't show toast for rate limit errors - just log them
-      if (error?.message?.includes("rate limit")) {
-        console.warn('Rate limit reached - subscription check will retry later');
+      if (error?.message?.includes("rate limit") || error?.message?.includes("Timeout")) {
+        console.warn('Rate limit or timeout reached - subscription check will retry later');
         return;
       }
       
       // Only show toast for other types of errors
       toast({
         title: "Erro ao verificar assinatura",
-        description: "Não foi possível verificar o status da assinatura.",
+        description: "Não foi possível verificar o status da assinatura. Dados locais serão usados.",
         variant: "destructive",
       });
     } finally {
@@ -63,20 +76,46 @@ export const useSubscription = () => {
     }
 
     try {
+      console.log('[useSubscription] Criando checkout para:', priceId);
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId }
-      });
       
-      if (error) throw error;
+      // Adicionar timeout para evitar requests longos
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout na criação do checkout')), 30000)
+      );
       
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
-    } catch (error) {
+      const result = await Promise.race([
+        supabase.functions.invoke('create-checkout', {
+          body: { priceId }
+        }),
+        timeoutPromise
+      ]) as any;
+      
+      const { data, error } = result;
+      
+      if (error) {
+        console.error('[useSubscription] Erro ao criar checkout:', error);
+        throw error;
+      }
+      
+      if (data?.url) {
+        console.log('[useSubscription] URL do checkout:', data.url);
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error('URL do checkout não encontrada na resposta');
+      }
+    } catch (error: any) {
       console.error('Error creating checkout:', error);
+      
+      let errorMessage = "Não foi possível iniciar o processo de pagamento.";
+      if (error?.message?.includes("Timeout")) {
+        errorMessage = "Timeout na criação do checkout. Tente novamente.";
+      }
+      
       toast({
         title: "Erro no checkout",
-        description: "Não foi possível iniciar o processo de pagamento.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -88,14 +127,27 @@ export const useSubscription = () => {
     if (!user) return;
 
     try {
+      console.log('[useSubscription] Abrindo portal do cliente...');
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      // Adicionar timeout para evitar requests longos
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout ao abrir portal')), 30000)
+      );
+      
+      const result = await Promise.race([
+        supabase.functions.invoke('customer-portal'),
+        timeoutPromise
+      ]) as any;
+      
+      const { data, error } = result;
       
       if (error) {
         console.error('Customer portal error:', error);
         throw error;
       }
       
+      console.log('[useSubscription] URL do portal:', data.url);
       // Open customer portal in a new tab
       window.open(data.url, '_blank');
     } catch (error: any) {
@@ -107,6 +159,8 @@ export const useSubscription = () => {
         errorMessage = "Você ainda não possui uma conta no Stripe. Assine um plano primeiro.";
       } else if (error?.message?.includes("rate limit")) {
         errorMessage = "Muitas solicitações. Aguarde um momento e tente novamente.";
+      } else if (error?.message?.includes("Timeout")) {
+        errorMessage = "Timeout ao abrir portal. Tente novamente.";
       }
       
       toast({

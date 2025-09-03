@@ -18,16 +18,21 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  logStep("Function started - v4");
+  logStep("Function started - v5");
 
   try {
     // Enhanced environment validation
     logStep("Checking environment variables");
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     
+    logStep("Environment check", {
+      hasStripeKey: !!stripeKey,
+      allEnvVars: Object.keys(Deno.env.toObject())
+    });
+    
     if (!stripeKey) {
       logStep("ERROR: STRIPE_SECRET_KEY not found in environment");
-      logStep("Available env vars", Object.keys(Deno.env.toObject()).filter(key => key.includes('STRIPE')));
+      logStep("Available env vars", Object.keys(Deno.env.toObject()));
       throw new Error("STRIPE_SECRET_KEY is not configured");
     }
     
