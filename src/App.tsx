@@ -14,6 +14,7 @@ import CustomLinks from "@/pages/CustomLinks";
 import Settings from "@/pages/Settings";
 import Plans from "@/pages/Plans";
 import Subscription from "@/pages/Subscription";
+import StripeDebug from "@/pages/StripeDebug";
 import CustomerPortal from "@/pages/CustomerPortal";
 import Analytics from "./pages/Analytics";
 import Catalog from "./pages/Catalog";
@@ -68,6 +69,11 @@ const App = () => (
             <Route path="/dashboard/subscription" element={
               <ProtectedRoute>
                 <Subscription />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/stripe-debug" element={
+              <ProtectedRoute>
+                <StripeDebug />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />

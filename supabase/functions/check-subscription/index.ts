@@ -13,7 +13,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Mapear price_id para tipo de assinatura
+// Mapear price_id para tipo de assinatura (centralizado)
 const mapPriceIdToSubscriptionType = (priceId: string): string => {
   const priceMap: { [key: string]: string } = {
     'price_1S2k58FhG2EqaMMaAifmR8iL': 'pro',             // PLANO PRO

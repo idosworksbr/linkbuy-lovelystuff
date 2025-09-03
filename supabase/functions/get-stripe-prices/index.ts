@@ -67,7 +67,7 @@ serve(async (req) => {
 
     logStep("Prices retrieved successfully", { count: prices.data.length });
 
-    // Filter and format only relevant subscription prices
+    // Filter and format only relevant subscription prices (Price IDs centralizados)
     const relevantPriceIds = [
       'price_1S2k58FhG2EqaMMaAifmR8iL', // PLANO PRO
       'price_1S2k55FhG2EqaMMaNHnafbQR', // PLANO PRO+  

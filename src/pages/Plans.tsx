@@ -8,6 +8,7 @@ import { Loader2, CreditCard, X, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { STRIPE_CONFIG, getPriceIdByPlan } from "@/lib/stripe";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,13 +29,8 @@ export default function Plans() {
   const navigate = useNavigate();
   const [cancelingAll, setCancelingAll] = useState(false);
 
-  // Stripe price IDs for subscription plans
-  const priceIds = {
-    "Pro": "price_1S2k58FhG2EqaMMaAifmR8iL",
-    "Pro+": "price_1S2k55FhG2EqaMMaNHnafbQR",
-    "Selo Verificado": "price_1S2k51FhG2EqaMMaJqiDgzMI",
-    "Pro+ Verificado": "price_1S2k54FhG2EqaMMa5PNk8gfV",
-  };
+  // Price IDs centralizados do Stripe
+  const priceIds = STRIPE_CONFIG.priceIds;
 
   const handleSelectPlan = (planName: string) => {
     if (planName === "Free") {
@@ -45,15 +41,18 @@ export default function Plans() {
       return;
     }
 
-    const priceId = priceIds[planName as keyof typeof priceIds];
-    if (!priceId || priceId.includes("temp")) {
+    // Usar helper centralizado para obter Price ID
+    const priceId = getPriceIdByPlan(planName);
+    if (!priceId) {
       toast({
-        title: "Em configuração",
-        description: `O plano ${planName} ainda está sendo configurado. Configure as chaves de produto no Stripe primeiro.`,
+        title: "Erro na configuração",
+        description: `Plano ${planName} não encontrado. Verifique a configuração do Stripe.`,
+        variant: "destructive"
       });
       return;
     }
 
+    console.log(`[Plans] Iniciando checkout para ${planName} com priceId: ${priceId}`);
     createCheckout(priceId);
   };
 

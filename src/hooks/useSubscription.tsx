@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { STRIPE_CONFIG } from '@/lib/stripe';
 
 export interface SubscriptionStatus {
   subscribed: boolean;
@@ -24,9 +25,9 @@ export const useSubscription = () => {
     try {
       console.log('[useSubscription] Verificando status da assinatura...');
       
-      // Adicionar timeout para evitar requests longos
+      // Timeout otimizado para produção
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout na verificação de assinatura')), 30000)
+        setTimeout(() => reject(new Error('Timeout na verificação de assinatura')), STRIPE_CONFIG.timeouts.subscription)
       );
       
       const result = await Promise.race([
@@ -79,9 +80,9 @@ export const useSubscription = () => {
       console.log('[useSubscription] Criando checkout para:', priceId);
       setLoading(true);
       
-      // Adicionar timeout para evitar requests longos
+      // Timeout otimizado para produção
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout na criação do checkout')), 30000)
+        setTimeout(() => reject(new Error('Timeout na criação do checkout')), STRIPE_CONFIG.timeouts.checkout)
       );
       
       const result = await Promise.race([
@@ -130,9 +131,9 @@ export const useSubscription = () => {
       console.log('[useSubscription] Abrindo portal do cliente...');
       setLoading(true);
       
-      // Adicionar timeout para evitar requests longos
+      // Timeout otimizado para produção
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout ao abrir portal')), 30000)
+        setTimeout(() => reject(new Error('Timeout ao abrir portal')), STRIPE_CONFIG.timeouts.subscription)
       );
       
       const result = await Promise.race([

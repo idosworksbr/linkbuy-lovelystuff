@@ -127,15 +127,19 @@ serve(async (req) => {
       throw new Error(`Price ID ${priceId} not found in Stripe`);
     }
 
-    // Determine application domain for URLs
+    // Determine application domain for URLs (melhorado para produção)
     const origin = req.headers.get("origin");
     let baseUrl = 'https://app.lovable.dev';
     
     if (origin) {
-      // Check if it's a Lovable app domain
-      if (origin.includes('.lovable.app') || origin.includes('.lovable.dev')) {
+      // Aceitar domínios Lovable ou custom domains
+      if (origin.includes('.lovable.app') || 
+          origin.includes('.lovable.dev') || 
+          origin.includes('localhost') ||
+          origin.includes('127.0.0.1')) {
         baseUrl = origin;
-      } else if (origin.includes('localhost')) {
+      } else {
+        // Para domínios customizados em produção
         baseUrl = origin;
       }
     }

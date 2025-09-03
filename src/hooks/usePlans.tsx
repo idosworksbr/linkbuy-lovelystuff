@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Profile } from "./useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { STRIPE_CONFIG } from "@/lib/stripe";
 
 export interface PlanFeatures {
   name: string;
@@ -35,7 +36,7 @@ export const defaultPlans: PlanPricing[] = [
   },
   {
     name: "Pro",
-    stripeId: "price_1S2k58FhG2EqaMMaAifmR8iL",
+    stripeId: STRIPE_CONFIG.priceIds.pro,
     price: "Carregando...",
     popular: true,
     features: [
@@ -50,7 +51,7 @@ export const defaultPlans: PlanPricing[] = [
   },
   {
     name: "Pro+",
-    stripeId: "price_1S2k55FhG2EqaMMaNHnafbQR",
+    stripeId: STRIPE_CONFIG.priceIds.pro_plus,
     price: "Carregando...", 
     features: [
       "Tudo do Free e Pro",
@@ -62,7 +63,7 @@ export const defaultPlans: PlanPricing[] = [
   },
   {
     name: "Selo Verificado",
-    stripeId: "price_1S2k51FhG2EqaMMaJqiDgzMI",
+    stripeId: STRIPE_CONFIG.priceIds.verified,
     price: "Carregando...",
     verified: true,
     features: [
@@ -73,7 +74,7 @@ export const defaultPlans: PlanPricing[] = [
   },
   {
     name: "Pro+ Verificado",
-    stripeId: "price_1S2k54FhG2EqaMMa5PNk8gfV",
+    stripeId: STRIPE_CONFIG.priceIds.pro_plus_verified,
     price: "Carregando...",
     verified: true,
     features: [
@@ -92,9 +93,9 @@ export const usePlans = () => {
       try {
         console.log('[usePlans] Iniciando busca de preços do Stripe...');
         
-        // Adicionar timeout para evitar requests longos
+        // Timeout otimizado para produção
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout na busca de preços')), 30000)
+          setTimeout(() => reject(new Error('Timeout na busca de preços')), STRIPE_CONFIG.timeouts.prices)
         );
         
         const result = await Promise.race([
