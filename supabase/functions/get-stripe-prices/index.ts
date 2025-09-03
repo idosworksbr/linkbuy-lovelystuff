@@ -62,23 +62,40 @@ serve(async (req) => {
     const prices = await stripe.prices.list({
       active: true,
       expand: ["data.product"],
-      limit: 100, // Add explicit limit
+      limit: 100,
     });
 
     logStep("Prices retrieved successfully", { count: prices.data.length });
 
-    // Enhanced price formatting with validation
-    const formattedPrices = prices.data.map((price, index) => {
-      const formatted = {
-        id: price.id,
-        unit_amount: price.unit_amount,
-        currency: price.currency,
-        recurring: price.recurring,
-        product_name: (price.product as any)?.name || `Product ${index + 1}`,
-      };
-      logStep(`Price ${index + 1} formatted`, formatted);
-      return formatted;
-    });
+    // Filter and format only relevant subscription prices
+    const relevantPriceIds = [
+      'price_1S2k58FhG2EqaMMaAifmR8iL', // PLANO PRO
+      'price_1S2k55FhG2EqaMMaNHnafbQR', // PLANO PRO+  
+      'price_1S2k51FhG2EqaMMaJqiDgzMI', // SELO VERIFICADO AVULSO
+      'price_1S2k54FhG2EqaMMa5PNk8gfV'  // PLANO PRO+ VERIFICADO
+    ];
+
+    const formattedPrices = prices.data
+      .filter(price => {
+        // Filter only recurring subscription prices and relevant IDs
+        const isRelevant = relevantPriceIds.includes(price.id);
+        const isRecurring = price.recurring !== null;
+        return isRelevant && isRecurring;
+      })
+      .map((price, index) => {
+        const product = price.product as any;
+        const formatted = {
+          id: price.id,
+          unit_amount: price.unit_amount,
+          currency: price.currency,
+          recurring: price.recurring,
+          product_name: product?.name || `Subscription Plan ${index + 1}`,
+          product_description: product?.description || null,
+          active: price.active
+        };
+        logStep(`Relevant price ${index + 1} formatted`, formatted);
+        return formatted;
+      });
 
     logStep("All prices processed successfully", { totalPrices: formattedPrices.length });
 

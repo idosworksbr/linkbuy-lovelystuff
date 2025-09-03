@@ -112,11 +112,47 @@ serve(async (req) => {
       logStep("No existing customer found - will create new one");
     }
 
-    const origin = req.headers.get("origin") || "https://rpkawimruhfqhxbpavce.supabase.co";
-    logStep("Creating checkout session", { origin, priceId, customerId });
+    // Validate price ID exists before creating session
+    logStep("Validating price ID exists");
+    try {
+      const price = await stripe.prices.retrieve(priceId);
+      logStep("Price validation successful", { 
+        priceId,
+        amount: price.unit_amount,
+        currency: price.currency,
+        product: price.product
+      });
+    } catch (priceError) {
+      logStep("ERROR: Price ID validation failed", { priceId, error: priceError.message });
+      throw new Error(`Price ID ${priceId} not found in Stripe`);
+    }
+
+    // Determine application domain for URLs
+    const origin = req.headers.get("origin");
+    let baseUrl = 'https://app.lovable.dev';
+    
+    if (origin) {
+      // Check if it's a Lovable app domain
+      if (origin.includes('.lovable.app') || origin.includes('.lovable.dev')) {
+        baseUrl = origin;
+      } else if (origin.includes('localhost')) {
+        baseUrl = origin;
+      }
+    }
+    
+    const successUrl = `${baseUrl}/dashboard?payment=success`;
+    const cancelUrl = `${baseUrl}/dashboard/plans?payment=cancelled`;
+    
+    logStep("Creating checkout session", { 
+      priceId, 
+      customerId: customerId || 'new',
+      successUrl,
+      cancelUrl,
+      baseUrl
+    });
 
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
+      customer: customerId || undefined,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
@@ -125,8 +161,12 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/dashboard?success=true`,
-      cancel_url: `${origin}/dashboard/plans?canceled=true`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: {
+        user_id: user.id,
+        user_email: user.email
+      }
     });
 
     logStep("Checkout session created successfully", { 
