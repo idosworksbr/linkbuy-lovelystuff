@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const Dashboard = () => {
   const { products, loading, updateProduct, deleteProduct, createProduct } = useProducts();
   const { categories } = useCategories();
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const { storeAnalytics, loading: analyticsLoading } = useAnalytics();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -185,6 +185,16 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => profile && updateProfile({ 
+                  show_all_products_in_feed: !profile.show_all_products_in_feed 
+                })}
+                className="text-xs"
+              >
+                {profile?.show_all_products_in_feed ? 'Mostrar todos' : 'Só sem categoria'}
+              </Button>
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="sm"

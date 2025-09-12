@@ -4,6 +4,7 @@ import { ArrowLeft, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useToast } from "@/hooks/use-toast";
+import { getProductPrices } from "@/lib/priceUtils";
 
 interface Product {
   id: string;
@@ -12,6 +13,9 @@ interface Product {
   price: number;
   images: string[];
   created_at: string;
+  discount?: number;
+  discount_animation_enabled?: boolean;
+  discount_animation_color?: string;
 }
 
 interface Category {
@@ -128,7 +132,17 @@ const CategoryProducts = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
             <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
               <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
-              <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through opacity-70">R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p className="text-xs font-bold">R$ {prices.formattedFinalPrice}</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -160,7 +174,17 @@ const CategoryProducts = () => {
             
             <div className="text-center">
               <h3 className="text-xs font-medium text-gray-800 line-clamp-2 mb-1">{product.name}</h3>
-              <p className="text-xs font-bold text-green-600">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center justify-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through text-gray-400">R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p className="text-xs font-bold text-green-600">R$ {prices.formattedFinalPrice}</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -191,16 +215,36 @@ const CategoryProducts = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
             <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
               <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
-              <p className="text-xs font-bold">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through opacity-70">R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p className="text-xs font-bold">R$ {prices.formattedFinalPrice}</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
             <div className="absolute bottom-0 left-0 right-0 p-2">
               <h3 className="text-xs font-medium line-clamp-2 mb-1 text-white drop-shadow-lg">{product.name}</h3>
-              <p className="drop-shadow-lg text-green-600 text-left font-semibold text-xs">
-                R$ {product.price.toFixed(2).replace('.', ',')}
-              </p>
+              {(() => {
+                const prices = getProductPrices(product);
+                return (
+                  <div className="flex items-center gap-1">
+                    {prices.hasDiscount && (
+                      <span className="text-xs line-through text-gray-300 drop-shadow-lg">R$ {prices.formattedOriginalPrice}</span>
+                    )}
+                    <p className="drop-shadow-lg text-green-600 text-left font-semibold text-xs">
+                      R$ {prices.formattedFinalPrice}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}

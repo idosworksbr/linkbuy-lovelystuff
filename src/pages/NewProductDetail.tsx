@@ -224,15 +224,16 @@ const NewProductDetail = () => {
                 </p>
               )}
               
-              {/* WhatsApp Button - Polaroid style */}
-              <Button 
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
-                onClick={handleWhatsAppOrder}
-                disabled={!isWhatsAppAvailable()}
-              >
-                <MessageCircle className="h-5 w-5 mr-2" />
-                {isWhatsAppAvailable() ? 'Pedir pelo WhatsApp' : 'WhatsApp não disponível'}
-              </Button>
+              {/* WhatsApp Button - Polaroid style - Only show if available */}
+              {isWhatsAppAvailable() && (
+                <Button 
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
+                  onClick={handleWhatsAppOrder}
+                >
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  Pedir pelo WhatsApp
+                </Button>
+              )}
             </div>
           </div>
         </div>
