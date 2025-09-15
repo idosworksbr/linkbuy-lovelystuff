@@ -111,11 +111,13 @@ Deno.serve(async (req) => {
         catalog_theme: store.catalog_theme || 'light',
         catalog_layout: store.catalog_layout || 'bottom'  // Fixed: bottom shows title/price visible
       },
-      products: feedProducts,
+      products: feedProducts, // Products for the main feed (filtered)
+      allProducts: allProducts || [], // All products for category filtering
       categories,
       customLinks,
       meta: {
         total_products: feedProducts.length,
+        total_all_products: allProducts?.length || 0,
         total_custom_links: customLinks.length,
         total_categories: categories.length,
         generated_at: new Date().toISOString()

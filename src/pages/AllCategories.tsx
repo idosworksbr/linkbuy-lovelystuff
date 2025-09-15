@@ -71,8 +71,11 @@ const AllCategories = () => {
         const catalogData = await response.json();
         setStoreProfile(catalogData.store);
         setCategories(catalogData.categories || []);
-        setProducts(catalogData.products || []);
-        setFilteredProducts(catalogData.products || []);
+        
+        // Use allProducts for category filtering, fallback to products for backward compatibility
+        const productsToShow = catalogData.allProducts || catalogData.products || [];
+        setProducts(productsToShow);
+        setFilteredProducts(productsToShow);
       } catch (error) {
         console.error('Error fetching data:', error);
         toast({
