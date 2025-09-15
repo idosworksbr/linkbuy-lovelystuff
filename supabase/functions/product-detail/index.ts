@@ -95,6 +95,9 @@ serve(async (req) => {
       name: productData.name,
       description: productData.description,
       price: productData.price,
+      discount: productData.discount,
+      discount_animation_enabled: productData.discount_animation_enabled,
+      discount_animation_color: productData.discount_animation_color,
       images: productData.images || [],
       created_at: productData.created_at,
       store: {
@@ -108,7 +111,8 @@ serve(async (req) => {
         custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
         instagram_url: store.instagram_url,
         catalog_theme: store.catalog_theme || 'light',
-        catalog_layout: store.catalog_layout || 'overlay'
+        catalog_layout: store.catalog_layout || 'overlay',
+        hide_footer: store.hide_footer || false,
       }
     }
 

@@ -217,23 +217,26 @@ const ProductDetail = () => {
           )}
 
           {/* WhatsApp Button */}
-          <div className="pt-2">
-            <Button 
-              className={`whatsapp-btn w-full text-lg py-6 rounded-full hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl`}
-              onClick={handleWhatsAppOrder}
-              disabled={!isWhatsAppAvailable()}
-            >
-              <MessageCircle className="h-6 w-6 mr-2" />
-              {isWhatsAppAvailable() ? 'Fazer Pedido pelo WhatsApp' : 'WhatsApp não disponível'}
-            </Button>
-          </div>
+          {isWhatsAppAvailable() && (
+            <div className="pt-2">
+              <Button 
+                className={`whatsapp-btn w-full text-lg py-6 rounded-full hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl`}
+                onClick={handleWhatsAppOrder}
+              >
+                <MessageCircle className="h-6 w-6 mr-2" />
+                Fazer Pedido pelo WhatsApp
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
-        <div className={`text-center py-6 text-xs ${themeClasses.textMuted} border-t rounded-t-xl mx-4`} 
-             style={{ backgroundColor: theme === 'light' ? '#f8f9fa' : theme === 'dark' ? '#374151' : '#fef3c7' }}>
-          Criado com 💚 no LinkBuy
-        </div>
+        {!product.store.hide_footer && (
+          <div className={`text-center py-6 text-xs ${themeClasses.textMuted} border-t rounded-t-xl mx-4`} 
+               style={{ backgroundColor: theme === 'light' ? '#f8f9fa' : theme === 'dark' ? '#374151' : '#fef3c7' }}>
+            Criado com 💚 no LinkBuy
+          </div>
+        )}
       </div>
     </CatalogTheme>
   );
