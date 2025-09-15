@@ -2,8 +2,8 @@ import { loadStripe } from '@stripe/stripe-js';
 
 // Configuração centralizada do Stripe
 export const STRIPE_CONFIG = {
-  // Chave pública - será carregada do ambiente em produção
-  publishableKey: "pk_live_51S2cpKFhG2EqaMMarWCOKw3EDm5iwwM7G50tefRYeHUjP18iuSnAsuVovc1drMFdp7BZMoq4GvA1joXvbSLYW8ru00kZN9qEDo",
+  // Chave pública - carregada das variáveis de ambiente
+  publishableKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_live_51S2cpKFhG2EqaMMarWCOKw3EDm5iwwM7G50tefRYeHUjP18iuSnAsuVovc1drMFdp7BZMoq4GvA1joXvbSLYW8ru00kZN9qEDo",
   
   // Price IDs centralizados para todos os planos
   priceIds: {
