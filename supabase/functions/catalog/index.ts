@@ -84,7 +84,10 @@ Deno.serve(async (req) => {
     
     // Filter products based on store's feed configuration
     let feedProducts = allProducts || [];
-    if (!store.show_all_products_in_feed) {
+    if (store.show_all_products_in_feed) {
+      // Show all products in the main feed when enabled
+      feedProducts = allProducts || [];
+    } else {
       // Show only products without category in the main feed
       feedProducts = (allProducts || []).filter(product => !product.category_id);
     }

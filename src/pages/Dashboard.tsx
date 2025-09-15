@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Image, List, Grid } from "lucide-react";
+import { Plus, Edit, Trash2, Image, List, Grid, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -23,6 +23,33 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(() => {
+    const saved = localStorage.getItem('dashboard-items-per-page');
+    return saved ? parseInt(saved) : 10;
+  });
+
+  // Save pagination preferences
+  useEffect(() => {
+    localStorage.setItem('dashboard-items-per-page', itemsPerPage.toString());
+    localStorage.setItem('dashboard-current-page', currentPage.toString());
+  }, [itemsPerPage, currentPage]);
+
+  // Load current page from localStorage on mount
+  useEffect(() => {
+    const savedPage = localStorage.getItem('dashboard-current-page');
+    if (savedPage) {
+      setCurrentPage(parseInt(savedPage));
+    }
+  }, []);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = products.slice(startIndex, endIndex);
   const navigate = useNavigate();
 
   // Check if user needs onboarding and show automatically for first-time users
@@ -184,7 +211,7 @@ const Dashboard = () => {
                 {products.length} produto(s) cadastrado(s)
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -193,8 +220,22 @@ const Dashboard = () => {
                 })}
                 className="text-xs"
               >
-                {profile?.show_all_products_in_feed ? 'Mostrar todos' : 'Só sem categoria'}
+                {profile?.show_all_products_in_feed ? 'Todos os produtos' : 'Só sem categoria'}
               </Button>
+              
+              {/* Items per page selector */}
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(parseInt(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="text-xs px-2 py-1 border rounded-md bg-background"
+              >
+                <option value={10}>10 por página</option>
+                <option value={20}>20 por página</option>
+                <option value={30}>30 por página</option>
+              </select>
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="sm"
@@ -218,11 +259,11 @@ const Dashboard = () => {
                 <Skeleton key={i} className="h-24 w-full" />
               ))}
             </div>
-          ) : products.length > 0 ? (
+            ) : products.length > 0 ? (
             <>
               {viewMode === 'list' ? (
                 <ProductListView
-                  products={products as any}
+                  products={paginatedProducts as any}
                   categories={categories}
                   onEdit={handleEditProduct}
                   onDelete={handleDeleteProduct}
@@ -230,7 +271,7 @@ const Dashboard = () => {
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product) => (
+                  {paginatedProducts.map((product) => (
                     <Card key={product.id} className="group hover:shadow-lg transition-shadow">
                       <CardContent className="p-4">
                         <div className="aspect-square bg-muted rounded-lg mb-4 overflow-hidden">
@@ -277,6 +318,41 @@ const Dashboard = () => {
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              )}
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Mostrando {startIndex + 1} a {Math.min(endIndex, products.length)} de {products.length} produtos
+                  </p>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                    
+                    <span className="text-sm px-3 py-1 bg-muted rounded">
+                      {currentPage} de {totalPages}
+                    </span>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Próximo
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </>

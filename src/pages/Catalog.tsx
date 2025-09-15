@@ -818,14 +818,51 @@ const Catalog = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
+            {/* Products Section First */}
+            {products.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className={`text-lg font-semibold ${themeClasses.text}`}>Produtos</h2>
+                  <span className={`text-sm ${themeClasses.textMuted}`}>
+                    {Math.min(6, products.length)} de {products.length}
+                  </span>
+                </div>
+                
+                {/* Products Grid - Show first 6 products */}
+                <div className={`grid ${
+                  gridLayout === 'instagram' 
+                    ? 'grid-cols-3 gap-1' 
+                    : gridLayout === 'round' 
+                      ? 'grid-cols-2 gap-4' 
+                      : 'grid-cols-2 gap-3'
+                } mb-4`}>
+                  {products.slice(0, 6).map((product, index) => renderProduct(product, index))}
+                </div>
+                
+                {/* Load More Button */}
+                {products.length > 6 && (
+                  <div className="text-center">
+                    <Button 
+                      onClick={() => setActiveTab('products')}
+                      variant="outline"
+                      className={`${themeClasses.buttonOutline} rounded-full px-6 py-2 text-sm hover:scale-105 transition-all`}
+                    >
+                      Ver todos os {products.length} produtos
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Categories Section */}
             <div className="text-center py-8">
-                <Button 
-                  onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
-                  className={`${themeClasses.button} rounded-full px-8 py-3 text-sm font-medium hover:scale-105 transition-all shadow-lg`}
-                >
-                  <icons.List className="h-4 w-4 mr-2" />
-                  Ver Todas as Categorias
-                </Button>
+              <Button 
+                onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
+                className={`${themeClasses.button} rounded-full px-8 py-3 text-sm font-medium hover:scale-105 transition-all shadow-lg`}
+              >
+                <icons.List className="h-4 w-4 mr-2" />
+                Ver Todas as Categorias
+              </Button>
               <p className={`text-sm ${themeClasses.textMuted} mt-3`}>
                 Explore produtos organizados por categoria
               </p>
