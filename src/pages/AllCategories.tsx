@@ -106,9 +106,11 @@ const AllCategories = () => {
     // Filter by category
     if (selectedCategory !== "all") {
       if (selectedCategory === "uncategorized") {
-        filtered = filtered.filter(product => !product.category_id);
+        filtered = filtered.filter(product => !product.category_id && !product.categories?.id);
       } else {
-        filtered = filtered.filter(product => product.category_id === selectedCategory);
+        filtered = filtered.filter(product => 
+          product.category_id === selectedCategory || product.categories?.id === selectedCategory
+        );
       }
     }
 
