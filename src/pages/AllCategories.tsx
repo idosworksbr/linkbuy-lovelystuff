@@ -7,12 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getProductPrices } from "@/lib/priceUtils";
+import { DiscountAnimation } from "@/components/DiscountAnimation";
 
 interface Product {
   id: string;
   name: string;
   description: string | null;
   price: number;
+  discount?: number | null;
+  discount_animation_enabled?: boolean;
+  discount_animation_color?: string | null;
   images: string[];
   category_id: string | null;
   categories?: {
@@ -106,9 +111,17 @@ const AllCategories = () => {
 
     // Sort by price
     if (priceSort === "low-to-high") {
-      filtered.sort((a, b) => a.price - b.price);
+      filtered.sort((a, b) => {
+        const pricesA = getProductPrices({ id: a.id, name: a.name, price: a.price, discount: a.discount || 0 });
+        const pricesB = getProductPrices({ id: b.id, name: b.name, price: b.price, discount: b.discount || 0 });
+        return pricesA.finalPrice - pricesB.finalPrice;
+      });
     } else if (priceSort === "high-to-low") {
-      filtered.sort((a, b) => b.price - a.price);
+      filtered.sort((a, b) => {
+        const pricesA = getProductPrices({ id: a.id, name: a.name, price: a.price, discount: a.discount || 0 });
+        const pricesB = getProductPrices({ id: b.id, name: b.name, price: b.price, discount: b.discount || 0 });
+        return pricesB.finalPrice - pricesA.finalPrice;
+      });
     }
 
     setFilteredProducts(filtered);
@@ -210,46 +223,75 @@ const AllCategories = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {filteredProducts.map((product, index) => (
-                <div 
-                  key={product.id}
-                  onClick={() => handleProductClick(product)}
-                  className="cursor-pointer group animate-fade-in bg-white rounded-xl p-3 shadow-sm hover:shadow-lg transition-all duration-300 border"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  {/* Product Image */}
-                  <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-gray-100 relative">
-                    {product.images && product.images.length > 0 ? (
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                        Sem imagem
-                      </div>
-                    )}
+              {filteredProducts.map((product, index) => {
+                const prices = getProductPrices({
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  discount: product.discount || 0,
+                });
+                const hasDiscount = prices.hasDiscount;
+                const discountAnimationEnabled = product.discount_animation_enabled && hasDiscount;
+
+                const productCard = (
+                  <div 
+                    key={product.id}
+                    onClick={() => handleProductClick(product)}
+                    className="cursor-pointer group animate-fade-in bg-white rounded-xl p-3 shadow-sm hover:shadow-lg transition-all duration-300 border"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Product Image */}
+                    <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-gray-100 relative">
+                      {product.images && product.images.length > 0 ? (
+                        <img 
+                          src={product.images[0]} 
+                          alt={product.name}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                          Sem imagem
+                        </div>
+                      )}
+                      
+                      {/* Category Badge */}
+                      {product.categories && (
+                        <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                          {product.categories.name}
+                        </div>
+                      )}
+                    </div>
                     
-                    {/* Category Badge */}
-                    {product.categories && (
-                      <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                        {product.categories.name}
+                    {/* Product Info */}
+                    <div className="space-y-1">
+                      <h3 className="font-medium text-sm line-clamp-2 text-gray-900">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-baseline gap-2">
+                        {hasDiscount && (
+                          <span className="text-xs line-through opacity-70">
+                            R$ {prices.formattedOriginalPrice}
+                          </span>
+                        )}
+                        <p className="text-lg font-bold text-green-600">
+                          R$ {prices.formattedFinalPrice}
+                        </p>
                       </div>
-                    )}
+                    </div>
                   </div>
-                  
-                  {/* Product Info */}
-                  <div className="space-y-1">
-                    <h3 className="font-medium text-sm line-clamp-2 text-gray-900">
-                      {product.name}
-                    </h3>
-                    <p className="text-lg font-bold text-green-600">
-                      R$ {product.price.toFixed(2).replace('.', ',')}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+
+                return discountAnimationEnabled ? (
+                  <DiscountAnimation 
+                    key={product.id}
+                    enabled={true} 
+                    color={product.discount_animation_color || '#ff0000'}
+                    className="rounded-xl"
+                  >
+                    {productCard}
+                  </DiscountAnimation>
+                ) : productCard;
+              })}
             </div>
           )}
         </div>
