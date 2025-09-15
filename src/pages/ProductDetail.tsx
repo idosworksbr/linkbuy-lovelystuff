@@ -24,8 +24,12 @@ const ProductDetail = () => {
   const isWhatsAppAvailable = () => {
     const whatsappNumber = product?.store.whatsapp_number;
     
-    // Verificação robusta: não pode ser null, undefined, 0, NaN ou string vazia
-    if (whatsappNumber === null || whatsappNumber === undefined) {
+    // Verificação robusta: não pode ser null, undefined, 0, NaN, string vazia ou string "null"
+    if (!whatsappNumber || 
+        whatsappNumber === null || 
+        whatsappNumber === undefined || 
+        String(whatsappNumber) === "null" ||
+        String(whatsappNumber) === "") {
       return false;
     }
 

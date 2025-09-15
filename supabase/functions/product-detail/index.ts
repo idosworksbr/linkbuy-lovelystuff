@@ -112,7 +112,7 @@ serve(async (req) => {
         instagram_url: store.instagram_url,
         catalog_theme: store.catalog_theme || 'light',
         catalog_layout: store.catalog_layout || 'overlay',
-        hide_footer: store.hide_footer || false,
+        hide_footer: store.hide_footer ?? false,
       }
     }
 
