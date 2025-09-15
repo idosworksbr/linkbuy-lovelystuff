@@ -7,6 +7,9 @@ export interface ProductDetail {
   name: string;
   description: string | null;
   price: number;
+  discount?: number | null;
+  discount_animation_enabled?: boolean;
+  discount_animation_color?: string | null;
   images: string[];
   created_at: string;
   store: {

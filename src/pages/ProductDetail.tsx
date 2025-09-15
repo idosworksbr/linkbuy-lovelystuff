@@ -6,6 +6,8 @@ import { useProductDetail } from "@/hooks/useProductDetail";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useState, useEffect } from "react";
 import { useAnalyticsTracker } from "@/hooks/useAnalytics";
+import { getProductPrices } from "@/lib/priceUtils";
+import { DiscountAnimation } from "@/components/DiscountAnimation";
 
 const ProductDetail = () => {
   const { storeUrl, productId } = useParams();
@@ -125,61 +127,84 @@ const ProductDetail = () => {
         </div>
 
         {/* Image Carousel */}
-        <div className="relative rounded-xl mx-4 mt-4 overflow-hidden shadow-lg">
-          <div className="aspect-square bg-muted overflow-hidden">
-            {product.images && product.images.length > 0 ? (
-              <img 
-                src={product.images[currentImageIndex]} 
-                alt={product.name}
-                className="w-full h-full object-cover transition-opacity duration-300"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <span className="text-gray-400">Sem imagem</span>
-              </div>
-            )}
-          </div>
-          
-          {product.images && product.images.length > 1 && (
-            <>
-              <button
-                onClick={prevImage}
-                className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-2 hover:bg-black/80 hover:scale-110 transition-all duration-200 backdrop-blur-sm"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              
-              <button
-                onClick={nextImage}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-2 hover:bg-black/80 hover:scale-110 transition-all duration-200 backdrop-blur-sm"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-              
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {product.images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToImage(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-200 hover:scale-125 ${
-                      index === currentImageIndex 
-                        ? 'bg-white shadow-lg' 
-                        : 'bg-white/60 hover:bg-white/80'
-                    }`}
+        {(() => {
+          const hasAnim = (product.discount && product.discount > 0 && product.discount_animation_enabled) || false;
+          const content = (
+            <div className="relative rounded-xl mx-4 mt-4 overflow-hidden shadow-lg">
+              <div className="aspect-square bg-muted overflow-hidden">
+                {product.images && product.images.length > 0 ? (
+                  <img 
+                    src={product.images[currentImageIndex]} 
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-opacity duration-300"
                   />
-                ))}
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <span className="text-gray-400">Sem imagem</span>
+                  </div>
+                )}
               </div>
-            </>
-          )}
-        </div>
+              
+              {product.images && product.images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-2 hover:bg-black/80 hover:scale-110 transition-all duration-200 backdrop-blur-sm"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-2 hover:bg-black/80 hover:scale-110 transition-all duration-200 backdrop-blur-sm"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    {product.images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToImage(index)}
+                        className={`w-2 h-2 rounded-full transition-all duration-200 hover:scale-125 ${
+                          index === currentImageIndex 
+                            ? 'bg-white shadow-lg' 
+                            : 'bg-white/60 hover:bg-white/80'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+          return hasAnim ? (
+            <DiscountAnimation enabled={true} color={product.discount_animation_color || '#ff0000'} className="rounded-xl mx-4 mt-4">
+              {content}
+            </DiscountAnimation>
+          ) : content;
+        })()}
 
         {/* Product Info */}
         <div className="p-6 space-y-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
           <div className={`${themeClasses.card} rounded-xl p-4 shadow-sm border`}>
             <h1 className={`text-2xl font-bold mb-3 ${themeClasses.text}`}>{product.name}</h1>
-            <p className="text-3xl font-bold text-green-600">
-              R$ {product.price.toFixed(2).replace('.', ',')}
-            </p>
+            {(() => {
+              const prices = getProductPrices({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                discount: product.discount || 0,
+              });
+              return (
+                <div className="flex items-baseline gap-3">
+                  {prices.hasDiscount && (
+                    <span className="text-lg line-through opacity-70">R$ {prices.formattedOriginalPrice}</span>
+                  )}
+                  <p className="text-3xl font-bold text-green-600">R$ {prices.formattedFinalPrice}</p>
+                </div>
+              );
+            })()}
           </div>
 
           {product.description && (

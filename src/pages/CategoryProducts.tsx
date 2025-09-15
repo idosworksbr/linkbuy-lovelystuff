@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CatalogTheme, useThemeClasses } from "@/components/CatalogTheme";
 import { useToast } from "@/hooks/use-toast";
 import { getProductPrices } from "@/lib/priceUtils";
+import { DiscountAnimation } from "@/components/DiscountAnimation";
 
 interface Product {
   id: string;
@@ -110,7 +111,8 @@ const CategoryProducts = () => {
     const animationStyle = { animationDelay: `${index * 50}ms` };
 
     if (gridLayout === 'instagram') {
-      return (
+      const hasAnim = (product.discount && product.discount > 0 && product.discount_animation_enabled) || false;
+      const content = (
         <div 
           key={product.id} 
           onClick={() => handleProductClick(product)} 
@@ -147,10 +149,16 @@ const CategoryProducts = () => {
           </div>
         </div>
       );
+      return hasAnim ? (
+        <DiscountAnimation enabled={true} color={product.discount_animation_color || '#ff0000'} className="rounded-sm">
+          {content}
+        </DiscountAnimation>
+      ) : content;
     }
 
     if (gridLayout === 'round') {
-      return (
+      const hasAnim = (product.discount && product.discount > 0 && product.discount_animation_enabled) || false;
+      const content = (
         <div 
           key={product.id} 
           onClick={() => handleProductClick(product)} 
@@ -189,10 +197,16 @@ const CategoryProducts = () => {
           </div>
         </div>
       );
+      return hasAnim ? (
+        <DiscountAnimation enabled={true} color={product.discount_animation_color || '#ff0000'} className="rounded-lg">
+          {content}
+        </DiscountAnimation>
+      ) : content;
     }
 
     // Default layout
-    return (
+    const hasAnim = (product.discount && product.discount > 0 && product.discount_animation_enabled) || false;
+    const content = (
       <div 
         key={product.id} 
         onClick={() => handleProductClick(product)} 
@@ -250,6 +264,11 @@ const CategoryProducts = () => {
         )}
       </div>
     );
+    return hasAnim ? (
+      <DiscountAnimation enabled={true} color={product.discount_animation_color || '#ff0000'} className="rounded-sm">
+        {content}
+      </DiscountAnimation>
+    ) : content;
   };
 
   if (loading) {
