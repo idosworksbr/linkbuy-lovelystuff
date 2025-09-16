@@ -35,6 +35,8 @@ interface StoreProfile {
   product_grid_layout?: 'default' | 'round' | 'instagram';
   catalog_layout?: 'overlay' | 'bottom';
   hide_footer?: boolean;
+  show_mylinkbuy_credits?: boolean;
+  has_active_subscription?: boolean;
 }
 
 interface CategoryData {
