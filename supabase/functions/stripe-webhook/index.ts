@@ -12,6 +12,25 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Helper to robustly read env vars even if the secret name has stray whitespace/newlines
+const getEnvVar = (key: string): { value?: string; sourceKey?: string } => {
+  const env = Deno.env.toObject();
+  if (env[key] !== undefined) return { value: env[key], sourceKey: key };
+  // Try to find variants with trimmed/whitespace-removed keys
+  const keys = Object.keys(env);
+  for (const k of keys) {
+    if (k.replace(/\s/g, '') === key) {
+      return { value: env[k], sourceKey: k };
+    }
+  }
+  for (const k of keys) {
+    if (k.trim().toUpperCase() === key.toUpperCase()) {
+      return { value: env[k], sourceKey: k };
+    }
+  }
+  return { value: undefined };
+};
+
 // Map Stripe price IDs to subscription types
 const mapPriceIdToSubscriptionType = (priceId: string): string => {
   const priceMap: { [key: string]: string } = {
@@ -33,21 +52,29 @@ serve(async (req) => {
     logStep("Webhook received", { method: req.method, url: req.url });
 
     // Validate environment variables with detailed logging
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const { value: stripeSecretKeyRaw, sourceKey: stripeKeySource } = getEnvVar('STRIPE_SECRET_KEY');
+    const { value: webhookSecretRaw, sourceKey: webhookKeySource } = getEnvVar('STRIPE_WEBHOOK_SECRET');
+    const { value: supabaseUrl, sourceKey: supabaseUrlSource } = getEnvVar('SUPABASE_URL');
+    const { value: supabaseServiceKeyRaw, sourceKey: serviceKeySource } = getEnvVar('SUPABASE_SERVICE_ROLE_KEY');
+
+    const stripeSecretKey = stripeSecretKeyRaw?.trim();
+    const webhookSecret = webhookSecretRaw?.trim();
+    const supabaseServiceKey = supabaseServiceKeyRaw?.trim();
 
     // Log what we have (without exposing full secrets)
     logStep("Environment check", {
       hasStripeKey: !!stripeSecretKey,
       stripeKeyPrefix: stripeSecretKey ? stripeSecretKey.substring(0, 10) + '...' : 'MISSING',
+      stripeKeySource: stripeKeySource || 'STRIPE_SECRET_KEY',
       hasWebhookSecret: !!webhookSecret,
       webhookSecretPrefix: webhookSecret ? 'whsec_...' : 'MISSING',
+      webhookKeySource: webhookKeySource || 'STRIPE_WEBHOOK_SECRET',
       hasSupabaseUrl: !!supabaseUrl,
       supabaseUrl: supabaseUrl || 'MISSING',
+      supabaseUrlSource: supabaseUrlSource || 'SUPABASE_URL',
       hasServiceKey: !!supabaseServiceKey,
-      serviceKeyPrefix: supabaseServiceKey ? supabaseServiceKey.substring(0, 15) + '...' : 'MISSING'
+      serviceKeyPrefix: supabaseServiceKey ? supabaseServiceKey.substring(0, 15) + '...' : 'MISSING',
+      serviceKeySource: serviceKeySource || 'SUPABASE_SERVICE_ROLE_KEY'
     });
 
     // Check for missing variables

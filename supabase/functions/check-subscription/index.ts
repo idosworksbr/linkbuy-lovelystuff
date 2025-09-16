@@ -13,6 +13,20 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Helper to robustly read env vars even if the secret name has stray whitespace/newlines
+const getEnvVar = (key: string): { value?: string; sourceKey?: string } => {
+  const env = Deno.env.toObject();
+  if (env[key] !== undefined) return { value: env[key], sourceKey: key };
+  const keys = Object.keys(env);
+  for (const k of keys) {
+    if (k.replace(/\s/g, '') === key) return { value: env[k], sourceKey: k };
+  }
+  for (const k of keys) {
+    if (k.trim().toUpperCase() === key.toUpperCase()) return { value: env[k], sourceKey: k };
+  }
+  return { value: undefined };
+};
+
 // Mapear price_id para tipo de assinatura (centralizado)
 const mapPriceIdToSubscriptionType = (priceId: string): string => {
   const priceMap: { [key: string]: string } = {
@@ -48,9 +62,11 @@ serve(async (req) => {
   }
 
   // Use the service role key to perform writes (upsert) in Supabase
+  const { value: supabaseUrlRaw } = getEnvVar("SUPABASE_URL");
+  const { value: supabaseServiceKeyRaw } = getEnvVar("SUPABASE_SERVICE_ROLE_KEY");
   const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    (supabaseUrlRaw ?? "").trim(),
+    (supabaseServiceKeyRaw ?? "").trim(),
     { auth: { persistSession: false } }
   );
 
@@ -59,14 +75,20 @@ serve(async (req) => {
 
     // Enhanced environment validation
     logStep("Validating environment configuration");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const { value: supabaseUrlRaw, sourceKey: supabaseUrlSource } = getEnvVar("SUPABASE_URL");
+    const { value: supabaseServiceKeyRaw, sourceKey: serviceKeySource } = getEnvVar("SUPABASE_SERVICE_ROLE_KEY");
+    const { value: stripeKeyRaw, sourceKey: stripeKeySource } = getEnvVar("STRIPE_SECRET_KEY");
+    const supabaseUrl = supabaseUrlRaw?.trim();
+    const supabaseServiceKey = supabaseServiceKeyRaw?.trim();
+    const stripeKey = stripeKeyRaw?.trim();
     
     logStep("Environment check", {
       hasSupabaseUrl: !!supabaseUrl,
+      supabaseUrlSource: supabaseUrlSource || 'SUPABASE_URL',
       hasServiceKey: !!supabaseServiceKey,
+      serviceKeySource: serviceKeySource || 'SUPABASE_SERVICE_ROLE_KEY',
       hasStripeKey: !!stripeKey,
+      stripeKeySource: stripeKeySource || 'STRIPE_SECRET_KEY',
       allEnvVars: Object.keys(Deno.env.toObject())
     });
     

@@ -12,24 +12,44 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Enhanced logging function
-  const logStep = (step: string, details?: any) => {
-    const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-    console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
-  };
+// Enhanced logging function
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
+};
+
+// Helper to robustly read env vars even if the secret name has stray whitespace/newlines
+const getEnvVar = (key: string): { value?: string; sourceKey?: string } => {
+  const env = Deno.env.toObject();
+  if (env[key] !== undefined) return { value: env[key], sourceKey: key };
+  const keys = Object.keys(env);
+  for (const k of keys) {
+    if (k.replace(/\s/g, '') === key) return { value: env[k], sourceKey: k };
+  }
+  for (const k of keys) {
+    if (k.trim().toUpperCase() === key.toUpperCase()) return { value: env[k], sourceKey: k };
+  }
+  return { value: undefined };
+};
 
   logStep("Function started - v5");
 
   // Enhanced environment validation
   logStep("Checking environment variables");
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+  const { value: supabaseUrlRaw, sourceKey: supabaseUrlSource } = getEnvVar("SUPABASE_URL");
+  const { value: supabaseAnonKeyRaw, sourceKey: supabaseAnonKeySource } = getEnvVar("SUPABASE_ANON_KEY");
+  const { value: stripeKeyRaw, sourceKey: stripeKeySource } = getEnvVar("STRIPE_SECRET_KEY");
+  const supabaseUrl = supabaseUrlRaw?.trim();
+  const supabaseAnonKey = supabaseAnonKeyRaw?.trim();
+  const stripeKey = stripeKeyRaw?.trim();
   
   logStep("Environment check", {
     hasSupabaseUrl: !!supabaseUrl,
+    supabaseUrlSource: supabaseUrlSource || 'SUPABASE_URL',
     hasAnonKey: !!supabaseAnonKey,
+    supabaseAnonKeySource: supabaseAnonKeySource || 'SUPABASE_ANON_KEY',
     hasStripeKey: !!stripeKey,
+    stripeKeySource: stripeKeySource || 'STRIPE_SECRET_KEY',
     allEnvVars: Object.keys(Deno.env.toObject())
   });
 

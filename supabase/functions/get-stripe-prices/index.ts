@@ -12,6 +12,20 @@ const logStep = (step: string, details?: any) => {
   console.log(`[GET-STRIPE-PRICES] ${step}${detailsStr}`);
 };
 
+// Helper to robustly read env vars even if the secret name has stray whitespace/newlines
+const getEnvVar = (key: string): { value?: string; sourceKey?: string } => {
+  const env = Deno.env.toObject();
+  if (env[key] !== undefined) return { value: env[key], sourceKey: key };
+  const keys = Object.keys(env);
+  for (const k of keys) {
+    if (k.replace(/\s/g, '') === key) return { value: env[k], sourceKey: k };
+  }
+  for (const k of keys) {
+    if (k.trim().toUpperCase() === key.toUpperCase()) return { value: env[k], sourceKey: k };
+  }
+  return { value: undefined };
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -23,10 +37,12 @@ serve(async (req) => {
   try {
     // Enhanced environment validation
     logStep("Checking environment variables");
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const { value: stripeKeyRaw, sourceKey: stripeKeySource } = getEnvVar("STRIPE_SECRET_KEY");
+    const stripeKey = stripeKeyRaw?.trim();
     
     logStep("Environment check", {
       hasStripeKey: !!stripeKey,
+      stripeKeySource: stripeKeySource || 'STRIPE_SECRET_KEY',
       allEnvVars: Object.keys(Deno.env.toObject())
     });
     
