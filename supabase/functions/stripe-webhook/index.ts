@@ -98,7 +98,8 @@ serve(async (req) => {
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature, cleanWebhookSecret);
+      // Use async verification compatible with Deno's SubtleCrypto
+      event = await stripe.webhooks.constructEventAsync(body, signature, cleanWebhookSecret);
       logStep("Webhook signature verified", { eventType: event.type, eventId: event.id });
     } catch (err: any) {
       logStep("ERROR: Webhook signature verification failed", { 
