@@ -32,16 +32,55 @@ serve(async (req) => {
   try {
     logStep("Webhook received", { method: req.method, url: req.url });
 
-    // Validate environment
+    // Validate environment variables with detailed logging
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!stripeSecretKey || !webhookSecret || !supabaseUrl || !supabaseServiceKey) {
-      logStep("ERROR: Missing required environment variables");
-      throw new Error('Missing required environment variables');
+    // Log what we have (without exposing full secrets)
+    logStep("Environment check", {
+      hasStripeKey: !!stripeSecretKey,
+      stripeKeyPrefix: stripeSecretKey ? stripeSecretKey.substring(0, 10) + '...' : 'MISSING',
+      hasWebhookSecret: !!webhookSecret,
+      webhookSecretPrefix: webhookSecret ? 'whsec_...' : 'MISSING',
+      hasSupabaseUrl: !!supabaseUrl,
+      supabaseUrl: supabaseUrl || 'MISSING',
+      hasServiceKey: !!supabaseServiceKey,
+      serviceKeyPrefix: supabaseServiceKey ? supabaseServiceKey.substring(0, 15) + '...' : 'MISSING'
+    });
+
+    // Check for missing variables
+    const missingVars: string[] = [];
+    if (!stripeSecretKey) missingVars.push('STRIPE_SECRET_KEY');
+    if (!webhookSecret) missingVars.push('STRIPE_WEBHOOK_SECRET');
+    if (!supabaseUrl) missingVars.push('SUPABASE_URL');
+    if (!supabaseServiceKey) missingVars.push('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (missingVars.length > 0) {
+      logStep("ERROR: Missing environment variables", { missingVars });
+      throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
+
+    // Validate Stripe key format
+    if (!stripeSecretKey.startsWith('sk_')) {
+      logStep("ERROR: Invalid Stripe key format", { 
+        received: stripeSecretKey.substring(0, 10) + '...',
+        expected: 'sk_live_... or sk_test_...' 
+      });
+      throw new Error('STRIPE_SECRET_KEY must start with sk_live_ or sk_test_');
+    }
+
+    // Validate webhook secret format
+    if (!webhookSecret.startsWith('whsec_')) {
+      logStep("ERROR: Invalid webhook secret format", { 
+        expected: 'whsec_...' 
+      });
+      throw new Error('STRIPE_WEBHOOK_SECRET must start with whsec_');
+    }
+
+    // Clean webhook secret (remove any trailing whitespace/newlines)
+    const cleanWebhookSecret = webhookSecret.trim();
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' });
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -59,10 +98,14 @@ serve(async (req) => {
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      event = stripe.webhooks.constructEvent(body, signature, cleanWebhookSecret);
       logStep("Webhook signature verified", { eventType: event.type, eventId: event.id });
     } catch (err: any) {
-      logStep("ERROR: Webhook signature verification failed", { error: err.message });
+      logStep("ERROR: Webhook signature verification failed", { 
+        error: err.message,
+        signaturePrefix: signature.substring(0, 20) + '...',
+        bodyLength: body.length
+      });
       throw new Error(`Webhook signature verification failed: ${err.message}`);
     }
 
