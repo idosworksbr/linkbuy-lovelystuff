@@ -22,11 +22,9 @@ export interface ProductDetail {
     whatsapp_number: number | null;
     custom_whatsapp_message: string;
     instagram_url: string | null;
-    catalog_theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
+    catalog_theme: 'light' | 'dark' | 'beige';
     catalog_layout: 'overlay' | 'bottom';
     hide_footer?: boolean;
-    show_mylinkbuy_credits?: boolean;
-    has_active_subscription?: boolean;
   };
 }
 

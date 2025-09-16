@@ -39,8 +39,6 @@ interface StoreProfile {
   background_color: string;
   background_image_url?: string | null;
   background_type?: 'color' | 'image';
-  show_mylinkbuy_credits?: boolean;
-  has_active_subscription?: boolean;
 }
 
 const AllCategories = () => {

@@ -5,16 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Configurações padrão para usuários sem assinatura ativa
-const DEFAULT_CATALOG_CONFIG = {
-  catalog_theme: 'light',
-  catalog_layout: 'bottom',
-  product_grid_layout: 'default',
-  hide_footer: false,
-  background_color: '#ffffff',
-  store_description: null, // Ocultar descrição para não assinantes
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -60,40 +50,12 @@ Deno.serve(async (req) => {
 
     const store = storeData[0];
 
-    // Verificar se usuário tem assinatura ativa
-    const { data: subscriptionData } = await supabaseClient
-      .from('user_subscriptions')
-      .select('status, subscription_type, current_period_end')
-      .eq('user_id', store.id)
-      .eq('status', 'active');
-
-    const hasActiveSubscription = subscriptionData && subscriptionData.length > 0;
-    console.log(`🔐 Status da assinatura - User ID: ${store.id}, Ativa: ${hasActiveSubscription}`);
-    
-    // Se não tem assinatura ativa, aplicar configurações padrão
-    let finalStore = { ...store };
-    if (!hasActiveSubscription) {
-      finalStore = {
-        ...store,
-        ...DEFAULT_CATALOG_CONFIG,
-        // Manter apenas dados básicos obrigatórios
-        id: store.id,
-        store_name: store.store_name,
-        store_url: store.store_url,
-        profile_photo_url: store.profile_photo_url,
-        whatsapp_number: store.whatsapp_number,
-        instagram_url: store.instagram_url,
-        custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
-        created_at: store.created_at,
-      };
-    }
-
     // Get category information
     const { data: categoryData, error: categoryError } = await supabaseClient
       .from('categories')
       .select('*')
       .eq('id', category_id)
-      .eq('user_id', finalStore.id)
+      .eq('user_id', store.id)
       .eq('is_active', true)
       .single();
 
@@ -112,7 +74,7 @@ Deno.serve(async (req) => {
     const { data: productsData, error: productsError } = await supabaseClient
       .from('products')
       .select('*')
-      .eq('user_id', finalStore.id)
+      .eq('user_id', store.id)
       .eq('category_id', category_id)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
@@ -129,10 +91,13 @@ Deno.serve(async (req) => {
 
     const response = {
       store: {
-        ...finalStore,
-        // Sempre adicionar créditos se não há assinatura ativa
-        show_mylinkbuy_credits: !hasActiveSubscription,
-        has_active_subscription: hasActiveSubscription
+        ...store,
+        background_color: store.background_color || '#ffffff',
+        background_type: store.background_type || 'color',
+        background_image_url: store.background_image_url || null,
+        hide_footer: store.hide_footer || false,
+        catalog_theme: store.catalog_theme || 'light',
+        product_grid_layout: store.product_grid_layout || 'default'
       },
       category: categoryData,
       products,

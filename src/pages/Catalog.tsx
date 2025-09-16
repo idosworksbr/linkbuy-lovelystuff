@@ -33,8 +33,6 @@ interface StoreProfile {
   product_grid_layout?: 'default' | 'round' | 'instagram';
   hide_footer?: boolean;
   is_verified?: boolean;
-  show_mylinkbuy_credits?: boolean;
-  has_active_subscription?: boolean;
   created_at: string;
 }
 
@@ -908,31 +906,9 @@ const Catalog = () => {
         {/* Footer */}
         {!store.hide_footer && (
           <div className={`py-6 ${themeClasses.accent}`}>            
-            <div className={`text-center text-xs ${themeClasses.textMuted} space-y-2`}>
-              {/* Mostrar créditos MyLinkBuy sempre, mas destacar para não assinantes */}
-              <div className="space-y-1">
-                <p className="text-xs">
-                  Criado com 💚 no{' '}
-                  <a 
-                    href="https://mylinkbuy.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className={`font-semibold hover:underline ${
-                      store.show_mylinkbuy_credits 
-                        ? 'text-blue-600' // Destacar para não assinantes
-                        : 'text-blue-500'
-                    }`}
-                  >
-                    MyLinkBuy
-                  </a>
-                  {store.show_mylinkbuy_credits && (
-                    <span className="text-blue-600 font-medium"> • Faça o seu!</span>
-                  )}
-                </p>
-                <p className="mt-1 text-xs font-thin">
-                  Última atualização: {new Date(catalogData.meta.generated_at).toLocaleString('pt-BR')}
-                </p>
-              </div>
+            <div className={`text-center text-xs ${themeClasses.textMuted}`}>
+              <p className="text-xs">Criado com 💚 no <span className="font-semibold">LinkBuy</span></p>
+              <p className="mt-1 text-xs font-thin">Última atualização: {new Date(catalogData.meta.generated_at).toLocaleString('pt-BR')}</p>
             </div>
           </div>
         )}

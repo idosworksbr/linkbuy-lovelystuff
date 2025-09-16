@@ -238,26 +238,7 @@ const ProductDetail = () => {
         {!product.store.hide_footer && (
           <div className={`text-center py-6 text-xs ${themeClasses.textMuted} border-t rounded-t-xl mx-4`} 
                style={{ backgroundColor: theme === 'light' ? '#f8f9fa' : theme === 'dark' ? '#374151' : '#fef3c7' }}>
-            <div className="space-y-1">
-              <p>
-                Criado com 💚 no{' '}
-                <a 
-                  href="https://mylinkbuy.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className={`font-semibold hover:underline ${
-                    product.store.show_mylinkbuy_credits 
-                      ? 'text-blue-600' // Destacar para não assinantes
-                      : 'text-blue-500'
-                  }`}
-                >
-                  MyLinkBuy
-                </a>
-                {product.store.show_mylinkbuy_credits && (
-                  <span className="text-blue-600 font-medium"> • Faça o seu!</span>
-                )}
-              </p>
-            </div>
+            Criado com 💚 no LinkBuy
           </div>
         )}
       </div>
