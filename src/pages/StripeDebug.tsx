@@ -190,7 +190,7 @@ export default function StripeDebug() {
               <div>
                 <span className="font-medium">Stripe Key Type:</span>
                 <div className="text-muted-foreground">
-                  {STRIPE_CONFIG.publishableKey.startsWith('pk_live_') ? 'Live (Produção)' : 'Test/Dev'}
+                  Configurada via variáveis de ambiente (seguro)
                 </div>
               </div>
               <div>

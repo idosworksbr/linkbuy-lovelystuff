@@ -19,15 +19,12 @@ export const StripeProductionReadiness = () => {
   const performProductionChecks = () => {
     const newChecks: ProductionCheck[] = [];
 
-    // 1. Check Stripe Key Format
-    const isLiveKey = STRIPE_CONFIG.publishableKey.startsWith('pk_live_');
+    // 1. Check Stripe Key Format - Chave removida por segurança
     newChecks.push({
       name: 'Chave Pública Stripe',
-      status: isLiveKey ? 'ok' : 'warning',
-      message: isLiveKey 
-        ? 'Usando chave de produção (pk_live_)'
-        : 'Usando chave de teste ou desenvolvimento',
-      action: isLiveKey ? undefined : 'Configurar chave de produção'
+      status: 'warning',
+      message: 'Chave pública deve estar configurada via variáveis de ambiente',
+      action: 'Verificar STRIPE_PUBLIC_KEY no Supabase'
     });
 
     // 2. Check Price IDs
