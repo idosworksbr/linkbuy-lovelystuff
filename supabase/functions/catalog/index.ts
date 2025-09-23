@@ -69,18 +69,54 @@ Deno.serve(async (req) => {
     const customLinks = customLinksResult.data || [];
     const categories = categoriesResult.data || [];
 
-    // Get all products with category information in a single query to avoid duplicates
+    // Get products efficiently - separate queries for better performance
     // Only show active products in public catalog
-    const { data: allProducts, error: productsError } = await supabaseClient
-      .from('products')
-      .select(`
-        *,
-        categories!products_category_id_fkey(id, name, image_url)
-      `)
-      .eq('user_id', store.id)
-      .eq('status', 'active')
-      .order('display_order', { ascending: true })
-      .order('created_at', { ascending: false });
+    let allProducts = [];
+    let productsError = null;
+    
+    try {
+      // First get products without JOIN to avoid timeout
+      const { data: productsData, error: pError } = await supabaseClient
+        .from('products')
+        .select('*')
+        .eq('user_id', store.id)
+        .eq('status', 'active')
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false })
+        .limit(200); // Add reasonable limit to prevent timeout
+      
+      if (pError) {
+        productsError = pError;
+      } else if (productsData && productsData.length > 0) {
+        // Get unique category IDs from products
+        const categoryIds = [...new Set(productsData
+          .filter(p => p.category_id)
+          .map(p => p.category_id))];
+        
+        // Get categories for these products only if needed
+        let categoryMap = new Map();
+        if (categoryIds.length > 0) {
+          const { data: categoryData } = await supabaseClient
+            .from('categories')
+            .select('id, name, image_url')
+            .in('id', categoryIds);
+          
+          if (categoryData) {
+            categoryData.forEach(cat => categoryMap.set(cat.id, cat));
+          }
+        }
+        
+        // Combine products with their categories
+        allProducts = productsData.map(product => ({
+          ...product,
+          categories: product.category_id ? categoryMap.get(product.category_id) || null : null
+        }));
+      }
+    } catch (error) {
+      console.error('Error in products query:', error);
+      productsError = error;
+      allProducts = [];
+    }
     
     // Filter products based on store's feed configuration
     let feedProducts = allProducts || [];
