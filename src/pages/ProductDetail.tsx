@@ -53,7 +53,8 @@ const ProductDetail = () => {
     trackEvent('whatsapp_click', product.store.id, product.id);
 
     const customMessage = product.store.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.';
-    const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`;
+    const prices = getProductPrices(product);
+    const productMessage = `${customMessage}\n\nProduto: ${product.name} - R$ ${prices.formattedFinalPrice}`;
     const message = encodeURIComponent(productMessage);
     
     // Smart WhatsApp URL generation - check if number already includes country code
