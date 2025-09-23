@@ -33,6 +33,7 @@ interface StoreProfile {
   product_grid_layout?: 'default' | 'round' | 'instagram';
   hide_footer?: boolean;
   is_verified?: boolean;
+  show_all_products_in_feed?: boolean;
   created_at: string;
 }
 
@@ -70,10 +71,12 @@ interface CustomLink {
 interface CatalogData {
   store: StoreProfile;
   products: Product[];
+  allProducts: Product[];
   categories: Category[];
   customLinks: CustomLink[];
   meta: {
     total_products: number;
+    total_all_products: number;
     total_custom_links: number;
     total_categories: number;
     generated_at: string;
@@ -279,16 +282,25 @@ const Catalog = () => {
   const handleProductReorder = (productIds: string[]) => {
     reorderProducts(productIds);
     
-    // Atualizar ordem local
+    // Atualizar ordem local tanto nos produtos do feed quanto em todos os produtos
     if (catalogData) {
       const reorderedProducts = productIds.map((id, index) => {
         const product = catalogData.products.find(p => p.id === id);
         return product ? { ...product, display_order: index + 1 } : null;
       }).filter(Boolean) as Product[];
       
+      const updatedAllProducts = catalogData.allProducts.map(product => {
+        const newOrderIndex = productIds.indexOf(product.id);
+        if (newOrderIndex !== -1) {
+          return { ...product, display_order: newOrderIndex + 1 };
+        }
+        return product;
+      }).sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      
       setCatalogData({
         ...catalogData,
-        products: reorderedProducts
+        products: reorderedProducts,
+        allProducts: updatedAllProducts
       });
     }
   };
@@ -341,11 +353,13 @@ const Catalog = () => {
     );
   }
 
-  const { store, products, categories, meta } = catalogData;
+  const { store, products, allProducts, categories, meta } = catalogData;
   const gridLayout = store.product_grid_layout || 'default';
   
-  // Filter products without category for main feed
-  const uncategorizedProducts = products.filter(product => !product.category_id);
+  // Products already come filtered from the API based on show_all_products_in_feed setting:
+  // - If show_all_products_in_feed = true: products contains ALL products
+  // - If show_all_products_in_feed = false: products contains only products WITHOUT category
+  // allProducts always contains ALL products for category page navigation
 
   // Função para renderizar o produto baseado no layout
   const renderProduct = (product: Product, index: number) => {
@@ -744,9 +758,9 @@ const Catalog = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {uncategorizedProducts.length > 0 ? (
+            {products.length > 0 ? (
               <DragDropProductGrid
-                products={uncategorizedProducts}
+                products={products}
                 onReorder={handleProductReorder}
                 isEditMode={isEditMode}
                 gridLayout={gridLayout}
@@ -819,16 +833,16 @@ const Catalog = () => {
             }}
           >
             {/* Products Section First */}
-            {products.length > 0 && (
+            {allProducts && allProducts.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className={`text-lg font-semibold ${themeClasses.text}`}>Produtos</h2>
                   <span className={`text-sm ${themeClasses.textMuted}`}>
-                    {Math.min(6, products.length)} de {products.length}
+                    {Math.min(6, allProducts.length)} de {allProducts.length}
                   </span>
                 </div>
                 
-                {/* Products Grid - Show first 6 products */}
+                {/* Products Grid - Show first 6 products from allProducts */}
                 <div className={`grid ${
                   gridLayout === 'instagram' 
                     ? 'grid-cols-3 gap-1' 
@@ -836,18 +850,18 @@ const Catalog = () => {
                       ? 'grid-cols-2 gap-4' 
                       : 'grid-cols-2 gap-3'
                 } mb-4`}>
-                  {products.slice(0, 6).map((product, index) => renderProduct(product, index))}
+                  {allProducts.slice(0, 6).map((product, index) => renderProduct(product, index))}
                 </div>
                 
                 {/* Load More Button */}
-                {products.length > 6 && (
+                {allProducts.length > 6 && (
                   <div className="text-center">
                     <Button 
                       onClick={() => setActiveTab('products')}
                       variant="outline"
                       className={`${themeClasses.buttonOutline} rounded-full px-6 py-2 text-sm hover:scale-105 transition-all`}
                     >
-                      Ver todos os {products.length} produtos
+                      Ver todos os {allProducts.length} produtos
                     </Button>
                   </div>
                 )}

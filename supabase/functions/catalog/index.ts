@@ -97,6 +97,8 @@ Deno.serve(async (req) => {
     }
 
     console.log('Total products count:', allProducts?.length || 0);
+    console.log('Feed products count:', feedProducts?.length || 0);
+    console.log('Show all products in feed:', store.show_all_products_in_feed);
     console.log('Categories count:', categories.length);
 
     const response = {
@@ -109,7 +111,8 @@ Deno.serve(async (req) => {
         is_verified: store.is_verified || false,
         custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.',
         catalog_theme: store.catalog_theme || 'light',
-        catalog_layout: store.catalog_layout || 'bottom'  // Fixed: bottom shows title/price visible
+        catalog_layout: store.catalog_layout || 'bottom',  // Fixed: bottom shows title/price visible
+        show_all_products_in_feed: store.show_all_products_in_feed || false
       },
       products: feedProducts, // Products for the main feed (filtered)
       allProducts: allProducts || [], // All products for category filtering
