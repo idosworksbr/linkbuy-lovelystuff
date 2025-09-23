@@ -26,7 +26,8 @@ export const useCategories = () => {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('*')
+        .select('id, user_id, name, image_url, display_order, is_active, created_at, updated_at')
+        .eq('user_id', user.id)
         .order('display_order', { ascending: true });
 
       if (error) throw error;

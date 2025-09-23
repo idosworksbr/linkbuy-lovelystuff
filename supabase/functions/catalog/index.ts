@@ -119,8 +119,17 @@ Deno.serve(async (req) => {
     }
     
     // Filter products based on store's feed configuration
+    const showAllProductsInFeed = Boolean(
+      store?.show_all_products_in_feed === true ||
+      store?.settings?.show_all_products_in_feed === true ||
+      store?.catalog_settings?.show_all_products_in_feed === true ||
+      store?.feed_settings?.show_all_products_in_feed === true ||
+      store?.list_all_products_in_feed === true ||
+      store?.list_all_products === true
+    );
+
     let feedProducts = allProducts || [];
-    if (store.show_all_products_in_feed) {
+    if (showAllProductsInFeed) {
       // Show all products in the main feed when enabled
       feedProducts = allProducts || [];
     } else {
@@ -134,7 +143,15 @@ Deno.serve(async (req) => {
 
     console.log('Total products count:', allProducts?.length || 0);
     console.log('Feed products count:', feedProducts?.length || 0);
-    console.log('Show all products in feed:', store.show_all_products_in_feed);
+    console.log('Show all products in feed (computed):', showAllProductsInFeed);
+    console.log('Raw flags:', {
+      top_level: store?.show_all_products_in_feed,
+      settings: store?.settings?.show_all_products_in_feed,
+      catalog_settings: store?.catalog_settings?.show_all_products_in_feed,
+      feed_settings: store?.feed_settings?.show_all_products_in_feed,
+      list_all_products_in_feed: store?.list_all_products_in_feed,
+      list_all_products: store?.list_all_products,
+    });
     console.log('Categories count:', categories.length);
 
     const response = {
@@ -148,7 +165,7 @@ Deno.serve(async (req) => {
         custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.',
         catalog_theme: store.catalog_theme || 'light',
         catalog_layout: store.catalog_layout || 'bottom',  // Fixed: bottom shows title/price visible
-        show_all_products_in_feed: store.show_all_products_in_feed || false
+        show_all_products_in_feed: showAllProductsInFeed
       },
       products: feedProducts, // Products for the main feed (filtered)
       allProducts: allProducts || [], // All products for category filtering
