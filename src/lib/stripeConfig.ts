@@ -64,7 +64,7 @@ export const mapPriceIdToPlanName = (priceId: string): string => {
 // Função para obter chave pública do Stripe de forma segura
 export const getStripePublishableKey = (): string | null => {
   // TODO: Substitua pela sua chave pública real do Stripe (pk_live_... ou pk_test_...)
-  const STRIPE_PUBLISHABLE_KEY = ""; // ← ADICIONE SUA CHAVE PÚBLICA AQUI
+  const STRIPE_PUBLISHABLE_KEY = "pk_live_51S2cpKFhG2EqaMMarWCOKw3EDm5iwwM7G50tefRYeHUjP18iuSnAsuVovc1drMFdp7BZMoq4GvA1joXvbSLYW8ru00kZN9qEDo"; // ← ADICIONE SUA CHAVE PÚBLICA AQUI
   
   const publishableKey = STRIPE_PUBLISHABLE_KEY || 
                         import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
