@@ -229,15 +229,26 @@ async function handleSubscriptionUpdate(
   }
 
   if (subscription.status === 'active') {
-    const priceId = subscription.items.data[0].price.id;
+    const firstItem = subscription.items?.data?.[0];
+    const priceId = firstItem?.price?.id || '';
     const subscriptionType = mapPriceIdToSubscriptionType(priceId);
-    const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
-    const currentPeriodStart = new Date(subscription.current_period_start * 1000).toISOString();
+
+    const toIsoFromUnixSeconds = (value: number | null | undefined) => {
+      if (typeof value === 'number' && isFinite(value) && value > 0) {
+        return new Date(value * 1000).toISOString();
+      }
+      return null;
+    };
+
+    const currentPeriodEnd = toIsoFromUnixSeconds((subscription as any).current_period_end);
+    const currentPeriodStart = toIsoFromUnixSeconds((subscription as any).current_period_start);
 
     logStep("Upserting active subscription", {
       userId: user.id,
       subscriptionType,
-      subscriptionId: subscription.id
+      subscriptionId: subscription.id,
+      currentPeriodStart,
+      currentPeriodEnd
     });
 
     // Upsert subscription
@@ -245,7 +256,7 @@ async function handleSubscriptionUpdate(
       user_id: user.id,
       subscription_type: subscriptionType,
       stripe_subscription_id: subscription.id,
-      stripe_price_id: priceId,
+      stripe_price_id: priceId || null,
       status: 'active',
       current_period_start: currentPeriodStart,
       current_period_end: currentPeriodEnd,
