@@ -106,6 +106,8 @@ const Catalog = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'products' | 'links' | 'categories'>('products');
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'bottom';
   const themeClasses = useThemeClasses(theme);
@@ -329,6 +331,8 @@ const Catalog = () => {
       });
     }
   };
+
+  const handleProductReorder = (productIds: string[]) => {
     reorderProducts(productIds);
     
     // Atualizar ordem local tanto nos produtos do feed quanto em todos os produtos

@@ -6,7 +6,7 @@ interface Category {
   name: string;
   image_url: string | null;
   display_order: number;
-  product_count: number;
+  product_count?: number;
 }
 
 interface DragDropCategoryGridProps {
@@ -151,7 +151,7 @@ export const DragDropCategoryGrid: React.FC<DragDropCategoryGridProps> = ({
           
           <div className={`absolute bottom-0 left-0 right-0 p-2 ${themeClasses.overlay}`}>
             <h4 className="font-medium text-sm text-white truncate">{category.name}</h4>
-            <p className="text-xs text-gray-200">{category.product_count} produtos</p>
+            <p className="text-xs text-gray-200">{category.product_count || 0} produtos</p>
           </div>
         </div>
       ))}
