@@ -15,6 +15,9 @@ import { ProductPreviewModal } from "@/components/ProductPreviewModal";
 import { InstagramStyleProductGrid } from "@/components/InstagramStyleProductGrid";
 import { DragDropCategoryGrid } from "@/components/DragDropCategoryGrid";
 import { useLongPress } from "@/hooks/useLongPress";
+import { useProfile } from "@/hooks/useProfile";
+import { usePlans } from "@/hooks/usePlans";
+import { getProductPrices } from "@/lib/priceUtils";
 
 interface StoreProfile {
   id: string;
@@ -411,6 +414,7 @@ const Catalog = () => {
   const renderProduct = (product: Product, index: number) => {
     const baseClasses = "cursor-pointer group animate-fade-in relative";
     const animationStyle = { animationDelay: `${index * 50}ms` };
+    const layout = store.catalog_layout || 'bottom';
 
     const longPressProps = useLongPress({
       onLongPress: () => handleProductLongPress(product),
@@ -420,6 +424,7 @@ const Catalog = () => {
 
     if (gridLayout === 'instagram') {
       // Layout Instagram - sem gap nem bordas, apenas as imagens
+      return (
         <div 
           key={product.id} 
           {...longPressProps}
@@ -504,7 +509,6 @@ const Catalog = () => {
       );
     }
 
-    // Layout padrão (default) com animação de desconto
     // Layout padrão (default) com animação de desconto
     const productWithAnimation = (
       <div 
@@ -985,9 +989,19 @@ const Catalog = () => {
             </div>
           </div>
         )}
+
+        {/* Product Preview Modal */}
+        <ProductPreviewModal
+          product={previewProduct}
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          onBuyNow={handleBuyNow}
+          themeClasses={themeClasses}
+        />
       </div>
     </CatalogTheme>
   );
-};
+}; // End of Catalog component
 
+// Exportar componente Catalog
 export default Catalog;
