@@ -131,7 +131,22 @@ Deno.serve(async (req) => {
     let feedProducts = allProducts || [];
     if (showAllProductsInFeed) {
       // Show all products in the main feed when enabled
-      feedProducts = allProducts || [];
+      // Handle display_order conflicts: categorized products keep their order, uncategorized get higher numbers
+      const categorizedProducts = (allProducts || []).filter(p => p.category_id);
+      const uncategorizedProducts = (allProducts || []).filter(p => !p.category_id);
+      
+      const maxCategorizedOrder = categorizedProducts.length > 0 
+        ? Math.max(...categorizedProducts.map(p => p.display_order || 0))
+        : 0;
+      
+      // Uncategorized products get orders starting from maxCategorizedOrder + 1
+      const reorderedUncategorized = uncategorizedProducts.map((product, index) => ({
+        ...product,
+        display_order: maxCategorizedOrder + index + 1
+      }));
+      
+      feedProducts = [...categorizedProducts, ...reorderedUncategorized]
+        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
     } else {
       // Show only products without category in the main feed
       feedProducts = (allProducts || []).filter(product => !product.category_id);

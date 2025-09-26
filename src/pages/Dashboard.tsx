@@ -13,6 +13,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useProfile } from "@/hooks/useProfile";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getProductPrices } from '@/lib/priceUtils';
 
 const Dashboard = () => {
   const { products, loading, updateProduct, deleteProduct, createProduct } = useProducts();
@@ -292,9 +293,27 @@ const Dashboard = () => {
                           {product.description}
                         </p>
                         <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold text-lg">
-                            R$ {product.price?.toFixed(2).replace('.', ',')}
-                          </span>
+                          {(() => {
+                            const prices = getProductPrices(product);
+                            return (
+                              <div className="flex flex-col">
+                                {prices.hasDiscount ? (
+                                  <>
+                                    <span className="text-sm text-muted-foreground line-through">
+                                      R$ {prices.formattedOriginalPrice}
+                                    </span>
+                                    <span className="font-bold text-lg text-success">
+                                      R$ {prices.formattedFinalPrice}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="font-bold text-lg">
+                                    R$ {prices.formattedFinalPrice}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                         <div className="flex gap-2">
                           <Button

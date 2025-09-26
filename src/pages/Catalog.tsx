@@ -11,9 +11,10 @@ import { DragDropProductGrid } from "@/components/DragDropProductGrid";
 import { DiscountAnimation } from "@/components/DiscountAnimation";
 import { useCatalogEdit } from "@/hooks/useCatalogEdit";
 import { useReorderItems } from "@/hooks/useReorderItems";
-import { useProfile } from "@/hooks/useProfile";
-import { usePlans } from "@/hooks/usePlans";
-import { getProductPrices } from "@/lib/priceUtils";
+import { ProductPreviewModal } from "@/components/ProductPreviewModal";
+import { InstagramStyleProductGrid } from "@/components/InstagramStyleProductGrid";
+import { DragDropCategoryGrid } from "@/components/DragDropCategoryGrid";
+import { useLongPress } from "@/hooks/useLongPress";
 
 interface StoreProfile {
   id: string;
@@ -279,7 +280,52 @@ const Catalog = () => {
     navigate(`/catalog/${storeUrl}/product/${product.id}`);
   };
 
-  const handleProductReorder = (productIds: string[]) => {
+  const handleProductLongPress = (product: Product) => {
+    if (isEditMode) return;
+    setPreviewProduct(product);
+    setIsPreviewOpen(true);
+  };
+
+  const handleBuyNow = (product: Product) => {
+    setIsPreviewOpen(false);
+    if (!catalogData?.store) return;
+    
+    trackEvent('whatsapp_click', catalogData.store.id, product.id);
+    
+    if (!isWhatsAppAvailable()) {
+      toast({
+        title: "WhatsApp não disponível",
+        description: "Esta loja não configurou um número de WhatsApp válido.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const phoneNumber = catalogData.store.whatsapp_number;
+    const productMessage = `Olá! Vi o produto "${product.name}" no seu catálogo e gostaria de saber mais informações.`;
+    const message = encodeURIComponent(productMessage);
+    
+    const phoneStr = phoneNumber.toString();
+    const whatsappUrl = `https://wa.me/${phoneStr}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleCategoryReorder = (categoryUpdates: Array<{ id: string; display_order: number }>) => {
+    reorderCategories(categoryUpdates);
+    
+    // Atualizar ordem local das categorias
+    if (catalogData) {
+      const updatedCategories = catalogData.categories.map(category => {
+        const update = categoryUpdates.find(u => u.id === category.id);
+        return update ? { ...category, display_order: update.display_order } : category;
+      }).sort((a, b) => a.display_order - b.display_order);
+      
+      setCatalogData({
+        ...catalogData,
+        categories: updatedCategories
+      });
+    }
+  };
     reorderProducts(productIds);
     
     // Atualizar ordem local tanto nos produtos do feed quanto em todos os produtos
@@ -366,12 +412,17 @@ const Catalog = () => {
     const baseClasses = "cursor-pointer group animate-fade-in relative";
     const animationStyle = { animationDelay: `${index * 50}ms` };
 
+    const longPressProps = useLongPress({
+      onLongPress: () => handleProductLongPress(product),
+      onClick: () => handleProductClick(product),
+      delay: 500
+    });
+
     if (gridLayout === 'instagram') {
       // Layout Instagram - sem gap nem bordas, apenas as imagens
-      return (
         <div 
           key={product.id} 
-          onClick={() => handleProductClick(product)} 
+          {...longPressProps}
           className={`${baseClasses} aspect-square overflow-hidden`}
           style={animationStyle}
         >
@@ -413,7 +464,7 @@ const Catalog = () => {
       return (
         <div 
           key={product.id} 
-          onClick={() => handleProductClick(product)} 
+          {...longPressProps}
           className={`${baseClasses} bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-all`}
           style={animationStyle}
         >
@@ -454,10 +505,11 @@ const Catalog = () => {
     }
 
     // Layout padrão (default) com animação de desconto
+    // Layout padrão (default) com animação de desconto
     const productWithAnimation = (
       <div 
         key={product.id} 
-        onClick={() => handleProductClick(product)} 
+        {...longPressProps}
         className={`${baseClasses} aspect-square bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-all`}
         style={animationStyle}
       >
@@ -832,55 +884,62 @@ const Catalog = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {/* Products Section First */}
+            {/* Products Section First - Instagram Style */}
             {allProducts && allProducts.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className={`text-lg font-semibold ${themeClasses.text}`}>Produtos</h2>
                   <span className={`text-sm ${themeClasses.textMuted}`}>
-                    {Math.min(6, allProducts.length)} de {allProducts.length}
+                    {allProducts.length} produtos
                   </span>
                 </div>
                 
-                {/* Products Grid - Show first 6 products from allProducts */}
-                <div className={`grid ${
-                  gridLayout === 'instagram' 
-                    ? 'grid-cols-3 gap-1' 
-                    : gridLayout === 'round' 
-                      ? 'grid-cols-2 gap-4' 
-                      : 'grid-cols-2 gap-3'
-                } mb-4`}>
-                  {allProducts.slice(0, 6).map((product, index) => renderProduct(product, index))}
-                </div>
-                
-                {/* Load More Button */}
-                {allProducts.length > 6 && (
-                  <div className="text-center">
-                    <Button 
-                      onClick={() => setActiveTab('products')}
-                      variant="outline"
-                      className={`${themeClasses.buttonOutline} rounded-full px-6 py-2 text-sm hover:scale-105 transition-all`}
-                    >
-                      Ver todos os {allProducts.length} produtos
-                    </Button>
-                  </div>
-                )}
+                {/* Instagram Style Product Grid */}
+                <InstagramStyleProductGrid
+                  products={allProducts}
+                  onBuyNow={handleBuyNow}
+                  themeClasses={themeClasses}
+                />
               </div>
             )}
             
-            {/* Categories Section */}
-            <div className="text-center py-8">
-              <Button 
-                onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
-                className={`${themeClasses.button} rounded-full px-8 py-3 text-sm font-medium hover:scale-105 transition-all shadow-lg`}
-              >
-                <icons.List className="h-4 w-4 mr-2" />
-                Ver Todas as Categorias
-              </Button>
-              <p className={`text-sm ${themeClasses.textMuted} mt-3`}>
-                Explore produtos organizados por categoria
-              </p>
-            </div>
+            {/* Categories Section with Drag and Drop */}
+            {categories && categories.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className={`text-lg font-semibold ${themeClasses.text}`}>Categorias</h2>
+                  {isEditMode && (
+                    <span className={`text-xs ${themeClasses.textMuted} bg-blue-100 px-2 py-1 rounded`}>
+                      Modo de edição: arraste para reordenar
+                    </span>
+                  )}
+                </div>
+                
+                <DragDropCategoryGrid
+                  categories={categories}
+                  onReorder={handleCategoryReorder}
+                  isEditMode={isEditMode}
+                  themeClasses={themeClasses}
+                  storeUrl={storeUrl || ''}
+                />
+              </div>
+            )}
+            
+            {/* Fallback button if no categories */}
+            {(!categories || categories.length === 0) && (
+              <div className="text-center py-8">
+                <Button 
+                  onClick={() => navigate(`/catalog/${storeUrl}/categories`)}
+                  className={`${themeClasses.button} rounded-full px-8 py-3 text-sm font-medium hover:scale-105 transition-all shadow-lg`}
+                >
+                  <icons.List className="h-4 w-4 mr-2" />
+                  Ver Todas as Categorias
+                </Button>
+                <p className={`text-sm ${themeClasses.textMuted} mt-3`}>
+                  Explore produtos organizados por categoria
+                </p>
+              </div>
+            )}
           </div>
         )}
 

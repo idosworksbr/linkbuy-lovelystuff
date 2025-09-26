@@ -101,7 +101,7 @@ export const DragDropCategoryGrid: React.FC<DragDropCategoryGridProps> = ({
 
   const handleCategoryClick = (category: Category) => {
     if (!isEditMode) {
-      navigate(`/catalogo/${storeUrl}/categoria/${category.id}`);
+      navigate(`/catalog/${storeUrl}/category/${category.id}`);
     }
   };
 
