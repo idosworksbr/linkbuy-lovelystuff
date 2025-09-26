@@ -988,7 +988,7 @@ const Catalog = () => {
         {!store.hide_footer && (
           <div className={`py-6 ${themeClasses.accent}`}>            
             <div className={`text-center text-xs ${themeClasses.textMuted}`}>
-              <p className="text-xs">Criado com 💚 no <a href="https://mylinkbuy.com" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline">MyLinkBuy</a></p>
+              <p className="text-xs">Criado com 💚 no <a href="https://www.mylinkbuy.com.br" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline">MyLinkBuy</a></p>
               <p className="mt-1 text-xs font-thin">Última atualização: {new Date(catalogData.meta.generated_at).toLocaleString('pt-BR')}</p>
             </div>
           </div>
