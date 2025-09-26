@@ -84,7 +84,7 @@ const Login = () => {
           
           <div className="flex items-center justify-center gap-2 mb-4">
             <ShoppingBag className="h-10 w-10 text-whatsapp" />
-            <span className="text-3xl font-bold">LinkBuy</span>
+            <span className="text-3xl font-bold">MyLinkBuy</span>
           </div>
           <p className="text-muted-foreground">Entre ou crie sua conta</p>
         </div>
@@ -100,7 +100,7 @@ const Login = () => {
               <CardHeader className="text-center pb-4">
                 <CardTitle>Bem-vindo de volta!</CardTitle>
                 <CardDescription>
-                  Entre na sua conta do LinkBuy
+                  Entre na sua conta do MyLinkBuy
                 </CardDescription>
               </CardHeader>
               <CardContent>

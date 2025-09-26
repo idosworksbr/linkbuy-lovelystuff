@@ -149,8 +149,8 @@ export const useSubscription = () => {
       }
       
       console.log('[useSubscription] URL do portal:', data.url);
-      // Open customer portal in a new tab
-      window.open(data.url, '_blank');
+      // Use direct redirect instead of popup to avoid blockers
+      window.location.href = data.url;
     } catch (error: any) {
       console.error('Error opening customer portal:', error);
       

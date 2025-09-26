@@ -267,24 +267,24 @@ const Analytics = () => {
                     </div>
                     
                     <div className="flex items-center justify-around sm:justify-center sm:space-x-4 text-xs sm:text-sm border-t sm:border-t-0 pt-3 sm:pt-0">
-                      <div className="text-center">
-                        <div className="font-medium text-sm sm:text-base">{product.total_views}</div>
-                        <div className="text-muted-foreground text-xs">Views</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-medium text-sm sm:text-base">{product.whatsapp_clicks}</div>
-                        <div className="text-muted-foreground text-xs">WhatsApp</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-medium text-sm sm:text-base">{product.instagram_clicks}</div>
-                        <div className="text-muted-foreground text-xs">Instagram</div>
-                      </div>
-                      <div className="text-center">
-                        <Badge variant={product.conversion_rate > 5 ? "default" : "secondary"} className="text-xs">
-                          {product.conversion_rate.toFixed(1)}%
-                        </Badge>
-                        <div className="text-muted-foreground text-xs mt-1">Conversão</div>
-                      </div>
+                          <div className="text-center">
+                            <div className="font-medium text-sm sm:text-base">{product.total_views}</div>
+                            <div className="text-muted-foreground text-xs">Views</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-medium text-sm sm:text-base">{product.whatsapp_clicks}</div>
+                            <div className="text-muted-foreground text-xs">WhatsApp</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-medium text-sm sm:text-base">{product.instagram_clicks}</div>
+                            <div className="text-muted-foreground text-xs">Instagram</div>
+                          </div>
+                          <div className="text-center">
+                            <Badge variant={product.conversion_rate > 5 ? "default" : "secondary"} className="text-xs">
+                              {product.conversion_rate.toFixed(1)}%
+                            </Badge>
+                            <div className="text-muted-foreground text-xs mt-1">Conversão</div>
+                          </div>
                     </div>
                   </div>
                 ))}

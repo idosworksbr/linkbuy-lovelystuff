@@ -20,6 +20,7 @@ import { ImageUploadField } from "@/components/ImageUploadField";
 import { StripeDebugPanel } from "@/components/StripeDebugPanel";
 import { MultipleSubscriptionsInfo } from "@/components/MultipleSubscriptionsInfo";
 import { CancellationDialog } from "@/components/CancellationDialog";
+import { SecuritySettings } from "@/components/SecuritySettings";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -244,11 +245,12 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="visual">Visual</TabsTrigger>
             <TabsTrigger value="plans">Planos</TabsTrigger>
             <TabsTrigger value="portal">Portal</TabsTrigger>
+            <TabsTrigger value="security">Segurança</TabsTrigger>
             <TabsTrigger value="debug" className="text-orange-600">
               <Bug className="h-4 w-4 mr-1" />
               Debug
@@ -680,7 +682,7 @@ const Settings = () => {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Esconder rodapé "Criado com ❤️ no LinkBuy"</Label>
+                      <Label>Esconder rodapé "Criado com ❤️ no MyLinkBuy"</Label>
                       <p className="text-xs text-muted-foreground">
                         Remove o rodapé de crédito do catálogo
                       </p>

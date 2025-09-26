@@ -36,7 +36,7 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto rounded-2xl p-0 overflow-hidden">
+      <DialogContent className={`max-w-md mx-auto rounded-2xl p-0 overflow-hidden ${themeClasses.card}`}>
         <div className="relative">
           {/* Product Image */}
           <div className="aspect-square relative overflow-hidden bg-gray-100">
@@ -45,6 +45,7 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
                 src={product.images[0]}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                style={{ userSelect: 'none' }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -68,7 +69,7 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
 
           {/* Product Info */}
           <div className="p-6">
-            <h3 className="text-xl font-bold mb-2 text-foreground">
+            <h3 className={`text-xl font-bold mb-2 ${themeClasses.text}`}>
               {product.name}
             </h3>
             
@@ -76,7 +77,7 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
             <div className="mb-4">
               {prices.hasDiscount ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-lg text-muted-foreground line-through">
+                  <span className={`text-lg line-through ${themeClasses.textMuted}`}>
                     R$ {prices.formattedOriginalPrice}
                   </span>
                   <span className="text-2xl font-bold text-success">
@@ -87,7 +88,7 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
                   </span>
                 </div>
               ) : (
-                <span className="text-2xl font-bold text-foreground">
+                <span className={`text-2xl font-bold ${themeClasses.text}`}>
                   R$ {prices.formattedFinalPrice}
                 </span>
               )}
@@ -95,7 +96,7 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
 
             {/* Description */}
             {product.description && (
-              <p className="text-muted-foreground mb-6 leading-relaxed">
+              <p className={`mb-6 leading-relaxed ${themeClasses.textMuted}`}>
                 {product.description}
               </p>
             )}

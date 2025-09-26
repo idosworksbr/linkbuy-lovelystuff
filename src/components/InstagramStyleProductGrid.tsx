@@ -54,7 +54,8 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
         return (
           <div
             key={product.id}
-            className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in"
+            className={`${themeClasses.card} rounded-2xl border ${themeClasses.border} overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in`}
+            style={{ userSelect: 'none' }}
           >
             {/* Image Container with Carousel */}
             <div className="relative aspect-square bg-muted">
@@ -64,6 +65,7 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
                     src={product.images[currentImageIndex]}
                     alt={product.name}
                     className="w-full h-full object-cover"
+                    style={{ userSelect: 'none' }}
                   />
                   
                   {/* Discount Animation */}
@@ -119,7 +121,7 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
 
             {/* Product Info */}
             <div className="p-6">
-              <h3 className="text-lg font-bold mb-2 text-foreground line-clamp-2">
+              <h3 className={`text-lg font-bold mb-2 line-clamp-2 ${themeClasses.text}`}>
                 {product.name}
               </h3>
 
@@ -127,7 +129,7 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
               <div className="mb-4">
                 {prices.hasDiscount ? (
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm text-muted-foreground line-through">
+                    <span className={`text-sm line-through ${themeClasses.textMuted}`}>
                       R$ {prices.formattedOriginalPrice}
                     </span>
                     <span className="text-xl font-bold text-success">
@@ -138,7 +140,7 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
                     </span>
                   </div>
                 ) : (
-                  <span className="text-xl font-bold text-foreground">
+                  <span className={`text-xl font-bold ${themeClasses.text}`}>
                     R$ {prices.formattedFinalPrice}
                   </span>
                 )}
@@ -146,7 +148,7 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
 
               {/* Description */}
               {product.description && (
-                <p className="text-muted-foreground mb-4 text-sm leading-relaxed line-clamp-3">
+                <p className={`mb-4 text-sm leading-relaxed line-clamp-3 ${themeClasses.textMuted}`}>
                   {product.description}
                 </p>
               )}

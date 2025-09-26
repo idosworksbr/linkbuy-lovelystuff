@@ -54,7 +54,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   // Check if user needs onboarding and show automatically for first-time users
-  const needsOnboarding = !profile?.store_name;
+  const needsOnboarding = !profile?.store_name || !profile?.store_url;
   
   // Auto-show onboarding for new users
   useEffect(() => {
@@ -152,14 +152,6 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            {needsOnboarding && (
-              <Button 
-                onClick={() => setShowOnboarding(true)}
-                variant="outline"
-              >
-                Configurar Loja
-              </Button>
-            )}
             <Button onClick={() => navigate("/dashboard/add-product")}>
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Produto
@@ -213,16 +205,6 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => profile && updateProfile({ 
-                  show_all_products_in_feed: !profile.show_all_products_in_feed 
-                })}
-                className="text-xs"
-              >
-                {profile?.show_all_products_in_feed ? 'Todos os produtos' : 'Só sem categoria'}
-              </Button>
               
               {/* Items per page selector */}
               <select

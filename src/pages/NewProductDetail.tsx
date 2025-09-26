@@ -252,7 +252,7 @@ const NewProductDetail = () => {
         {!product.store.hide_footer && (
           <div className={`text-center py-6 text-xs ${themeClasses.textMuted} border-t rounded-t-xl mx-4`} 
                style={{ backgroundColor: theme === 'light' ? '#f8f9fa' : theme === 'dark' ? '#374151' : '#fef3c7' }}>
-            Criado com 💚 no LinkBuy
+            Criado com 💚 no <a href="https://mylinkbuy.com" target="_blank" rel="noopener noreferrer" className="hover:underline">MyLinkBuy</a>
           </div>
         )}
       </div>

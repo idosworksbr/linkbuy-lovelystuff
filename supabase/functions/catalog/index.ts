@@ -118,39 +118,26 @@ Deno.serve(async (req) => {
       allProducts = [];
     }
     
-    // Filter products based on store's feed configuration
-    const showAllProductsInFeed = Boolean(
-      store?.show_all_products_in_feed === true ||
-      store?.settings?.show_all_products_in_feed === true ||
-      store?.catalog_settings?.show_all_products_in_feed === true ||
-      store?.feed_settings?.show_all_products_in_feed === true ||
-      store?.list_all_products_in_feed === true ||
-      store?.list_all_products === true
-    );
+    // Always show all products in feed (removed toggle functionality)
+    // All products will be shown in the main feed regardless of category
 
     let feedProducts = allProducts || [];
-    if (showAllProductsInFeed) {
-      // Show all products in the main feed when enabled
-      // Handle display_order conflicts: categorized products keep their order, uncategorized get higher numbers
-      const categorizedProducts = (allProducts || []).filter(p => p.category_id);
-      const uncategorizedProducts = (allProducts || []).filter(p => !p.category_id);
-      
-      const maxCategorizedOrder = categorizedProducts.length > 0 
-        ? Math.max(...categorizedProducts.map(p => p.display_order || 0))
-        : 0;
-      
-      // Uncategorized products get orders starting from maxCategorizedOrder + 1
-      const reorderedUncategorized = uncategorizedProducts.map((product, index) => ({
-        ...product,
-        display_order: maxCategorizedOrder + index + 1
-      }));
-      
-      feedProducts = [...categorizedProducts, ...reorderedUncategorized]
-        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-    } else {
-      // Show only products without category in the main feed
-      feedProducts = (allProducts || []).filter(product => !product.category_id);
-    }
+    // Always show all products - handle display_order conflicts
+    const categorizedProducts = (allProducts || []).filter(p => p.category_id);
+    const uncategorizedProducts = (allProducts || []).filter(p => !p.category_id);
+    
+    const maxCategorizedOrder = categorizedProducts.length > 0 
+      ? Math.max(...categorizedProducts.map(p => p.display_order || 0))
+      : 0;
+    
+    // Uncategorized products get orders starting from maxCategorizedOrder + 1
+    const reorderedUncategorized = uncategorizedProducts.map((product, index) => ({
+      ...product,
+      display_order: maxCategorizedOrder + index + 1
+    }));
+    
+    feedProducts = [...categorizedProducts, ...reorderedUncategorized]
+      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 
     if (productsError) {
       console.error('Error fetching products:', productsError);
@@ -158,15 +145,7 @@ Deno.serve(async (req) => {
 
     console.log('Total products count:', allProducts?.length || 0);
     console.log('Feed products count:', feedProducts?.length || 0);
-    console.log('Show all products in feed (computed):', showAllProductsInFeed);
-    console.log('Raw flags:', {
-      top_level: store?.show_all_products_in_feed,
-      settings: store?.settings?.show_all_products_in_feed,
-      catalog_settings: store?.catalog_settings?.show_all_products_in_feed,
-      feed_settings: store?.feed_settings?.show_all_products_in_feed,
-      list_all_products_in_feed: store?.list_all_products_in_feed,
-      list_all_products: store?.list_all_products,
-    });
+    console.log('All products shown in feed (default behavior)');
     console.log('Categories count:', categories.length);
 
     const response = {
@@ -177,10 +156,10 @@ Deno.serve(async (req) => {
         background_image_url: store.background_image_url || null,
         hide_footer: store.hide_footer || false,
         is_verified: store.is_verified || false,
-        custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo LinkBuy e gostaria de saber mais sobre seus produtos.',
+        custom_whatsapp_message: store.custom_whatsapp_message || 'Olá! Vi seu catálogo MyLinkBuy e gostaria de saber mais sobre seus produtos.',
         catalog_theme: store.catalog_theme || 'light',
         catalog_layout: store.catalog_layout || 'bottom',  // Fixed: bottom shows title/price visible
-        show_all_products_in_feed: showAllProductsInFeed
+        show_all_products_in_feed: true // Always true - removed toggle functionality
       },
       products: feedProducts, // Products for the main feed (filtered)
       allProducts: allProducts || [], // All products for category filtering

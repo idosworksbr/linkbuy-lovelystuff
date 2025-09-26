@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LinkBuy Design System - Cores e tokens semânticos */
+/* MyLinkBuy Design System - Cores e tokens semânticos */
 
 @layer base {
   :root {
@@ -37,7 +37,7 @@
 
     --radius: 0.75rem;
 
-    /* LinkBuy Custom Colors */
+    /* MyLinkBuy Custom Colors */
     --whatsapp: 142 70% 49%;
     --whatsapp-foreground: 0 0% 100%;
     

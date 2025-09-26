@@ -100,7 +100,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <SheetContent side="left" className="w-64 p-0">
                   <div className="flex flex-col h-full">
                     <div className="p-4 border-b">
-                      <h2 className="text-lg font-semibold text-gray-900">LinkBuy</h2>
+                      <h2 className="text-lg font-semibold text-gray-900">MyLinkBuy</h2>
                     </div>
                     <nav className="flex-1 p-4 space-y-2">
                       {menuItems.map((item) => (
@@ -139,7 +139,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </SheetContent>
               </Sheet>
 
-              <h1 className="text-xl font-bold text-gray-900">LinkBuy</h1>
+              <h1 className="text-xl font-bold text-gray-900">MyLinkBuy</h1>
             </div>
 
             {/* Desktop Navigation */}

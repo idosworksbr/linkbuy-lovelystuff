@@ -37,7 +37,7 @@ const Index = () => {
         <nav className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingBag className="h-8 w-8 text-whatsapp" />
-            <span className="text-2xl font-bold">LinkBuy</span>
+            <span className="text-2xl font-bold">MyLinkBuy</span>
           </div>
           <Link to="/login">
             <Button variant="outline">Entrar</Button>
@@ -177,7 +177,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>&copy; 2024 LinkBuy. Feito com ❤️ para empreendedores.</p>
+          <p>&copy; 2024 <a href="https://mylinkbuy.com" target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">MyLinkBuy</a>. Feito com ❤️ para empreendedores.</p>
         </div>
       </footer>
     </div>
