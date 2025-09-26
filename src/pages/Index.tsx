@@ -177,7 +177,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>&copy; 2024 <a href="https://mylinkbuy.com" target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">MyLinkBuy</a>. Feito com ❤️ para empreendedores.</p>
+          <p>&copy; 2024 <a href="https://www.mylinkbuy.com.br" target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">MyLinkBuy</a>. Feito com ❤️ para empreendedores.</p>
         </div>
       </footer>
     </div>
