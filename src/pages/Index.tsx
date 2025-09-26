@@ -37,7 +37,7 @@ const Index = () => {
         <nav className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingBag className="h-8 w-8 text-whatsapp" />
-            <span className="text-2xl font-bold">MyLinkBuy</span>
+            <span className="text-2xl font-bold">My LinkBuy</span>
           </div>
           <Link to="/login">
             <Button variant="outline">Entrar</Button>
