@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Image, List, Grid, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Edit, Trash2, Image, List, Grid, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -7,15 +7,18 @@ import DashboardLayout from "@/components/DashboardLayout";
 import ProductFormAdvanced from "@/components/ProductFormAdvanced";
 import { ProductListView } from "@/components/ProductListView";
 import { OnboardingForm } from "@/components/OnboardingForm";
+import { ProductFilters } from "@/components/ProductFilters";
 import { useNavigate } from "react-router-dom";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useProfile } from "@/hooks/useProfile";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProductPrices } from '@/lib/priceUtils';
 
 const Dashboard = () => {
+  usePageTitle(); // Set dynamic page title
   const { products, loading, updateProduct, deleteProduct, createProduct } = useProducts();
   const { categories } = useCategories();
   const { profile, updateProfile } = useProfile();
@@ -24,6 +27,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,11 +50,14 @@ const Dashboard = () => {
     }
   }, []);
 
+  // Use filtered products for display
+  const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
+  
   // Calculate pagination
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const totalPages = Math.ceil(displayProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedProducts = products.slice(startIndex, endIndex);
+  const paginatedProducts = displayProducts.slice(startIndex, endIndex);
   const navigate = useNavigate();
 
   // Check if user needs onboarding and show automatically for first-time users
@@ -105,6 +112,19 @@ const Dashboard = () => {
         console.error('Error updating product:', error);
     } finally {
         setIsLoading(false);
+    }
+  };
+
+  const handleToggleProductStatus = async (product: Product) => {
+    const newStatus = product.status === 'inactive' ? 'active' : 'inactive';
+    
+    try {
+      await updateProduct(product.id, {
+        ...product,
+        status: newStatus
+      } as any);
+    } catch (error) {
+      console.error('Error toggling product status:', error);
     }
   };
 
@@ -197,11 +217,18 @@ const Dashboard = () => {
 
         {/* Products Section */}
         <div className="space-y-4">
+          {/* Product Filters */}
+          <ProductFilters 
+            products={products}
+            categories={categories}
+            onFiltersChange={setFilteredProducts}
+          />
+          
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold">Produtos</h2>
               <p className="text-sm text-muted-foreground">
-                {products.length} produto(s) cadastrado(s)
+                {displayProducts.length} produto(s) {displayProducts.length !== products.length ? `filtrado(s) de ${products.length}` : 'cadastrado(s)'}
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -242,7 +269,7 @@ const Dashboard = () => {
                 <Skeleton key={i} className="h-24 w-full" />
               ))}
             </div>
-            ) : products.length > 0 ? (
+            ) : displayProducts.length > 0 ? (
             <>
               {viewMode === 'list' ? (
                 <ProductListView
@@ -254,71 +281,90 @@ const Dashboard = () => {
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedProducts.map((product) => (
-                    <Card key={product.id} className="group hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="aspect-square bg-muted rounded-lg mb-4 overflow-hidden">
-                          {product.images && product.images.length > 0 ? (
-                            <img
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Image className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <h3 className="font-semibold mb-2 truncate">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                          {product.description}
-                        </p>
-                        <div className="flex justify-between items-center mb-4">
-                          {(() => {
-                            const prices = getProductPrices(product);
-                            return (
-                              <div className="flex flex-col">
-                                {prices.hasDiscount ? (
-                                  <>
-                                    <span className="text-sm text-muted-foreground line-through">
-                                      R$ {prices.formattedOriginalPrice}
-                                    </span>
-                                    <span className="font-bold text-lg text-success">
+                  {paginatedProducts.map((product) => {
+                    const isInactive = product.status === 'inactive';
+                    return (
+                      <Card key={product.id} className={`group hover:shadow-lg transition-shadow ${isInactive ? 'opacity-60' : ''}`}>
+                        <CardContent className="p-4">
+                          <div className="aspect-square bg-muted rounded-lg mb-4 overflow-hidden relative">
+                            {isInactive && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                                <span className="text-white text-xs font-medium bg-red-600 px-2 py-1 rounded">
+                                  INATIVO
+                                </span>
+                              </div>
+                            )}
+                            {product.images && product.images.length > 0 ? (
+                              <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Image className="h-8 w-8 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="font-semibold mb-2 truncate">{product.name}</h3>
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                            {product.description}
+                          </p>
+                          <div className="flex justify-between items-center mb-4">
+                            {(() => {
+                              const prices = getProductPrices(product);
+                              return (
+                                <div className="flex flex-col">
+                                  {prices.hasDiscount ? (
+                                    <>
+                                      <span className="text-sm text-muted-foreground line-through">
+                                        R$ {prices.formattedOriginalPrice}
+                                      </span>
+                                      <span className="font-bold text-lg text-success">
+                                        R$ {prices.formattedFinalPrice}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="font-bold text-lg">
                                       R$ {prices.formattedFinalPrice}
                                     </span>
-                                  </>
-                                ) : (
-                                  <span className="font-bold text-lg">
-                                    R$ {prices.formattedFinalPrice}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditProduct(product)}
-                            className="flex-1"
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteProduct(product.id)}
-                            className="text-red-600 hover:text-red-700 hover:border-red-300"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleToggleProductStatus(product)}
+                              className={`${isInactive ? 'text-green-600 hover:text-green-700 hover:border-green-300' : 'text-orange-600 hover:text-orange-700 hover:border-orange-300'}`}
+                            >
+                              {isInactive ? <Eye className="h-4 w-4 mr-1" /> : <EyeOff className="h-4 w-4 mr-1" />}
+                              {isInactive ? 'Ativar' : 'Inativar'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditProduct(product)}
+                              className="flex-1"
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteProduct(product.id)}
+                              className="text-red-600 hover:text-red-700 hover:border-red-300"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
               
@@ -326,7 +372,7 @@ const Dashboard = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
                   <p className="text-sm text-muted-foreground">
-                    Mostrando {startIndex + 1} a {Math.min(endIndex, products.length)} de {products.length} produtos
+                    Mostrando {startIndex + 1} a {Math.min(endIndex, displayProducts.length)} de {displayProducts.length} produtos
                   </p>
                   
                   <div className="flex items-center gap-2">
@@ -357,6 +403,16 @@ const Dashboard = () => {
                 </div>
               )}
             </>
+          ) : displayProducts.length === 0 && products.length > 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="font-semibold mb-2">Nenhum produto encontrado</h3>
+                <p className="text-muted-foreground mb-4">
+                  Nenhum produto corresponde aos filtros aplicados
+                </p>
+              </CardContent>
+            </Card>
           ) : (
             <Card>
               <CardContent className="p-6 text-center">

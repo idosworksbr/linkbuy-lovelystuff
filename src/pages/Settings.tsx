@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3, Bug } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,14 +17,16 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { PlanCard } from "@/components/PlanCard";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 import { ImageUploadField } from "@/components/ImageUploadField";
-import { StripeDebugPanel } from "@/components/StripeDebugPanel";
+
 import { MultipleSubscriptionsInfo } from "@/components/MultipleSubscriptionsInfo";
 import { CancellationDialog } from "@/components/CancellationDialog";
 import { SecuritySettings } from "@/components/SecuritySettings";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 const Settings = () => {
+  usePageTitle(); // Set dynamic page title
   const { profile, loading, updateProfile } = useProfile();
   const { toast } = useToast();
   const { plans, canAccessFeature, getPlanName } = usePlans();
@@ -54,7 +56,7 @@ const Settings = () => {
     product_grid_layout: 'default' as 'default' | 'round' | 'instagram',
     hide_footer: false,
     is_verified: false,
-    show_all_products_in_feed: false
+    
   });
 
   useEffect(() => {
@@ -76,8 +78,7 @@ const Settings = () => {
         catalog_layout: profile.catalog_layout || 'bottom',
         product_grid_layout: (profile as any).product_grid_layout || 'default',
         hide_footer: (profile as any).hide_footer || false,
-        is_verified: (profile as any).is_verified || false,
-        show_all_products_in_feed: (profile as any).show_all_products_in_feed || false
+        is_verified: (profile as any).is_verified || false
       });
       
       // Load portal data when profile is available
@@ -245,16 +246,12 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="visual">Visual</TabsTrigger>
             <TabsTrigger value="plans">Planos</TabsTrigger>
             <TabsTrigger value="portal">Portal</TabsTrigger>
             <TabsTrigger value="security">Segurança</TabsTrigger>
-            <TabsTrigger value="debug" className="text-orange-600">
-              <Bug className="h-4 w-4 mr-1" />
-              Debug
-            </TabsTrigger>
           </TabsList>
 
           {/* Tab de Perfil e Loja */}
@@ -745,43 +742,6 @@ const Settings = () => {
                 </CardContent>
               </Card>
 
-              {/* Configurações de Catálogo */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Grid3x3 className="h-5 w-5" />
-                    Configurações do Feed de Produtos
-                  </CardTitle>
-                  <CardDescription>
-                    Configure como os produtos são exibidos no feed principal do catálogo
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Exibir todos os produtos no feed principal</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Quando ativado, exibe todos os produtos no feed principal. Quando desativado, exibe apenas produtos sem categoria no feed, deixando os categorizados apenas em suas respectivas seções.
-                      </p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={formData.show_all_products_in_feed}
-                      onChange={(e) => setFormData(prev => ({ ...prev, show_all_products_in_feed: e.target.checked }))}
-                      className="h-4 w-4"
-                    />
-                  </div>
-                  
-                  <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
-                    <h4 className="font-medium mb-2">💡 Como usar esta configuração:</h4>
-                    <ul className="space-y-1 text-muted-foreground">
-                      <li><strong>• Ativado:</strong> Ideal para lojas com poucos produtos ou que querem máxima visibilidade</li>
-                      <li><strong>• Desativado:</strong> Ideal para lojas organizadas por categorias, mantém o feed principal limpo</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Botões de Ação */}
               <div className="flex flex-col sm:flex-row justify-end gap-2">
                 <Button 
@@ -1082,11 +1042,6 @@ const Settings = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-          
-          {/* Debug Panel */}
-          <TabsContent value="debug" className="space-y-6">
-            <StripeDebugPanel />
           </TabsContent>
         </Tabs>
 

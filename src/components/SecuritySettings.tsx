@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Key, Mail, Smartphone } from "lucide-react";
+import { Shield, Key, Mail, Smartphone, Activity, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 export const SecuritySettings = () => {
   const { user } = useAuth();
@@ -18,6 +19,19 @@ export const SecuritySettings = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
+
+  // Password strength checker
+  const checkPasswordStrength = (password: string) => {
+    if (password.length < 6) return 'weak';
+    if (password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) return 'strong';
+    return 'medium';
+  };
+
+  const handlePasswordStrengthCheck = (password: string) => {
+    setNewPassword(password);
+    setPasswordStrength(checkPasswordStrength(password));
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,11 +203,38 @@ export const SecuritySettings = () => {
                 id="new-password"
                 type="password"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => handlePasswordStrengthCheck(e.target.value)}
                 placeholder="Digite sua nova senha"
                 minLength={6}
                 required
               />
+              
+              {/* Password Strength Indicator */}
+              {newPassword && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-2 flex-1 rounded ${
+                      passwordStrength === 'weak' ? 'bg-red-200' :
+                      passwordStrength === 'medium' ? 'bg-yellow-200' : 'bg-green-200'
+                    }`}>
+                      <div className={`h-full rounded transition-all ${
+                        passwordStrength === 'weak' ? 'w-1/3 bg-red-500' :
+                        passwordStrength === 'medium' ? 'w-2/3 bg-yellow-500' : 'w-full bg-green-500'
+                      }`} />
+                    </div>
+                    <Badge variant={
+                      passwordStrength === 'weak' ? 'destructive' :
+                      passwordStrength === 'medium' ? 'secondary' : 'default'
+                    }>
+                      {passwordStrength === 'weak' ? 'Fraca' :
+                       passwordStrength === 'medium' ? 'Média' : 'Forte'}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Use pelo menos 8 caracteres com letras maiúsculas, minúsculas e números
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -213,6 +254,49 @@ export const SecuritySettings = () => {
               {isLoading ? "Alterando..." : "Alterar Senha"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* Account Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Atividade da Conta
+          </CardTitle>
+          <CardDescription>
+            Informações sobre o acesso à sua conta
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+            <div className="flex items-center gap-3">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Último acesso</p>
+                <p className="text-xs text-muted-foreground">
+                  {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString('pt-BR') : 'Não disponível'}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Email verificado</p>
+                <p className="text-xs text-muted-foreground">
+                  {user?.email_confirmed_at ? 'Sim' : 'Não verificado'}
+                </p>
+              </div>
+            </div>
+            {user?.email_confirmed_at && (
+              <Badge variant="default">Verificado</Badge>
+            )}
+          </div>
         </CardContent>
       </Card>
 

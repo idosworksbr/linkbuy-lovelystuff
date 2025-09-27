@@ -149,8 +149,22 @@ export const useSubscription = () => {
       }
       
       console.log('[useSubscription] URL do portal:', data.url);
-      // Use direct redirect instead of popup to avoid blockers
-      window.location.href = data.url;
+      
+      // Use direct redirect with retry mechanism
+      const openPortal = () => {
+        try {
+          window.location.href = data.url;
+        } catch (redirectError) {
+          console.error('Redirect failed, trying window.open:', redirectError);
+          const newWindow = window.open(data.url, '_blank');
+          if (!newWindow) {
+            throw new Error('Pop-up bloqueado. Permita pop-ups para este site.');
+          }
+        }
+      };
+      
+      openPortal();
+      
     } catch (error: any) {
       console.error('Error opening customer portal:', error);
       
@@ -162,6 +176,8 @@ export const useSubscription = () => {
         errorMessage = "Muitas solicitações. Aguarde um momento e tente novamente.";
       } else if (error?.message?.includes("Timeout")) {
         errorMessage = "Timeout ao abrir portal. Tente novamente.";
+      } else if (error?.message?.includes("Pop-up bloqueado")) {
+        errorMessage = error.message;
       }
       
       toast({

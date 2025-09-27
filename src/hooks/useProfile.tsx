@@ -25,7 +25,7 @@ export interface Profile {
   is_verified?: boolean;
   subscription_plan: 'free' | 'pro' | 'pro_plus' | 'verified' | 'pro_plus_verified';
   subscription_expires_at?: string | null;
-  show_all_products_in_feed?: boolean;
+  
   created_at: string;
   updated_at: string;
 }
@@ -59,8 +59,7 @@ export const useProfile = () => {
         custom_background_enabled: data.custom_background_enabled || false,
         custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
         subscription_plan: (data.subscription_plan as 'free' | 'pro' | 'pro_plus' | 'verified' | 'pro_plus_verified') || 'free',
-        subscription_expires_at: data.subscription_expires_at || null,
-        show_all_products_in_feed: data.show_all_products_in_feed || false
+        subscription_expires_at: data.subscription_expires_at || null
       };
       
       setProfile(profileData);
@@ -94,8 +93,7 @@ export const useProfile = () => {
         custom_background_enabled: data.custom_background_enabled || false,
         custom_whatsapp_message: data.custom_whatsapp_message || 'Olá! Vi seu catálogo e gostaria de saber mais sobre seus produtos.',
         subscription_plan: (data.subscription_plan as 'free' | 'pro' | 'pro_plus' | 'verified' | 'pro_plus_verified') || 'free',
-        subscription_expires_at: data.subscription_expires_at || null,
-        show_all_products_in_feed: data.show_all_products_in_feed || false
+        subscription_expires_at: data.subscription_expires_at || null
       };
 
       setProfile(updatedProfile);

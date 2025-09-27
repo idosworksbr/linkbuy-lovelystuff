@@ -18,6 +18,7 @@ import { useLongPress } from "@/hooks/useLongPress";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlans } from "@/hooks/usePlans";
 import { getProductPrices } from "@/lib/priceUtils";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface StoreProfile {
   id: string;
@@ -111,6 +112,9 @@ const Catalog = () => {
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'bottom';
   const themeClasses = useThemeClasses(theme);
+  
+  // Set dynamic page title
+  usePageTitle(catalogData?.store ? `${catalogData.store.store_name} - MyLinkBuy` : undefined);
   
   // Hooks para edição e reordenação
   const { isEditMode, isOwner, toggleEditMode } = useCatalogEdit({ 
