@@ -1043,6 +1043,11 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Tab de Segurança */}
+          <TabsContent value="security" className="space-y-6">
+            <SecuritySettings />
+          </TabsContent>
         </Tabs>
 
         <CancellationDialog
