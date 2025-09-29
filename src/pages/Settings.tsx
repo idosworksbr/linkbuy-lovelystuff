@@ -246,10 +246,9 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="visual">Visual</TabsTrigger>
-            <TabsTrigger value="plans">Planos</TabsTrigger>
             <TabsTrigger value="portal">Portal</TabsTrigger>
             <TabsTrigger value="security">Segurança</TabsTrigger>
           </TabsList>
@@ -771,77 +770,6 @@ const Settings = () => {
                 </Button>
               </div>
             </form>
-          </TabsContent>
-
-          {/* Tab de Planos */}
-          <TabsContent value="plans" className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2">Gerenciar Assinatura</h2>
-              <p className="text-muted-foreground">
-                Gerencie seu plano atual e explore outras opções
-              </p>
-            </div>
-
-            {/* Informações das assinaturas ativas */}
-            <MultipleSubscriptionsInfo />
-
-            {profile && (
-              <div className="mt-4 p-4 bg-muted rounded-lg">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <p className="text-sm">
-                    <strong>Plano atual:</strong> {getPlanName(profile.subscription_plan)}
-                  </p>
-                  {profile.subscription_plan !== 'free' && (
-                    <Badge variant="default" className="bg-green-100 text-green-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Ativo
-                    </Badge>
-                  )}
-                </div>
-                {profile.subscription_expires_at && (
-                  <p className="text-xs text-muted-foreground text-center">
-                    Expira em {new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Customer Portal for Subscribers */}
-            {profile?.subscription_plan !== 'free' && (
-              <Card className="border-blue-200 bg-blue-50 mb-6">
-                <CardContent className="pt-6">
-                  <div className="text-center space-y-4">
-                    <CreditCard className="h-8 w-8 text-blue-600 mx-auto" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-blue-900">
-                        Gerenciar Assinatura
-                      </h3>
-                      <p className="text-blue-700 text-sm mt-1">
-                        Acesse o portal do cliente para alterar forma de pagamento, ver faturas ou cancelar sua assinatura.
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={openCustomerPortal} 
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Portal do Cliente
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {plans.map((plan) => (
-                <PlanCard
-                  key={plan.name}
-                  plan={plan}
-                  isCurrentPlan={profile ? getPlanName(profile.subscription_plan) === plan.name : false}
-                  onSelectPlan={() => handleSelectPlan(plan.name)}
-                />
-              ))}
-            </div>
           </TabsContent>
 
           {/* Tab de Portal do Cliente */}
