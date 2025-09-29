@@ -65,8 +65,9 @@ serve(async (req) => {
       const testResult = await stripe.customers.list({ limit: 1 });
       logStep("Stripe connectivity successful", { testCount: testResult.data.length });
     } catch (connectError) {
-      logStep("ERROR: Stripe connectivity failed", { error: connectError.message });
-      throw new Error(`Stripe connection failed: ${connectError.message}`);
+      const errorMessage = connectError instanceof Error ? connectError.message : String(connectError);
+      logStep("ERROR: Stripe connectivity failed", { error: errorMessage });
+      throw new Error(`Stripe connection failed: ${errorMessage}`);
     }
 
     logStep("Searching for customer", { email: user.email });

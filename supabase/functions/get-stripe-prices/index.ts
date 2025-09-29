@@ -70,8 +70,9 @@ serve(async (req) => {
       await stripe.customers.list({ limit: 1 });
       logStep("Stripe connectivity test successful");
     } catch (testError) {
-      logStep("ERROR: Stripe connectivity test failed", { error: testError.message });
-      throw new Error(`Stripe connection failed: ${testError.message}`);
+      const errorMessage = testError instanceof Error ? testError.message : String(testError);
+      logStep("ERROR: Stripe connectivity test failed", { error: errorMessage });
+      throw new Error(`Stripe connection failed: ${errorMessage}`);
     }
 
     logStep("Fetching active prices from Stripe");
@@ -92,13 +93,13 @@ serve(async (req) => {
     ];
 
     const formattedPrices = prices.data
-      .filter(price => {
+      .filter((price: any) => {
         // Filter only recurring subscription prices and relevant IDs
         const isRelevant = relevantPriceIds.includes(price.id);
         const isRecurring = price.recurring !== null;
         return isRelevant && isRecurring;
       })
-      .map((price, index) => {
+      .map((price: any, index: number) => {
         const product = price.product as any;
         const formatted = {
           id: price.id,

@@ -64,7 +64,7 @@ serve(async (req) => {
       limit: 50,
     });
 
-    const payments = charges.data.map(charge => ({
+    const payments = charges.data.map((charge: any) => ({
       id: charge.id,
       amount: charge.amount,
       currency: charge.currency,

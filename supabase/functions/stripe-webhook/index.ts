@@ -90,16 +90,16 @@ serve(async (req) => {
     }
 
     // Validate Stripe key format
-    if (!stripeSecretKey.startsWith('sk_')) {
+    if (!stripeSecretKey || !stripeSecretKey.startsWith('sk_')) {
       logStep("ERROR: Invalid Stripe key format", { 
-        received: stripeSecretKey.substring(0, 10) + '...',
+        received: stripeSecretKey ? stripeSecretKey.substring(0, 10) + '...' : 'MISSING',
         expected: 'sk_live_... or sk_test_...' 
       });
       throw new Error('STRIPE_SECRET_KEY must start with sk_live_ or sk_test_');
     }
 
     // Validate webhook secret format
-    if (!webhookSecret.startsWith('whsec_')) {
+    if (!webhookSecret || !webhookSecret.startsWith('whsec_')) {
       logStep("ERROR: Invalid webhook secret format", { 
         expected: 'whsec_...' 
       });
@@ -108,6 +108,10 @@ serve(async (req) => {
 
     // Clean webhook secret (remove any trailing whitespace/newlines)
     const cleanWebhookSecret = webhookSecret.trim();
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration');
+    }
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' });
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {

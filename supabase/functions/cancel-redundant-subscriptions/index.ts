@@ -71,9 +71,10 @@ serve(async (req) => {
               type: subscription.subscription_type 
             });
           } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             logStep("Error canceling subscription", { 
               subscriptionId: subscription.stripe_subscription_id,
-              error: error.message 
+              error: errorMessage 
             });
           }
         }

@@ -131,12 +131,14 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('💥 Erro interno:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace';
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error', 
         message: 'Erro interno do servidor. Tente novamente em alguns instantes.',
-        details: error.message,
-        stack: error.stack
+        details: errorMessage,
+        stack: errorStack
       }),
       { 
         status: 500, 

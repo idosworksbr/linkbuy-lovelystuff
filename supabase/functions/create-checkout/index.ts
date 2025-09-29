@@ -107,8 +107,9 @@ const getEnvVar = (key: string): { value?: string; sourceKey?: string } => {
       const testResult = await stripe.customers.list({ limit: 1 });
       logStep("Stripe connectivity successful", { testCount: testResult.data.length });
     } catch (connectError) {
-      logStep("ERROR: Stripe connectivity failed", { error: connectError.message });
-      throw new Error(`Stripe connection failed: ${connectError.message}`);
+      const errorMessage = connectError instanceof Error ? connectError.message : String(connectError);
+      logStep("ERROR: Stripe connectivity failed", { error: errorMessage });
+      throw new Error(`Stripe connection failed: ${errorMessage}`);
     }
 
     logStep("Parsing request body");
@@ -143,7 +144,8 @@ const getEnvVar = (key: string): { value?: string; sourceKey?: string } => {
         product: price.product
       });
     } catch (priceError) {
-      logStep("ERROR: Price ID validation failed", { priceId, error: priceError.message });
+      const errorMessage = priceError instanceof Error ? priceError.message : String(priceError);
+      logStep("ERROR: Price ID validation failed", { priceId, error: errorMessage });
       throw new Error(`Price ID ${priceId} not found in Stripe`);
     }
 

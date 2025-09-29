@@ -76,9 +76,10 @@ serve(async (req) => {
         canceledCount++;
         logStep("Canceled subscription", { subscriptionId: subscription.id });
       } catch (error) {
-        const errorMsg = `Erro ao cancelar ${subscription.id}: ${error.message}`;
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMsg = `Erro ao cancelar ${subscription.id}: ${errorMessage}`;
         errors.push(errorMsg);
-        logStep("Error canceling subscription", { subscriptionId: subscription.id, error: error.message });
+        logStep("Error canceling subscription", { subscriptionId: subscription.id, error: errorMessage });
       }
     }
 

@@ -162,7 +162,7 @@ serve(async (req) => {
       .eq('status', 'active');
 
     // Primeiro, identificar se existe Pro+ Verificado nas assinaturas
-    const hasProPlusVerified = subscriptions.data.some(sub => {
+    const hasProPlusVerified = subscriptions.data.some((sub: any) => {
       const priceId = sub.items.data[0].price.id;
       return mapPriceIdToSubscriptionType(priceId) === 'pro_plus_verified';
     });
@@ -188,9 +188,10 @@ serve(async (req) => {
             );
             logStep("Successfully canceled subscription", { subscriptionId: subscription.id });
           } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             logStep("Error canceling subscription", { 
               subscriptionId: subscription.id, 
-              error: error.message 
+              error: errorMessage 
             });
           }
         }
