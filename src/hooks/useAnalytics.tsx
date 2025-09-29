@@ -30,10 +30,18 @@ export const useAnalytics = (startDate?: Date, endDate?: Date) => {
   useEffect(() => {
     if (!user) return
 
+    // Validate dates for custom range
+    if (startDate && endDate && startDate > endDate) {
+      setError('Data inicial deve ser anterior à data final')
+      setLoading(false)
+      return
+    }
+
     let isMounted = true
+    let timeoutId: NodeJS.Timeout
 
     // Debounce para evitar múltiplas chamadas
-    const timeoutId = setTimeout(async () => {
+    timeoutId = setTimeout(async () => {
       try {
         setLoading(true)
         setError(null)
@@ -104,10 +112,18 @@ export const useProductAnalytics = (startDate?: Date, endDate?: Date) => {
   useEffect(() => {
     if (!user) return
 
+    // Validate dates for custom range
+    if (startDate && endDate && startDate > endDate) {
+      setError('Data inicial deve ser anterior à data final')
+      setLoading(false)
+      return
+    }
+
     let isMounted = true
+    let timeoutId: NodeJS.Timeout
 
     // Debounce para evitar múltiplas chamadas
-    const timeoutId = setTimeout(async () => {
+    timeoutId = setTimeout(async () => {
       try {
         setLoading(true)
         setError(null)

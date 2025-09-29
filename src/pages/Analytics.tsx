@@ -55,8 +55,8 @@ const Analytics = () => {
   const { startDate, endDate } = getDateRange()
   
   // Always call hooks - never conditionally
-  const { storeAnalytics, loading: analyticsLoading } = useAnalytics(startDate, endDate)
-  const { productAnalytics, loading: productLoading } = useProductAnalytics(startDate, endDate)
+  const { storeAnalytics, loading: analyticsLoading, error: analyticsError } = useAnalytics(startDate, endDate)
+  const { productAnalytics, loading: productLoading, error: productError } = useProductAnalytics(startDate, endDate)
 
   // Check access after all hooks are called
   if (!canAccessFeature(profile, 'analytics')) {
@@ -93,7 +93,7 @@ const Analytics = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
             <p className="text-muted-foreground">
@@ -101,9 +101,9 @@ const Analytics = () => {
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <Select value={timeFilter} onValueChange={setTimeFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -122,23 +122,25 @@ const Analytics = () => {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-60 justify-start text-left font-normal",
+                      "w-full sm:w-auto justify-start text-left font-normal",
                       !customDateRange && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {customDateRange?.from ? (
-                      customDateRange.to ? (
-                        <>
-                          {format(customDateRange.from, "dd MMM", { locale: ptBR })} -{" "}
-                          {format(customDateRange.to, "dd MMM yyyy", { locale: ptBR })}
-                        </>
+                    <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">
+                      {customDateRange?.from ? (
+                        customDateRange.to ? (
+                          <>
+                            {format(customDateRange.from, "dd MMM", { locale: ptBR })} -{" "}
+                            {format(customDateRange.to, "dd MMM yyyy", { locale: ptBR })}
+                          </>
+                        ) : (
+                          format(customDateRange.from, "dd MMM yyyy", { locale: ptBR })
+                        )
                       ) : (
-                        format(customDateRange.from, "dd MMM yyyy", { locale: ptBR })
-                      )
-                    ) : (
-                      <span>Selecionar período</span>
-                    )}
+                        "Selecionar período"
+                      )}
+                    </span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -156,6 +158,15 @@ const Analytics = () => {
             )}
           </div>
         </div>
+
+        {/* Error Messages */}
+        {(analyticsError || productError) && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+            <p className="text-destructive text-sm font-medium">
+              {analyticsError || productError}
+            </p>
+          </div>
+        )}
 
         {/* Overview Cards */}
         <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
