@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Upload, X, Sparkles } from "lucide-react";
+import { Upload, X, Sparkles, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
@@ -16,6 +16,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { QuickCategoryDialog } from "@/components/QuickCategoryDialog";
 
 const productSchema = z.object({
   name: z.string().min(1, "Nome do produto é obrigatório"),
@@ -55,6 +56,7 @@ interface ProductFormAdvancedProps {
 const ProductFormAdvanced = ({ product, onSubmit, onCancel, isLoading = false }: ProductFormAdvancedProps) => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>(product?.images || []);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategories();
   const { canAccessFeature } = usePlans();
@@ -369,20 +371,32 @@ const ProductFormAdvanced = ({ product, onSubmit, onCancel, isLoading = false }:
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoria (Opcional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">Sem categoria</SelectItem>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}</SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Selecione uma categoria" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Sem categoria</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setShowCategoryDialog(true)}
+                        title="Adicionar nova categoria"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -471,6 +485,18 @@ const ProductFormAdvanced = ({ product, onSubmit, onCancel, isLoading = false }:
           </form>
         </Form>
       </CardContent>
+
+      <QuickCategoryDialog
+        open={showCategoryDialog}
+        onOpenChange={setShowCategoryDialog}
+        onCategoryCreated={(categoryId) => {
+          form.setValue('category_id', categoryId);
+          toast({
+            title: "Categoria criada!",
+            description: "A categoria foi adicionada e selecionada automaticamente.",
+          });
+        }}
+      />
     </Card>
   );
 };

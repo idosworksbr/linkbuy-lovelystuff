@@ -19,12 +19,20 @@ interface InstagramStyleProductGridProps {
   products: Product[];
   onBuyNow: (product: Product) => void;
   themeClasses: any;
+  storeSettings?: {
+    product_text_background_enabled?: boolean;
+    product_text_background_color?: string;
+    product_text_background_opacity?: number;
+    product_name_text_color?: string;
+    product_price_text_color?: string;
+  };
 }
 
 export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps> = ({
   products,
   onBuyNow,
-  themeClasses
+  themeClasses,
+  storeSettings
 }) => {
   const [imageIndexes, setImageIndexes] = useState<{ [key: string]: number }>({});
 
@@ -121,7 +129,12 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
 
             {/* Product Info */}
             <div className="p-6">
-              <h3 className={`text-lg font-bold mb-2 line-clamp-2 ${themeClasses.text}`}>
+              <h3 
+                className="text-lg font-bold mb-2 line-clamp-2"
+                style={{ 
+                  color: storeSettings?.product_name_text_color || themeClasses.text 
+                }}
+              >
                 {product.name}
               </h3>
 
@@ -129,10 +142,20 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
               <div className="mb-4">
                 {prices.hasDiscount ? (
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-sm line-through ${themeClasses.textMuted}`}>
+                    <span 
+                      className="text-sm line-through"
+                      style={{ 
+                        color: storeSettings?.product_price_text_color || themeClasses.textMuted 
+                      }}
+                    >
                       R$ {prices.formattedOriginalPrice}
                     </span>
-                    <span className="text-xl font-bold text-success">
+                    <span 
+                      className="text-xl font-bold"
+                      style={{ 
+                        color: storeSettings?.product_price_text_color || '#10b981' 
+                      }}
+                    >
                       R$ {prices.formattedFinalPrice}
                     </span>
                     <span className="bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded-full font-medium">
@@ -140,7 +163,12 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
                     </span>
                   </div>
                 ) : (
-                  <span className={`text-xl font-bold ${themeClasses.text}`}>
+                  <span 
+                    className="text-xl font-bold"
+                    style={{ 
+                      color: storeSettings?.product_price_text_color || themeClasses.text 
+                    }}
+                  >
                     R$ {prices.formattedFinalPrice}
                   </span>
                 )}

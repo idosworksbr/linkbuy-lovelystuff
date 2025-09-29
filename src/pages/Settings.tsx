@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3, Type } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3, Type, Paintbrush } from "lucide-react";
+import { GridLayoutPreview } from "@/components/GridLayoutPreview";
+import { LayoutPreview } from "@/components/LayoutPreview";
+import { ThemePreview } from "@/components/ThemePreview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,6 +64,8 @@ const Settings = () => {
     product_text_background_enabled: true,
     product_text_background_color: '#000000',
     product_text_background_opacity: 70,
+    product_name_text_color: '#ffffff',
+    product_price_text_color: '#ffffff',
   });
 
   useEffect(() => {
@@ -86,6 +91,8 @@ const Settings = () => {
         product_text_background_enabled: (profile as any).product_text_background_enabled ?? true,
         product_text_background_color: (profile as any).product_text_background_color || '#000000',
         product_text_background_opacity: (profile as any).product_text_background_opacity ?? 70,
+        product_name_text_color: (profile as any).product_name_text_color || '#ffffff',
+        product_price_text_color: (profile as any).product_price_text_color || '#ffffff',
       });
       
       // Load portal data when profile is available
@@ -516,37 +523,26 @@ const Settings = () => {
                         description="No plano Pro você pode escolher entre diferentes temas para seu catálogo"
                       />
                     ) : (
-                      <Select value={formData.catalog_theme} onValueChange={(value: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') => handleInputChange('catalog_theme', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tema" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="light">Claro (Branco e Cinza)</SelectItem>
-                          <SelectItem value="dark">Escuro</SelectItem>
-                          <SelectItem value="beige">Bege</SelectItem>
-                          <SelectItem value="rose">Rosa</SelectItem>
-                          <SelectItem value="gold">Dourado</SelectItem>
-                          <SelectItem value="purple">Roxo</SelectItem>
-                          <SelectItem value="mint">Verde Menta</SelectItem>
-                          <SelectItem value="sunset">Por do Sol</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <>
+                        <ThemePreview
+                          selectedTheme={formData.catalog_theme}
+                          onSelect={(theme) => handleInputChange('catalog_theme', theme)}
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Clique em um tema para selecioná-lo
+                        </p>
+                      </>
                     )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="catalog_layout">Layout dos Produtos</Label>
-                    <Select value={formData.catalog_layout} onValueChange={(value: 'overlay' | 'bottom') => handleInputChange('catalog_layout', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o layout" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bottom">Titulo/Preço visível no feed</SelectItem>
-                        <SelectItem value="overlay">Titulo/Preço oculto no feed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Escolha se deseja mostrar ou ocultar as informações dos produtos no grid principal
+                    <LayoutPreview
+                      selectedLayout={formData.catalog_layout}
+                      onSelect={(layout) => handleInputChange('catalog_layout', layout)}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Clique em um layout para selecioná-lo
                     </p>
                   </div>
 
@@ -560,18 +556,12 @@ const Settings = () => {
                       />
                     ) : (
                       <>
-                        <Select value={formData.product_grid_layout} onValueChange={(value: 'default' | 'round' | 'instagram') => handleInputChange('product_grid_layout', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o estilo da grade" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="default">Padrão (Cards com bordas)</SelectItem>
-                            <SelectItem value="round">Imagens Redondas (Título/preço abaixo)</SelectItem>
-                            <SelectItem value="instagram">Estilo Instagram (Sem separação entre imagens)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                          Escolha como os produtos aparecerão na grade do catálogo
+                        <GridLayoutPreview
+                          selectedLayout={formData.product_grid_layout}
+                          onSelect={(layout) => handleInputChange('product_grid_layout', layout)}
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Clique em um estilo para selecioná-lo
                         </p>
                       </>
                     )}
@@ -683,6 +673,15 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {formData.product_grid_layout === 'round' && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Nota:</strong> O estilo "Arredondado" tem um design fixo com fundo branco. 
+                        As configurações de fundo e sobreposição não se aplicam a este estilo.
+                      </p>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Fundo do texto no produto</Label>
@@ -693,6 +692,7 @@ const Settings = () => {
                     <Switch
                       checked={formData.product_text_background_enabled}
                       onCheckedChange={(checked) => setFormData(prev => ({ ...prev, product_text_background_enabled: checked }))}
+                      disabled={formData.product_grid_layout === 'round'}
                     />
                   </div>
 
@@ -736,6 +736,53 @@ const Settings = () => {
                         </p>
                       </div>
 
+                      {/* Cores do Texto */}
+                      <div className="grid md:grid-cols-2 gap-4 pt-4 border-t">
+                        <div className="space-y-2">
+                          <Label htmlFor="product_name_text_color">Cor do Nome</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              id="product_name_text_color"
+                              type="color"
+                              value={formData.product_name_text_color}
+                              onChange={(e) => handleInputChange('product_name_text_color', e.target.value)}
+                              className="w-16 h-10 p-1 border rounded cursor-pointer"
+                              disabled={formData.product_grid_layout === 'round'}
+                            />
+                            <Input
+                              value={formData.product_name_text_color}
+                              onChange={(e) => handleInputChange('product_name_text_color', e.target.value)}
+                              placeholder="#ffffff"
+                              pattern="^#[0-9A-Fa-f]{6}$"
+                              className="flex-1"
+                              disabled={formData.product_grid_layout === 'round'}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="product_price_text_color">Cor do Preço</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              id="product_price_text_color"
+                              type="color"
+                              value={formData.product_price_text_color}
+                              onChange={(e) => handleInputChange('product_price_text_color', e.target.value)}
+                              className="w-16 h-10 p-1 border rounded cursor-pointer"
+                              disabled={formData.product_grid_layout === 'round'}
+                            />
+                            <Input
+                              value={formData.product_price_text_color}
+                              onChange={(e) => handleInputChange('product_price_text_color', e.target.value)}
+                              placeholder="#ffffff"
+                              pattern="^#[0-9A-Fa-f]{6}$"
+                              className="flex-1"
+                              disabled={formData.product_grid_layout === 'round'}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Preview */}
                       <div className="p-4 border rounded-lg">
                         <Label className="mb-2 block">Prévia:</Label>
@@ -746,8 +793,18 @@ const Settings = () => {
                               backgroundColor: `${formData.product_text_background_color}${Math.round((formData.product_text_background_opacity / 100) * 255).toString(16).padStart(2, '0')}`
                             }}
                           >
-                            <p className="text-white text-sm font-medium">Nome do Produto</p>
-                            <p className="text-white text-xs font-bold">R$ 99,90</p>
+                            <p 
+                              className="text-sm font-medium" 
+                              style={{ color: formData.product_name_text_color }}
+                            >
+                              Nome do Produto
+                            </p>
+                            <p 
+                              className="text-xs font-bold" 
+                              style={{ color: formData.product_price_text_color }}
+                            >
+                              R$ 99,90
+                            </p>
                           </div>
                         </div>
                       </div>

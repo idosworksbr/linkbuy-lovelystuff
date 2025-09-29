@@ -39,6 +39,11 @@ interface StoreProfile {
   hide_footer?: boolean;
   is_verified?: boolean;
   show_all_products_in_feed?: boolean;
+  product_text_background_enabled?: boolean;
+  product_text_background_color?: string;
+  product_text_background_opacity?: number;
+  product_name_text_color?: string;
+  product_price_text_color?: string;
   created_at: string;
 }
 
@@ -431,12 +436,19 @@ const Catalog = () => {
     });
 
     if (gridLayout === 'instagram') {
-      // Layout Instagram - sem gap nem bordas, apenas as imagens
-      return (
+      // Layout Instagram - sempre mostra informações com fundo configurável
+      const textBgEnabled = (store as any).product_text_background_enabled ?? true;
+      const textBgColor = (store as any).product_text_background_color || '#000000';
+      const textBgOpacity = (store as any).product_text_background_opacity ?? 70;
+      const nameTextColor = (store as any).product_name_text_color || '#ffffff';
+      const priceTextColor = (store as any).product_price_text_color || '#ffffff';
+      const bgColorWithOpacity = `${textBgColor}${Math.round((textBgOpacity / 100) * 255).toString(16).padStart(2, '0')}`;
+      
+      const instagramProduct = (
         <div 
           key={product.id} 
           {...longPressProps}
-          className={`${baseClasses} aspect-square overflow-hidden`}
+          className={`${baseClasses} aspect-square overflow-hidden relative`}
           style={animationStyle}
         >
           {product.images && product.images.length > 0 ? (
@@ -451,18 +463,27 @@ const Catalog = () => {
             </div>
           )}
           
-          {/* Overlay com informações apenas no hover para Instagram */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-              <h3 className="text-xs font-medium line-clamp-2 mb-1">{product.name}</h3>
+          {/* Informações sempre visíveis com fundo configurável */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+            <div 
+              className="absolute bottom-0 left-0 right-0 p-2"
+              style={textBgEnabled ? { backgroundColor: bgColorWithOpacity } : {}}
+            >
+              <h3 className="text-xs font-medium line-clamp-2 mb-1" style={{ color: nameTextColor }}>
+                {product.name}
+              </h3>
               {(() => {
                 const prices = getProductPrices(product);
                 return (
                   <div className="flex items-center gap-1">
                     {prices.hasDiscount && (
-                      <span className="text-xs line-through opacity-70">R$ {prices.formattedOriginalPrice}</span>
+                      <span className="text-xs line-through opacity-70" style={{ color: priceTextColor }}>
+                        R$ {prices.formattedOriginalPrice}
+                      </span>
                     )}
-                    <p className="text-xs font-bold">R$ {prices.formattedFinalPrice}</p>
+                    <p className="text-xs font-bold" style={{ color: priceTextColor }}>
+                      R$ {prices.formattedFinalPrice}
+                    </p>
                   </div>
                 );
               })()}
@@ -470,11 +491,25 @@ const Catalog = () => {
           </div>
         </div>
       );
+
+      // Aplicar animação de desconto se habilitada
+      if (product.discount && product.discount > 0 && product.discount_animation_enabled) {
+        return (
+          <DiscountAnimation
+            enabled={true}
+            color={product.discount_animation_color || '#ff0000'}
+          >
+            {instagramProduct}
+          </DiscountAnimation>
+        );
+      }
+
+      return instagramProduct;
     }
 
     if (gridLayout === 'round') {
       // Layout com imagens redondas e informações abaixo
-      return (
+      const roundProduct = (
         <div 
           key={product.id} 
           {...longPressProps}
@@ -515,6 +550,21 @@ const Catalog = () => {
           </div>
         </div>
       );
+
+      // Aplicar animação de desconto se habilitada
+      if (product.discount && product.discount > 0 && product.discount_animation_enabled) {
+        return (
+          <DiscountAnimation
+            enabled={true}
+            color={product.discount_animation_color || '#ff0000'}
+            className="rounded-lg"
+          >
+            {roundProduct}
+          </DiscountAnimation>
+        );
+      }
+
+      return roundProduct;
     }
 
     // Layout padrão (default) com animação de desconto
@@ -559,6 +609,8 @@ const Catalog = () => {
             const textBgEnabled = (store as any).product_text_background_enabled ?? true;
             const textBgColor = (store as any).product_text_background_color || '#000000';
             const textBgOpacity = (store as any).product_text_background_opacity ?? 70;
+            const nameTextColor = (store as any).product_name_text_color || '#ffffff';
+            const priceTextColor = (store as any).product_price_text_color || '#ffffff';
             const bgColorWithOpacity = `${textBgColor}${Math.round((textBgOpacity / 100) * 255).toString(16).padStart(2, '0')}`;
             
             return (
@@ -567,15 +619,19 @@ const Catalog = () => {
                   className="absolute bottom-0 left-0 right-0 p-2"
                   style={textBgEnabled ? { backgroundColor: bgColorWithOpacity } : {}}
                 >
-                  <h3 className="text-xs font-medium line-clamp-2 mb-1 text-white">{product.name}</h3>
+                  <h3 className="text-xs font-medium line-clamp-2 mb-1" style={{ color: nameTextColor }}>
+                    {product.name}
+                  </h3>
                   {(() => {
                     const prices = getProductPrices(product);
                     return (
                       <div className="flex items-center gap-1">
                         {prices.hasDiscount && (
-                          <span className="text-xs line-through text-white/70">R$ {prices.formattedOriginalPrice}</span>
+                          <span className="text-xs line-through opacity-70" style={{ color: priceTextColor }}>
+                            R$ {prices.formattedOriginalPrice}
+                          </span>
                         )}
-                        <p className="text-white text-left font-semibold text-xs">
+                        <p className="text-left font-semibold text-xs" style={{ color: priceTextColor }}>
                           R$ {prices.formattedFinalPrice}
                         </p>
                       </div>

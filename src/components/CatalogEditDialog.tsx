@@ -186,6 +186,12 @@ export const CatalogEditDialog: React.FC<CatalogEditDialogProps> = ({
 
           {/* Fundo do Texto dos Produtos */}
           <div className="space-y-4 pt-4 border-t">
+            {profile.product_grid_layout === 'round' && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                <strong>Nota:</strong> O estilo "Arredondado" tem design fixo. Estas configurações não se aplicam.
+              </div>
+            )}
+            
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Fundo do texto no produto</Label>
@@ -196,7 +202,7 @@ export const CatalogEditDialog: React.FC<CatalogEditDialogProps> = ({
               <Switch
                 checked={(profile as any).product_text_background_enabled ?? true}
                 onCheckedChange={(checked) => handleUpdate({ product_text_background_enabled: checked } as any)}
-                disabled={loading}
+                disabled={loading || profile.product_grid_layout === 'round'}
               />
             </div>
 
@@ -235,6 +241,30 @@ export const CatalogEditDialog: React.FC<CatalogEditDialogProps> = ({
                     className="w-full"
                     disabled={loading}
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+                  <div className="space-y-2">
+                    <Label>Cor do Nome</Label>
+                    <Input
+                      type="color"
+                      value={(profile as any).product_name_text_color || '#ffffff'}
+                      onChange={(e) => handleUpdate({ product_name_text_color: e.target.value } as any)}
+                      className="w-full h-10 p-1 border rounded cursor-pointer"
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Cor do Preço</Label>
+                    <Input
+                      type="color"
+                      value={(profile as any).product_price_text_color || '#ffffff'}
+                      onChange={(e) => handleUpdate({ product_price_text_color: e.target.value } as any)}
+                      className="w-full h-10 p-1 border rounded cursor-pointer"
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
               </>
             )}

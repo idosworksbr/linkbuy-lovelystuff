@@ -247,6 +247,8 @@ export type Database = {
           name: string
           niche: string | null
           product_grid_layout: string | null
+          product_name_text_color: string | null
+          product_price_text_color: string | null
           product_text_background_color: string | null
           product_text_background_enabled: boolean | null
           product_text_background_opacity: number | null
@@ -279,6 +281,8 @@ export type Database = {
           name: string
           niche?: string | null
           product_grid_layout?: string | null
+          product_name_text_color?: string | null
+          product_price_text_color?: string | null
           product_text_background_color?: string | null
           product_text_background_enabled?: boolean | null
           product_text_background_opacity?: number | null
@@ -311,6 +315,8 @@ export type Database = {
           name?: string
           niche?: string | null
           product_grid_layout?: string | null
+          product_name_text_color?: string | null
+          product_price_text_color?: string | null
           product_text_background_color?: string | null
           product_text_background_enabled?: boolean | null
           product_text_background_opacity?: number | null
@@ -483,6 +489,8 @@ export type Database = {
           instagram_url: string | null
           is_verified: boolean | null
           product_grid_layout: string | null
+          product_name_text_color: string | null
+          product_price_text_color: string | null
           product_text_background_color: string | null
           product_text_background_enabled: boolean | null
           product_text_background_opacity: number | null
@@ -506,6 +514,8 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           product_grid_layout?: string | null
+          product_name_text_color?: string | null
+          product_price_text_color?: string | null
           product_text_background_color?: string | null
           product_text_background_enabled?: boolean | null
           product_text_background_opacity?: number | null
@@ -529,6 +539,8 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           product_grid_layout?: string | null
+          product_name_text_color?: string | null
+          product_price_text_color?: string | null
           product_text_background_color?: string | null
           product_text_background_enabled?: boolean | null
           product_text_background_opacity?: number | null
@@ -596,6 +608,8 @@ export type Database = {
           instagram_url: string
           is_verified: boolean
           product_grid_layout: string
+          product_name_text_color: string
+          product_price_text_color: string
           product_text_background_color: string
           product_text_background_enabled: boolean
           product_text_background_opacity: number
