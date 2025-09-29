@@ -79,16 +79,34 @@ serve(async (req) => {
     logStep("Customer found successfully", { customerId, email: user.email });
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: `${origin}/dashboard`,
-    });
-    logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });
+    
+    try {
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${origin}/dashboard`,
+      });
+      logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });
 
-    return new Response(JSON.stringify({ url: portalSession.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+      return new Response(JSON.stringify({ url: portalSession.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    } catch (portalError) {
+      const portalErrorMessage = portalError instanceof Error ? portalError.message : String(portalError);
+      
+      // Check if it's the configuration error
+      if (portalErrorMessage.includes("No configuration provided")) {
+        logStep("ERROR: Customer Portal not configured in Stripe");
+        return new Response(JSON.stringify({ 
+          error: "O Customer Portal do Stripe precisa ser configurado primeiro. Por favor, acesse https://dashboard.stripe.com/settings/billing/portal e configure o portal do cliente para continuar."
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+      
+      throw portalError; // Re-throw other errors
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in customer-portal", { message: errorMessage });
