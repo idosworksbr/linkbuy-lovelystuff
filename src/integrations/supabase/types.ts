@@ -236,6 +236,7 @@ export type Database = {
           background_type: string | null
           catalog_layout: string | null
           catalog_theme: string | null
+          catalog_visible: boolean | null
           created_at: string
           custom_background_enabled: boolean | null
           custom_whatsapp_message: string | null
@@ -264,6 +265,7 @@ export type Database = {
           background_type?: string | null
           catalog_layout?: string | null
           catalog_theme?: string | null
+          catalog_visible?: boolean | null
           created_at?: string
           custom_background_enabled?: boolean | null
           custom_whatsapp_message?: string | null
@@ -292,6 +294,7 @@ export type Database = {
           background_type?: string | null
           catalog_layout?: string | null
           catalog_theme?: string | null
+          catalog_visible?: boolean | null
           created_at?: string
           custom_background_enabled?: boolean | null
           custom_whatsapp_message?: string | null

@@ -50,6 +50,24 @@ Deno.serve(async (req) => {
 
     const store = storeData[0];
 
+    // Check if catalog is visible
+    const { data: profileData } = await supabaseClient
+      .from('profiles')
+      .select('catalog_visible')
+      .eq('store_url', storeUrl)
+      .single();
+
+    if (profileData && profileData.catalog_visible === false) {
+      console.log('Catalog is hidden for store:', storeUrl);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Catalog not available',
+          message: 'Este catálogo está temporariamente indisponível.'
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get data for this store in parallel
     const [customLinksResult, categoriesResult] = await Promise.all([
       supabaseClient.rpc('get_public_custom_links', { store_url_param: storeUrl }),

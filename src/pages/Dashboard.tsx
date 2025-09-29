@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Image, List, Grid, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { Plus, Edit, Trash2, Image, List, Grid, ChevronLeft, ChevronRight, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import DashboardLayout from "@/components/DashboardLayout";
 import ProductFormAdvanced from "@/components/ProductFormAdvanced";
 import { ProductListView } from "@/components/ProductListView";
@@ -28,6 +30,8 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [showActivateDialog, setShowActivateDialog] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -148,9 +152,34 @@ const Dashboard = () => {
     }
   };
 
+  const handleActivateCatalog = async () => {
+    setIsActivating(true);
+    try {
+      await updateProfile({ catalog_visible: true });
+      setShowActivateDialog(false);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error activating catalog:', error);
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Catalog Inactive Badge */}
+        {profile?.catalog_visible === false && (
+          <Badge 
+            variant="destructive" 
+            className="cursor-pointer hover:bg-red-700 transition-colors flex items-center gap-2 w-fit py-2 px-4"
+            onClick={() => setShowActivateDialog(true)}
+          >
+            <EyeOff className="h-4 w-4" />
+            <span>Catálogo Inativo - Clique para ativar</span>
+          </Badge>
+        )}
+
         {/* Onboarding Dialog */}
         {showOnboarding && (
           <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
@@ -443,6 +472,28 @@ const Dashboard = () => {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Activate Catalog Dialog */}
+        <AlertDialog open={showActivateDialog} onOpenChange={setShowActivateDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ativar Catálogo Público?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Seu catálogo voltará a ser visível para todos os visitantes.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleActivateCatalog}
+                disabled={isActivating}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {isActivating ? "Ativando..." : "Ativar"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );

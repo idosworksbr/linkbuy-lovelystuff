@@ -4,15 +4,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Key, Mail, Smartphone, Activity, Clock, AlertTriangle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Shield, Key, Mail, Smartphone, Activity, Clock, AlertTriangle, RefreshCcw, Eye, EyeOff, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 export const SecuritySettings = () => {
   const { user } = useAuth();
+  const { profile, updateProfile } = useProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -20,6 +26,20 @@ export const SecuritySettings = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
+
+  // Delete account state
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Reset catalog state
+  const [resetPassword, setResetPassword] = useState("");
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  // Catalog visibility state
+  const [catalogVisible, setCatalogVisible] = useState(profile?.catalog_visible ?? true);
 
   // Password strength checker
   const checkPasswordStrength = (password: string) => {
@@ -157,6 +177,113 @@ export const SecuritySettings = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword || deleteConfirmText !== "DELETE") {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Preencha todos os campos corretamente",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const { error } = await supabase.functions.invoke('delete-user-account', {
+        body: { password: deletePassword },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Conta deletada",
+        description: "Sua conta foi deletada permanentemente",
+      });
+
+      // Logout and redirect
+      await supabase.auth.signOut();
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao deletar conta",
+        description: error.message || "Tente novamente mais tarde",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
+  const handleResetCatalog = async () => {
+    if (!resetPassword) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Digite sua senha para confirmar",
+      });
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const { error } = await supabase.functions.invoke('reset-catalog', {
+        body: { password: resetPassword },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Catálogo resetado",
+        description: "Todos os seus produtos e dados foram removidos",
+      });
+
+      setResetPassword("");
+      setShowResetDialog(false);
+      
+      // Reload page to reflect changes
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao resetar catálogo",
+        description: error.message || "Tente novamente mais tarde",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const handleToggleCatalogVisibility = async (visible: boolean) => {
+    try {
+      await updateProfile({ catalog_visible: visible });
+      setCatalogVisible(visible);
+      
+      toast({
+        title: visible ? "Catálogo ativado" : "Catálogo oculto",
+        description: visible 
+          ? "Seu catálogo está visível publicamente" 
+          : "Seu catálogo está oculto para o público",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Não foi possível alterar a visibilidade do catálogo",
+      });
     }
   };
 
@@ -374,6 +501,206 @@ export const SecuritySettings = () => {
           </form>
         </CardContent>
       </Card>
+
+      <Separator />
+
+      {/* Catalog Visibility */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            {catalogVisible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+            <div>
+              <CardTitle>Visibilidade do Catálogo</CardTitle>
+              <CardDescription>
+                Controle se seu catálogo está visível publicamente
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex-1">
+              <Label htmlFor="catalog-visible" className="text-base font-medium">
+                Catálogo Público
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Quando oculto, apenas você poderá visualizar seu catálogo
+              </p>
+            </div>
+            <Switch
+              id="catalog-visible"
+              checked={catalogVisible}
+              onCheckedChange={handleToggleCatalogVisibility}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* Reset Catalog */}
+      <Card className="border-orange-200 dark:border-orange-900">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <RefreshCcw className="h-5 w-5 text-orange-600" />
+            <div>
+              <CardTitle className="text-orange-600 dark:text-orange-400">Resetar Catálogo</CardTitle>
+              <CardDescription>
+                Apagar todos os produtos, categorias, links e analytics
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+            <p className="text-sm text-orange-900 dark:text-orange-100 font-medium mb-2">
+              Esta ação irá deletar:
+            </p>
+            <ul className="text-sm text-orange-800 dark:text-orange-200 space-y-1 ml-4">
+              <li>✓ Todos os produtos</li>
+              <li>✓ Todas as categorias</li>
+              <li>✓ Todos os links personalizados</li>
+              <li>✓ Todos os dados de analytics</li>
+            </ul>
+            <p className="text-sm text-orange-900 dark:text-orange-100 font-medium mt-3">
+              Será mantido: Sua conta, perfil e assinaturas
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            className="w-full border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+            onClick={() => setShowResetDialog(true)}
+          >
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Resetar Catálogo
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* Delete Account */}
+      <Card className="border-red-200 dark:border-red-900">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <div>
+              <CardTitle className="text-red-600 dark:text-red-400">Deletar Conta</CardTitle>
+              <CardDescription>
+                Deletar permanentemente sua conta e todos os dados associados
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg">
+            <p className="text-sm text-red-900 dark:text-red-100 font-medium mb-2">
+              ⚠️ Atenção: Esta ação é irreversível!
+            </p>
+            <p className="text-sm text-red-800 dark:text-red-200">
+              Todos os seus dados, produtos, imagens, assinaturas e configurações serão deletados permanentemente.
+              {profile?.subscription_plan && profile.subscription_plan !== 'free' && (
+                <span className="block mt-2 font-medium">
+                  Sua assinatura ativa será cancelada imediatamente.
+                </span>
+              )}
+            </p>
+          </div>
+          <Button
+            variant="destructive"
+            className="w-full"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Deletar Conta Permanentemente
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Reset Catalog Dialog */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Resetar Catálogo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá deletar permanentemente todos os seus produtos, categorias, links personalizados e dados de analytics.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="reset-password">Digite sua senha para confirmar</Label>
+              <Input
+                id="reset-password"
+                type="password"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                placeholder="Sua senha"
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setResetPassword("")}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetCatalog}
+              disabled={!resetPassword || isResetting}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {isResetting ? "Resetando..." : "Resetar Catálogo"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600">Deletar Conta Permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é irreversível. Todos os seus dados serão deletados permanentemente, incluindo:
+              produtos, categorias, links, analytics, perfil e assinaturas ativas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="delete-password">Digite sua senha</Label>
+              <Input
+                id="delete-password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Sua senha"
+              />
+            </div>
+            <div>
+              <Label htmlFor="delete-confirm">
+                Digite <span className="font-bold text-red-600">DELETE</span> para confirmar
+              </Label>
+              <Input
+                id="delete-confirm"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setDeletePassword("");
+              setDeleteConfirmText("");
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={!deletePassword || deleteConfirmText !== "DELETE" || isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deletando..." : "Deletar Permanentemente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
