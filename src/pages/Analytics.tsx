@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -30,8 +30,8 @@ const Analytics = () => {
     to: undefined
   })
 
-  // Calculate date range based on filter
-  const getDateRange = () => {
+  // Memoize date range to prevent infinite re-renders
+  const { startDate, endDate } = useMemo(() => {
     const now = new Date()
     switch (timeFilter) {
       case 'today':
@@ -50,9 +50,7 @@ const Analytics = () => {
       default:
         return { startDate: undefined, endDate: undefined }
     }
-  }
-
-  const { startDate, endDate } = getDateRange()
+  }, [timeFilter, customDateRange.from, customDateRange.to])
   
   // Always call hooks - never conditionally
   const { storeAnalytics, loading: analyticsLoading, error: analyticsError } = useAnalytics(startDate, endDate)
@@ -143,21 +141,28 @@ const Analytics = () => {
                     </span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 max-w-[calc(100vw-2rem)]" align="start" side="bottom">
                   <Calendar
                     initialFocus
                     mode="range"
                     defaultMonth={customDateRange?.from}
                     selected={customDateRange}
                     onSelect={(range) => setCustomDateRange(range ? { from: range.from, to: range.to } : { from: undefined, to: undefined })}
-                    numberOfMonths={2}
+                    numberOfMonths={typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 2}
                     locale={ptBR}
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
             )}
           </div>
         </div>
+        
+        {timeFilter === 'custom' && (!customDateRange.from || !customDateRange.to) && (
+          <div className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            Selecione o início e o fim do período para visualizar os dados
+          </div>
+        )}
 
         {/* Error Messages */}
         {(analyticsError || productError) && (

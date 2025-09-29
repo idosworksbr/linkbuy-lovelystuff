@@ -132,7 +132,7 @@ const CustomerPortal = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold">{getPlanName(currentPlan)}</h3>
@@ -164,17 +164,17 @@ const CustomerPortal = () => {
                 )}
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 {isSubscribed && (
                   <>
-                    <Button onClick={openCustomerPortal} className="gap-2" variant="outline">
+                    <Button onClick={openCustomerPortal} className="gap-2 w-full sm:w-auto" variant="outline">
                       <Settings className="h-4 w-4" />
                       Gerenciar no Stripe
                     </Button>
                     <Button 
                       onClick={() => setShowCancellationDialog(true)} 
                       variant="outline"
-                      className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                      className="gap-2 border-red-200 text-red-600 hover:bg-red-50 w-full sm:w-auto"
                     >
                       <XCircle className="h-4 w-4" />
                       Cancelar Assinatura

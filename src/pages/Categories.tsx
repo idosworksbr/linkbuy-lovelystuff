@@ -6,14 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import { useCategories, Category } from "@/hooks/useCategories";
 import { useToast } from "@/hooks/use-toast";
+import { useReorderItems } from "@/hooks/useReorderItems";
 import DashboardLayout from "@/components/DashboardLayout";
 
 const Categories = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { categories, loading, createCategory, updateCategory, deleteCategory } = useCategories();
+  const { categories, loading, createCategory, updateCategory, deleteCategory, fetchCategories } = useCategories();
+  const { reorderCategories } = useReorderItems();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -101,26 +105,57 @@ const Categories = () => {
     setIsLoading(true);
     
     try {
-          const categoryData = {
-            name: formData.name.trim(),
-            image_url: imagePreview || null,
-            display_order: formData.display_order,
-            is_active: true
-          };
+      const categoryData = {
+        name: formData.name.trim(),
+        image_url: imagePreview || null,
+        display_order: formData.display_order,
+        is_active: true
+      };
 
+      let categoryId = editingCategory?.id;
+      
       if (editingCategory) {
         await updateCategory(editingCategory.id, categoryData);
-        toast({
-          title: "Categoria atualizada!",
-          description: "As alterações foram salvas com sucesso."
-        });
       } else {
-        await createCategory(categoryData);
-        toast({
-          title: "Categoria criada!",
-          description: "Nova categoria adicionada ao seu catálogo."
-        });
+        const newCategory = await createCategory(categoryData);
+        categoryId = newCategory?.id;
       }
+      
+      // Reordenar categorias: inserir na posição escolhida e reindexar
+      const otherCategories = categories.filter(c => c.id !== categoryId);
+      const newOrder: Category[] = [];
+      
+      // Inserir na posição do slider
+      for (let i = 0; i <= otherCategories.length; i++) {
+        if (i === formData.display_order) {
+          newOrder.push({ 
+            id: categoryId!, 
+            name: formData.name, 
+            image_url: imagePreview || null,
+            display_order: i,
+            is_active: true
+          } as Category);
+        }
+        if (i < otherCategories.length) {
+          newOrder.push(otherCategories[i]);
+        }
+      }
+      
+      // Criar updates com display_order sequencial
+      const updates = newOrder.map((cat, index) => ({
+        id: cat.id,
+        display_order: index
+      }));
+      
+      await reorderCategories(updates);
+      await fetchCategories();
+      
+      toast({
+        title: editingCategory ? "Categoria atualizada!" : "Categoria criada!",
+        description: editingCategory 
+          ? "As alterações foram salvas com sucesso." 
+          : "Nova categoria adicionada ao seu catálogo."
+      });
       
       handleCloseDialog();
     } catch (error) {
@@ -316,16 +351,53 @@ const Categories = () => {
                 />
               </div>
 
-              {/* Display Order */}
-              <div className="space-y-2">
-                <Label htmlFor="category-order">Ordem de Exibição</Label>
-                <Input
-                  id="category-order"
-                  type="number"
-                  min="0"
-                  value={formData.display_order}
-                  onChange={(e) => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
-                />
+              {/* Display Order Slider */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category-order">
+                    Ordem de Exibição (Posição {formData.display_order + 1})
+                  </Label>
+                  <Slider
+                    id="category-order"
+                    min={0}
+                    max={Math.max(0, categories.length - (editingCategory ? 1 : 0))}
+                    step={1}
+                    value={[formData.display_order]}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, display_order: value[0] }))}
+                    className="w-full"
+                  />
+                </div>
+                
+                {/* Preview das categorias */}
+                {categories.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Pré-visualização da ordem:
+                    </Label>
+                    <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border border-muted">
+                      {categories
+                        .filter(c => editingCategory ? c.id !== editingCategory.id : true)
+                        .map((cat, index) => {
+                          const adjustedIndex = index >= formData.display_order ? index + 1 : index;
+                          return (
+                            <Badge 
+                              key={cat.id} 
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {adjustedIndex + 1}. {cat.name}
+                            </Badge>
+                          );
+                        })}
+                      <Badge 
+                        variant="default" 
+                        className="text-xs bg-primary"
+                      >
+                        {formData.display_order + 1}. {formData.name || 'Nova categoria'}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

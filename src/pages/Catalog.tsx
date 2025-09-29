@@ -436,7 +436,8 @@ const Catalog = () => {
     });
 
     if (gridLayout === 'instagram') {
-      // Layout Instagram - sempre mostra informações com fundo configurável
+      // Layout Instagram - respeita configuração de overlay
+      const shouldShowInfo = layout === 'overlay';
       const textBgEnabled = (store as any).product_text_background_enabled ?? true;
       const textBgColor = (store as any).product_text_background_color || '#000000';
       const textBgOpacity = (store as any).product_text_background_opacity ?? 70;
@@ -463,9 +464,10 @@ const Catalog = () => {
             </div>
           )}
           
-          {/* Informações sempre visíveis com fundo configurável */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-            <div 
+          {/* Informações visíveis apenas se overlay estiver ativo */}
+          {shouldShowInfo && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+              <div
               className="absolute bottom-0 left-0 right-0 p-2"
               style={textBgEnabled ? { backgroundColor: bgColorWithOpacity } : {}}
             >
@@ -488,7 +490,8 @@ const Catalog = () => {
                 );
               })()}
             </div>
-          </div>
+            </div>
+          )}
         </div>
       );
 
