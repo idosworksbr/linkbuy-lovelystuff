@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3 } from "lucide-react";
+import { User, Save, Camera, Palette, Store, MessageCircle, Instagram, Smartphone, Layout, Crown, CreditCard, CheckCircle, ExternalLink, RefreshCw, Receipt, Download, XCircle, AlertCircle, Calendar, Grid3x3, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -56,7 +58,9 @@ const Settings = () => {
     product_grid_layout: 'default' as 'default' | 'round' | 'instagram',
     hide_footer: false,
     is_verified: false,
-    
+    product_text_background_enabled: true,
+    product_text_background_color: '#000000',
+    product_text_background_opacity: 70,
   });
 
   useEffect(() => {
@@ -78,7 +82,10 @@ const Settings = () => {
         catalog_layout: profile.catalog_layout || 'bottom',
         product_grid_layout: (profile as any).product_grid_layout || 'default',
         hide_footer: (profile as any).hide_footer || false,
-        is_verified: (profile as any).is_verified || false
+        is_verified: (profile as any).is_verified || false,
+        product_text_background_enabled: (profile as any).product_text_background_enabled ?? true,
+        product_text_background_color: (profile as any).product_text_background_color || '#000000',
+        product_text_background_opacity: (profile as any).product_text_background_opacity ?? 70,
       });
       
       // Load portal data when profile is available
@@ -660,6 +667,91 @@ const Settings = () => {
                       featureName="Planos de Fundo Personalizados"
                       description="No plano Pro você pode personalizar as cores e imagens de fundo do seu catálogo"
                     />
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Fundo do Texto dos Produtos */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Type className="h-5 w-5" />
+                    Fundo do Nome e Preço do Produto
+                  </CardTitle>
+                  <CardDescription>
+                    Adicione um fundo ao texto para melhor legibilidade
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Fundo do texto no produto</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Adiciona um fundo sutil ao nome e preço para melhor contraste com a imagem
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.product_text_background_enabled}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, product_text_background_enabled: checked }))}
+                    />
+                  </div>
+
+                  {formData.product_text_background_enabled && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="product_text_background_color">Cor do Fundo</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="product_text_background_color"
+                            type="color"
+                            value={formData.product_text_background_color}
+                            onChange={(e) => handleInputChange('product_text_background_color', e.target.value)}
+                            className="w-16 h-10 p-1 border rounded cursor-pointer"
+                          />
+                          <Input
+                            value={formData.product_text_background_color}
+                            onChange={(e) => handleInputChange('product_text_background_color', e.target.value)}
+                            placeholder="#000000"
+                            pattern="^#[0-9A-Fa-f]{6}$"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="product_text_background_opacity">
+                          Opacidade: {formData.product_text_background_opacity}%
+                        </Label>
+                        <Slider
+                          id="product_text_background_opacity"
+                          value={[formData.product_text_background_opacity]}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, product_text_background_opacity: value[0] }))}
+                          min={0}
+                          max={100}
+                          step={5}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Ajuste a transparência do fundo (0% = transparente, 100% = opaco)
+                        </p>
+                      </div>
+
+                      {/* Preview */}
+                      <div className="p-4 border rounded-lg">
+                        <Label className="mb-2 block">Prévia:</Label>
+                        <div className="relative w-full h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded overflow-hidden">
+                          <div 
+                            className="absolute bottom-0 left-0 right-0 p-2"
+                            style={{
+                              backgroundColor: `${formData.product_text_background_color}${Math.round((formData.product_text_background_opacity / 100) * 255).toString(16).padStart(2, '0')}`
+                            }}
+                          >
+                            <p className="text-white text-sm font-medium">Nome do Produto</p>
+                            <p className="text-white text-xs font-bold">R$ 99,90</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </CardContent>
               </Card>

@@ -555,30 +555,36 @@ const Catalog = () => {
             </div>
           </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-            <div className="absolute bottom-0 left-0 right-0 p-2">
-              <h3 className="text-xs font-medium line-clamp-2 mb-1 text-black drop-shadow-lg" style={{
-                textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-              }}>{product.name}</h3>
-              {(() => {
-                const prices = getProductPrices(product);
-                return (
-                  <div className="flex items-center gap-1">
-                    {prices.hasDiscount && (
-                      <span className="text-xs line-through text-gray-600 drop-shadow-lg" style={{
-                        textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                      }}>R$ {prices.formattedOriginalPrice}</span>
-                    )}
-                    <p style={{
-                      textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
-                    }} className="drop-shadow-lg text-green-400 text-left font-semibold text-xs">
-                      R$ {prices.formattedFinalPrice}
-                    </p>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
+          (() => {
+            const textBgEnabled = (store as any).product_text_background_enabled ?? true;
+            const textBgColor = (store as any).product_text_background_color || '#000000';
+            const textBgOpacity = (store as any).product_text_background_opacity ?? 70;
+            const bgColorWithOpacity = `${textBgColor}${Math.round((textBgOpacity / 100) * 255).toString(16).padStart(2, '0')}`;
+            
+            return (
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+                <div 
+                  className="absolute bottom-0 left-0 right-0 p-2"
+                  style={textBgEnabled ? { backgroundColor: bgColorWithOpacity } : {}}
+                >
+                  <h3 className="text-xs font-medium line-clamp-2 mb-1 text-white">{product.name}</h3>
+                  {(() => {
+                    const prices = getProductPrices(product);
+                    return (
+                      <div className="flex items-center gap-1">
+                        {prices.hasDiscount && (
+                          <span className="text-xs line-through text-white/70">R$ {prices.formattedOriginalPrice}</span>
+                        )}
+                        <p className="text-white text-left font-semibold text-xs">
+                          R$ {prices.formattedFinalPrice}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            );
+          })()
         )}
       </div>
     );

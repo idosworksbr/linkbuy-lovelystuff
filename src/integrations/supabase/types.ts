@@ -247,6 +247,9 @@ export type Database = {
           name: string
           niche: string | null
           product_grid_layout: string | null
+          product_text_background_color: string | null
+          product_text_background_enabled: boolean | null
+          product_text_background_opacity: number | null
           profile_photo_url: string | null
           show_all_products_in_feed: boolean
           store_description: string | null
@@ -276,6 +279,9 @@ export type Database = {
           name: string
           niche?: string | null
           product_grid_layout?: string | null
+          product_text_background_color?: string | null
+          product_text_background_enabled?: boolean | null
+          product_text_background_opacity?: number | null
           profile_photo_url?: string | null
           show_all_products_in_feed?: boolean
           store_description?: string | null
@@ -305,6 +311,9 @@ export type Database = {
           name?: string
           niche?: string | null
           product_grid_layout?: string | null
+          product_text_background_color?: string | null
+          product_text_background_enabled?: boolean | null
+          product_text_background_opacity?: number | null
           profile_photo_url?: string | null
           show_all_products_in_feed?: boolean
           store_description?: string | null

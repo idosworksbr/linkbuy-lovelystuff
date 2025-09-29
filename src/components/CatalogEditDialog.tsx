@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { Profile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 
@@ -181,6 +183,62 @@ export const CatalogEditDialog: React.FC<CatalogEditDialogProps> = ({
               </span>
             </div>
           )}
+
+          {/* Fundo do Texto dos Produtos */}
+          <div className="space-y-4 pt-4 border-t">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Fundo do texto no produto</Label>
+                <p className="text-sm text-muted-foreground">
+                  Adiciona fundo ao nome e preço
+                </p>
+              </div>
+              <Switch
+                checked={(profile as any).product_text_background_enabled ?? true}
+                onCheckedChange={(checked) => handleUpdate({ product_text_background_enabled: checked } as any)}
+                disabled={loading}
+              />
+            </div>
+
+            {((profile as any).product_text_background_enabled ?? true) && (
+              <>
+                <div className="space-y-2">
+                  <Label>Cor do Fundo</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="color"
+                      value={(profile as any).product_text_background_color || '#000000'}
+                      onChange={(e) => handleUpdate({ product_text_background_color: e.target.value } as any)}
+                      className="w-16 h-10 p-1 border rounded cursor-pointer"
+                      disabled={loading}
+                    />
+                    <Input
+                      value={(profile as any).product_text_background_color || '#000000'}
+                      onChange={(e) => handleUpdate({ product_text_background_color: e.target.value } as any)}
+                      placeholder="#000000"
+                      className="flex-1"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>
+                    Opacidade: {(profile as any).product_text_background_opacity ?? 70}%
+                  </Label>
+                  <Slider
+                    value={[(profile as any).product_text_background_opacity ?? 70]}
+                    onValueChange={(value) => handleUpdate({ product_text_background_opacity: value[0] } as any)}
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                    disabled={loading}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
