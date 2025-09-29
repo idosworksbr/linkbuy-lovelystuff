@@ -247,7 +247,7 @@ const Analytics = () => {
                 {productAnalytics.map((product) => (
                   <div key={product.product_id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg space-y-3 sm:space-y-0">
                     <div className="flex items-center space-x-3 sm:space-x-4">
-                      {product.product_image ? (
+                      {product.product_image && !product.product_image.startsWith('data:') ? (
                         <img 
                           src={product.product_image} 
                           alt={product.product_name}
@@ -255,7 +255,7 @@ const Analytics = () => {
                         />
                       ) : (
                         <div className="h-12 w-12 sm:h-16 sm:w-16 bg-muted rounded flex items-center justify-center flex-shrink-0">
-                          <span className="text-muted-foreground text-xs">Sem imagem</span>
+                          <span className="text-muted-foreground text-xs">📦</span>
                         </div>
                       )}
                       <div className="min-w-0 flex-1">

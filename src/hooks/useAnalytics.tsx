@@ -30,7 +30,10 @@ export const useAnalytics = (startDate?: Date, endDate?: Date) => {
   useEffect(() => {
     if (!user) return
 
-    const fetchAnalytics = async () => {
+    let isMounted = true
+
+    // Debounce para evitar múltiplas chamadas
+    const timeoutId = setTimeout(async () => {
       try {
         setLoading(true)
         setError(null)
@@ -41,9 +44,16 @@ export const useAnalytics = (startDate?: Date, endDate?: Date) => {
           end_date_param: endDate?.toISOString()
         })
 
+        if (!isMounted) return
+
         if (queryError) {
-          console.error('Error fetching store analytics:', queryError)
-          setError('Erro ao carregar analytics')
+          if (queryError.code === '57014') {
+            console.warn('Query timeout - tente um período menor')
+            setError('Timeout ao carregar dados. Tente um período menor.')
+          } else {
+            console.error('Error fetching store analytics:', queryError)
+            setError('Erro ao carregar analytics')
+          }
           return
         }
 
@@ -64,15 +74,22 @@ export const useAnalytics = (startDate?: Date, endDate?: Date) => {
             unique_visitors: 0
           })
         }
-      } catch (err) {
-        console.error('Error fetching analytics:', err)
-        setError('Erro ao carregar analytics')
+      } catch (err: any) {
+        if (isMounted) {
+          console.error('Error fetching analytics:', err)
+          setError('Erro ao carregar analytics')
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
-    }
+    }, 500) // 500ms debounce
 
-    fetchAnalytics()
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+    }
   }, [user, startDate, endDate])
 
   return { storeAnalytics, loading, error }
@@ -87,7 +104,10 @@ export const useProductAnalytics = (startDate?: Date, endDate?: Date) => {
   useEffect(() => {
     if (!user) return
 
-    const fetchProductAnalytics = async () => {
+    let isMounted = true
+
+    // Debounce para evitar múltiplas chamadas
+    const timeoutId = setTimeout(async () => {
       try {
         setLoading(true)
         setError(null)
@@ -98,9 +118,18 @@ export const useProductAnalytics = (startDate?: Date, endDate?: Date) => {
           end_date_param: endDate?.toISOString()
         })
 
+        if (!isMounted) return
+
         if (queryError) {
-          console.error('Error fetching product analytics:', queryError)
-          setError('Erro ao carregar analytics de produtos')
+          // Tratamento específico para timeout
+          if (queryError.code === '57014') {
+            console.warn('Query timeout - tente um período menor')
+            setError('Timeout ao carregar dados. Tente um período menor.')
+          } else {
+            console.error('Error fetching product analytics:', queryError)
+            setError('Erro ao carregar analytics de produtos')
+          }
+          setProductAnalytics([])
           return
         }
 
@@ -118,15 +147,23 @@ export const useProductAnalytics = (startDate?: Date, endDate?: Date) => {
         } else {
           setProductAnalytics([])
         }
-      } catch (err) {
-        console.error('Error fetching product analytics:', err)
-        setError('Erro ao carregar analytics de produtos')
+      } catch (err: any) {
+        if (isMounted) {
+          console.error('Error fetching product analytics:', err)
+          setError('Erro ao carregar analytics de produtos')
+          setProductAnalytics([])
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
-    }
+    }, 500) // 500ms debounce
 
-    fetchProductAnalytics()
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+    }
   }, [user, startDate, endDate])
 
   return { productAnalytics, loading, error }
