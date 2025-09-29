@@ -483,6 +483,9 @@ export type Database = {
           instagram_url: string | null
           is_verified: boolean | null
           product_grid_layout: string | null
+          product_text_background_color: string | null
+          product_text_background_enabled: boolean | null
+          product_text_background_opacity: number | null
           profile_photo_url: string | null
           store_description: string | null
           store_name: string | null
@@ -503,6 +506,9 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           product_grid_layout?: string | null
+          product_text_background_color?: string | null
+          product_text_background_enabled?: boolean | null
+          product_text_background_opacity?: number | null
           profile_photo_url?: string | null
           store_description?: string | null
           store_name?: string | null
@@ -523,6 +529,9 @@ export type Database = {
           instagram_url?: string | null
           is_verified?: boolean | null
           product_grid_layout?: string | null
+          product_text_background_color?: string | null
+          product_text_background_enabled?: boolean | null
+          product_text_background_opacity?: number | null
           profile_photo_url?: string | null
           store_description?: string | null
           store_name?: string | null
@@ -587,6 +596,9 @@ export type Database = {
           instagram_url: string
           is_verified: boolean
           product_grid_layout: string
+          product_text_background_color: string
+          product_text_background_enabled: boolean
+          product_text_background_opacity: number
           profile_photo_url: string
           store_description: string
           store_name: string
