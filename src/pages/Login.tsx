@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ShoppingBag, Mail, Lock, User, ArrowLeft, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,9 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailConfirmed, setShowEmailConfirmed] = useState(false);
   const { signIn, signUp, user, loading } = useAuth();
 
   useEffect(() => {
@@ -19,6 +21,16 @@ const Login = () => {
       navigate('/dashboard');
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    // Detectar se veio da confirmação de email
+    const type = searchParams.get('type');
+    if (type === 'signup') {
+      setShowEmailConfirmed(true);
+      // Remover o parâmetro da URL após 5 segundos
+      setTimeout(() => setShowEmailConfirmed(false), 5000);
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -75,6 +87,21 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-whatsapp/5 to-catalog flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Email Confirmed Banner */}
+        {showEmailConfirmed && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                Email confirmado com sucesso!
+              </p>
+              <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                Faça login para acessar sua conta.
+              </p>
+            </div>
+          </div>
+        )}
+        
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
