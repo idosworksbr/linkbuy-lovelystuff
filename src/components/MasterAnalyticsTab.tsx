@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from './ui/card';
 import { Skeleton } from './ui/skeleton';
 import { Users, MousePointerClick, Clock, TrendingUp, TrendingDown, Activity } from 'lucide-react';
@@ -41,18 +41,25 @@ const MetricCard = ({ title, value, icon, trend, suffix = '' }: MetricCardProps)
 export const MasterAnalyticsTab = () => {
   const [period, setPeriod] = useState('30');
   
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - parseInt(period));
-  const endDate = new Date();
+  // Memoize dates to prevent infinite loop
+  const { startDate, endDate } = useMemo(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - parseInt(period));
+    return {
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    };
+  }, [period]);
 
   const { data: analytics, loading: analyticsLoading } = useWebsiteAnalytics(
-    startDate.toISOString(),
-    endDate.toISOString()
+    startDate,
+    endDate
   );
 
   const { data: funnel, loading: funnelLoading } = useConversionFunnel(
-    startDate.toISOString(),
-    endDate.toISOString()
+    startDate,
+    endDate
   );
 
   const formatDuration = (seconds: number) => {
