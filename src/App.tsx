@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { MasterAuthProvider } from "@/hooks/useMasterAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -23,13 +24,17 @@ import NotFound from "./pages/NotFound";
 import AllCategories from "./pages/AllCategories";
 import CategoryProducts from "./pages/CategoryProducts";
 import Categories from "./pages/Categories";
+import MasterLogin from "./pages/MasterLogin";
+import MasterDashboard from "./pages/MasterDashboard";
+import LeadsManagement from "./pages/LeadsManagement";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
+      <MasterAuthProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -77,6 +82,11 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/dashboard/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+            <Route path="/dashboard/leads" element={<ProtectedRoute><LeadsManagement /></ProtectedRoute>} />
+            
+            {/* Master routes */}
+            <Route path="/loginmaster" element={<MasterLogin />} />
+            <Route path="/master/dashboard" element={<MasterDashboard />} />
             
             {/* Rotas do catálogo em inglês */}
             <Route path="/catalog/:storeUrl" element={<Catalog />} />
@@ -95,6 +105,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+    </MasterAuthProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

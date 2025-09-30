@@ -923,6 +923,39 @@ const Settings = () => {
 
           {/* Tab de Portal do Cliente */}
           <TabsContent value="portal" className="space-y-6">
+            {/* Plans Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5" />
+                  Gerenciar Planos
+                </CardTitle>
+                <CardDescription>
+                  Atualize seu plano ou gerencie sua assinatura
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h3 className="font-semibold">Plano Atual: {getPlanName(profile?.subscription_plan || 'free')}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {profile?.subscription_expires_at 
+                        ? `Expira em ${new Date(profile.subscription_expires_at).toLocaleDateString('pt-BR')}`
+                        : 'Plano gratuito'
+                      }
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => window.location.href = '/dashboard/plans'}
+                    className="gap-2"
+                  >
+                    <Crown className="h-4 w-4" />
+                    Ver Planos
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">Portal do Cliente</h2>

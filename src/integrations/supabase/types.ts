@@ -47,6 +47,42 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_leads: {
+        Row: {
+          captured_at: string
+          city: string
+          id: string
+          ip_address: string | null
+          name: string
+          phone: string
+          source_button: string
+          store_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          captured_at?: string
+          city: string
+          id?: string
+          ip_address?: string | null
+          name: string
+          phone: string
+          source_button: string
+          store_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          captured_at?: string
+          city?: string
+          id?: string
+          ip_address?: string | null
+          name?: string
+          phone?: string
+          source_button?: string
+          store_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -130,6 +166,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      masters: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          password_hash: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          password_hash: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          password_hash?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       product_analytics: {
         Row: {
