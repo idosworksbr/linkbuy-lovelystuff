@@ -252,7 +252,8 @@ async function handleSubscriptionUpdate(
       subscriptionType,
       subscriptionId: subscription.id,
       currentPeriodStart,
-      currentPeriodEnd
+      currentPeriodEnd,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end || false
     });
 
     // Upsert subscription
@@ -264,6 +265,7 @@ async function handleSubscriptionUpdate(
       status: 'active',
       current_period_start: currentPeriodStart,
       current_period_end: currentPeriodEnd,
+      cancel_at_period_end: subscription.cancel_at_period_end || false,
       updated_at: new Date().toISOString(),
     }, {
       onConflict: 'user_id,subscription_type',

@@ -1045,7 +1045,7 @@ const Settings = () => {
                 )}
 
                 {/* Cancellation Notice */}
-                {subscription?.subscription_end && new Date(subscription.subscription_end) > new Date() && (
+                {subscription?.cancel_at_period_end && subscription?.subscription_end && new Date(subscription.subscription_end) > new Date() && (
                   <div className="pt-4 border-t">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                       <div className="flex items-start gap-3">

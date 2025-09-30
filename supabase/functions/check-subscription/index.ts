@@ -234,6 +234,7 @@ serve(async (req) => {
         status: 'active',
         current_period_start: subscriptionStart,
         current_period_end: subscriptionEnd,
+        cancel_at_period_end: subscription.cancel_at_period_end || false,
         updated_at: new Date().toISOString(),
       }, { 
         onConflict: 'user_id,subscription_type',
@@ -244,7 +245,7 @@ serve(async (req) => {
     // Buscar as assinaturas ativas finais para retornar o status
     const { data: activeSubscriptions } = await supabaseClient
       .from("user_subscriptions")
-      .select("subscription_type, current_period_end")
+      .select("subscription_type, current_period_end, cancel_at_period_end")
       .eq('user_id', user.id)
       .eq('status', 'active');
 
@@ -254,11 +255,13 @@ serve(async (req) => {
       new Date(sub.current_period_end) > new Date(max) ? sub.current_period_end : max, 
       activeSubscriptions[0]?.current_period_end || null
     );
+    const hasCancelAtPeriodEnd = activeSubscriptions?.some(sub => sub.cancel_at_period_end) || false;
 
     logStep("Updated database with subscription info", { 
       subscribed: hasActiveSubscriptions, 
       subscriptionTypes,
-      maxEndDate 
+      maxEndDate,
+      cancelAtPeriodEnd: hasCancelAtPeriodEnd
     });
 
     // O trigger sync_user_subscriptions_to_profile() já atualizará o perfil automaticamente
@@ -266,7 +269,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       subscribed: hasActiveSubscriptions,
       subscription_types: subscriptionTypes,
-      subscription_end: maxEndDate
+      subscription_end: maxEndDate,
+      cancel_at_period_end: hasCancelAtPeriodEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

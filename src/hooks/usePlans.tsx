@@ -212,6 +212,11 @@ export const usePlans = () => {
       case 'premium_animations':
         return ['pro_plus', 'pro_plus_verified'].includes(plan);
 
+      // Lead capture - disponível em planos Pro, Pro+ e Pro+ Verificado
+      case 'lead_capture':
+        return ['pro', 'pro_plus', 'pro_plus_verified'].includes(plan) ||
+               (plan === 'pro' && isVerified);
+
       default:
         return false;
     }
