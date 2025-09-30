@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
+// Temporarily disabled to diagnose React duplication issue
+// import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 // Goal: guarantee a single React instance across all dependencies
@@ -10,13 +11,23 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(),
+    // Temporarily disabled to diagnose React duplication issue
+    // mode === 'development' && componentTagger(),
+  ].filter(Boolean),
+  define: {
+    // Force cache bust on dev server
+    __BUILD_ID__: JSON.stringify(Date.now()),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force React to resolve from the app's node_modules
-      react: path.resolve(__dirname, "./node_modules/react"),
-      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+      // Force all React imports to use the same instance
+      "react": path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+      "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime"),
+      "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime"),
     },
     dedupe: [
       "react",

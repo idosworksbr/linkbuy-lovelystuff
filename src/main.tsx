@@ -6,12 +6,13 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { MasterAuthProvider } from "@/hooks/useMasterAuth";
 import App from './App.tsx'
 import './index.css'
+import { registerReactInstance } from '@/lib/reactDebug';
 
 // Debug: ensure single React instance at runtime
+registerReactInstance('main.tsx');
+console.log('[Runtime] React version:', React.version);
+
 if (typeof window !== 'undefined') {
-  // @ts-ignore
-  // eslint-disable-next-line no-console
-  console.debug('[Runtime] React version:', React.version);
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(window as any).__REACT_SINGLETON__ = true;
