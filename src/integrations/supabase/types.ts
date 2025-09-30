@@ -167,6 +167,36 @@ export type Database = {
           },
         ]
       }
+      lead_capture_settings: {
+        Row: {
+          created_at: string
+          id: string
+          instagram_enabled: boolean
+          updated_at: string
+          user_id: string
+          whatsapp_feed_enabled: boolean
+          whatsapp_product_enabled: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instagram_enabled?: boolean
+          updated_at?: string
+          user_id: string
+          whatsapp_feed_enabled?: boolean
+          whatsapp_product_enabled?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instagram_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+          whatsapp_feed_enabled?: boolean
+          whatsapp_product_enabled?: boolean
+        }
+        Relationships: []
+      }
       masters: {
         Row: {
           created_at: string

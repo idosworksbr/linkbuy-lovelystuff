@@ -13,6 +13,7 @@ import { usePlans } from "@/hooks/usePlans";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { LeadCaptureSettingsDialog } from "@/components/LeadCaptureSettingsDialog";
 
 interface Lead {
   id: string;
@@ -294,10 +295,13 @@ const LeadsManagement = () => {
                   {filteredLeads.length} leads encontrados
                 </CardDescription>
               </div>
-              <Button onClick={handleExportLeads} disabled={filteredLeads.length === 0}>
-                <Download className="mr-2 h-4 w-4" />
-                Exportar Excel
-              </Button>
+              <div className="flex gap-2">
+                <LeadCaptureSettingsDialog />
+                <Button onClick={handleExportLeads} disabled={filteredLeads.length === 0}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar Excel
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">

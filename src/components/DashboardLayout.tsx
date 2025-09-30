@@ -51,10 +51,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       active: location.pathname === "/dashboard"
     },
     {
-      label: "Adicionar Produto",
+      label: "Leads",
       icon: Package,
-      path: "/dashboard/add-product",
-      active: location.pathname === "/dashboard/add-product"
+      path: "/dashboard/leads",
+      active: location.pathname === "/dashboard/leads"
     },
     {
       label: "Analytics",
