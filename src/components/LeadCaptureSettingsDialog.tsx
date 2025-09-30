@@ -20,6 +20,7 @@ interface LeadCaptureSettings {
   whatsapp_feed_enabled: boolean;
   whatsapp_product_enabled: boolean;
   instagram_enabled: boolean;
+  show_on_catalog_open: boolean;
 }
 
 export const LeadCaptureSettingsDialog = () => {
@@ -32,6 +33,7 @@ export const LeadCaptureSettingsDialog = () => {
     whatsapp_feed_enabled: true,
     whatsapp_product_enabled: true,
     instagram_enabled: true,
+    show_on_catalog_open: false,
   });
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export const LeadCaptureSettingsDialog = () => {
           whatsapp_feed_enabled: data.whatsapp_feed_enabled,
           whatsapp_product_enabled: data.whatsapp_product_enabled,
           instagram_enabled: data.instagram_enabled,
+          show_on_catalog_open: data.show_on_catalog_open,
         });
       }
     } catch (error) {
@@ -169,6 +172,22 @@ export const LeadCaptureSettingsDialog = () => {
                 checked={settings.instagram_enabled}
                 onCheckedChange={(checked) =>
                   setSettings({ ...settings, instagram_enabled: checked })
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between space-x-2 pt-2 border-t">
+              <Label htmlFor="catalog-open" className="flex flex-col space-y-1">
+                <span className="font-medium">Assim que abrir o catálogo</span>
+                <span className="text-sm text-muted-foreground">
+                  Exibe popup automaticamente ao acessar
+                </span>
+              </Label>
+              <Switch
+                id="catalog-open"
+                checked={settings.show_on_catalog_open}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, show_on_catalog_open: checked })
                 }
               />
             </div>

@@ -19,6 +19,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { usePlans } from "@/hooks/usePlans";
 import { getProductPrices } from "@/lib/priceUtils";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { LeadCaptureModal } from "@/components/LeadCaptureModal";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StoreProfile {
   id: string;
@@ -114,6 +116,9 @@ const Catalog = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [showLeadCapture, setShowLeadCapture] = useState(false);
+  const [leadCaptureSource, setLeadCaptureSource] = useState<string>('');
+  const [leadCaptureSettings, setLeadCaptureSettings] = useState<any>(null);
   const theme = catalogData?.store.catalog_theme || 'light';
   const layout = catalogData?.store.catalog_layout || 'bottom';
   const themeClasses = useThemeClasses(theme);
@@ -187,6 +192,9 @@ const Catalog = () => {
           
           // Fetch store analytics to show real metrics
           fetchStoreAnalytics(data.store.id);
+          
+          // Fetch lead capture settings
+          fetchLeadCaptureSettings(data.store.id);
         }
         
         toast({
@@ -208,6 +216,30 @@ const Catalog = () => {
     };
     fetchCatalogData();
   }, [storeUrl, toast]);
+
+  const fetchLeadCaptureSettings = async (storeId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('lead_capture_settings')
+        .select('*')
+        .eq('user_id', storeId)
+        .maybeSingle();
+      
+      if (!error && data) {
+        setLeadCaptureSettings(data);
+        
+        // Show modal automatically if configured
+        if (data.show_on_catalog_open) {
+          setTimeout(() => {
+            setLeadCaptureSource('catalog_open');
+            setShowLeadCapture(true);
+          }, 1500); // Show after 1.5 seconds
+        }
+      }
+    } catch (error) {
+      console.log('Error fetching lead capture settings:', error);
+    }
+  };
 
   const fetchStoreAnalytics = async (storeId: string) => {
     try {
@@ -245,6 +277,13 @@ const Catalog = () => {
       return;
     }
     
+    // Check if lead capture is enabled for WhatsApp feed
+    if (leadCaptureSettings?.whatsapp_feed_enabled) {
+      setLeadCaptureSource('whatsapp_feed');
+      setShowLeadCapture(true);
+      return;
+    }
+    
     // Track WhatsApp click
     trackEvent('whatsapp_click', catalogData.store.id);
     
@@ -268,10 +307,36 @@ const Catalog = () => {
       return;
     }
     
+    // Check if lead capture is enabled for Instagram
+    if (leadCaptureSettings?.instagram_enabled) {
+      setLeadCaptureSource('instagram');
+      setShowLeadCapture(true);
+      return;
+    }
+    
     // Track Instagram click
     trackEvent('instagram_click', catalogData.store.id);
     
     window.open(catalogData.store.instagram_url, '_blank');
+  };
+
+  const handleLeadCaptureSubmit = () => {
+    setShowLeadCapture(false);
+    
+    // After submitting, proceed with the original action
+    if (!catalogData?.store) return;
+    
+    if (leadCaptureSource === 'whatsapp_feed' || leadCaptureSource === 'whatsapp_product') {
+      trackEvent('whatsapp_click', catalogData.store.id);
+      const phoneNumber = catalogData.store.whatsapp_number;
+      const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo MyLinkBuy e gostaria de saber mais sobre seus produtos.');
+      const phoneStr = phoneNumber.toString();
+      const whatsappUrl = `https://wa.me/${phoneStr}?text=${message}`;
+      window.open(whatsappUrl, '_blank');
+    } else if (leadCaptureSource === 'instagram') {
+      trackEvent('instagram_click', catalogData.store.id);
+      window.open(catalogData.store.instagram_url, '_blank');
+    }
   };
 
   const handleGoBack = () => {
@@ -303,6 +368,13 @@ const Catalog = () => {
   const handleBuyNow = (product: Product) => {
     setIsPreviewOpen(false);
     if (!catalogData?.store) return;
+    
+    // Check if lead capture is enabled for WhatsApp product
+    if (leadCaptureSettings?.whatsapp_product_enabled) {
+      setLeadCaptureSource('whatsapp_product');
+      setShowLeadCapture(true);
+      return;
+    }
     
     trackEvent('whatsapp_click', catalogData.store.id, product.id);
     
@@ -1071,6 +1143,18 @@ const Catalog = () => {
           onBuyNow={handleBuyNow}
           themeClasses={themeClasses}
         />
+
+        {/* Lead Capture Modal */}
+        {catalogData?.store && (
+          <LeadCaptureModal
+            open={showLeadCapture}
+            onOpenChange={setShowLeadCapture}
+            storeId={catalogData.store.id}
+            sourceButton={leadCaptureSource}
+            onSubmit={handleLeadCaptureSubmit}
+            theme={theme}
+          />
+        )}
       </div>
     </CatalogTheme>
   );
