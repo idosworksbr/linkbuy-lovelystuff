@@ -28,6 +28,13 @@ import MasterLogin from "./pages/MasterLogin";
 import MasterDashboard from "./pages/MasterDashboard";
 import LeadsManagement from "./pages/LeadsManagement";
 
+// Demo pages
+import DemoRestaurante from "./pages/demos/DemoRestaurante";
+import DemoLojaCelular from "./pages/demos/DemoLojaCelular";
+import DemoCosmeticos from "./pages/demos/DemoCosmeticos";
+import DemoJoalheria from "./pages/demos/DemoJoalheria";
+import DemoLanchonete from "./pages/demos/DemoLanchonete";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -41,6 +48,14 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            
+            {/* Demo Routes */}
+            <Route path="/demo/restaurante-elegante" element={<DemoRestaurante />} />
+            <Route path="/demo/loja-celular" element={<DemoLojaCelular />} />
+            <Route path="/demo/cosmeticos-premium" element={<DemoCosmeticos />} />
+            <Route path="/demo/joalheria-luxo" element={<DemoJoalheria />} />
+            <Route path="/demo/lanchonete-delivery" element={<DemoLanchonete />} />
+            
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
