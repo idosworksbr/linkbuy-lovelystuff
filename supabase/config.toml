@@ -60,10 +60,16 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.delete-user-account]
-verify_jwt = true
+verify_jwt = false
 
 [functions.reset-catalog]
 verify_jwt = true
+
+[functions.cleanup-unverified-accounts]
+verify_jwt = false
+
+[functions.realtime-visitors]
+verify_jwt = false
 
 [functions.admin-metrics]
 verify_jwt = false

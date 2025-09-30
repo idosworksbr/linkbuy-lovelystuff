@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_expiration_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          expiration_hours: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          expiration_hours?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          expiration_hours?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -378,6 +402,7 @@ export type Database = {
           created_at: string
           custom_background_enabled: boolean | null
           custom_whatsapp_message: string | null
+          email_confirmed_at: string | null
           hide_footer: boolean | null
           id: string
           instagram_url: string | null
@@ -412,6 +437,7 @@ export type Database = {
           created_at?: string
           custom_background_enabled?: boolean | null
           custom_whatsapp_message?: string | null
+          email_confirmed_at?: string | null
           hide_footer?: boolean | null
           id: string
           instagram_url?: string | null
@@ -446,6 +472,7 @@ export type Database = {
           created_at?: string
           custom_background_enabled?: boolean | null
           custom_whatsapp_message?: string | null
+          email_confirmed_at?: string | null
           hide_footer?: boolean | null
           id?: string
           instagram_url?: string | null
@@ -568,6 +595,45 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_deletion_audit: {
+        Row: {
+          categories_count: number | null
+          created_at: string
+          deleted_by: string
+          deleted_user_email: string
+          deleted_user_id: string
+          deleted_user_name: string | null
+          deletion_reason: string | null
+          id: string
+          leads_count: number | null
+          products_count: number | null
+        }
+        Insert: {
+          categories_count?: number | null
+          created_at?: string
+          deleted_by: string
+          deleted_user_email: string
+          deleted_user_id: string
+          deleted_user_name?: string | null
+          deletion_reason?: string | null
+          id?: string
+          leads_count?: number | null
+          products_count?: number | null
+        }
+        Update: {
+          categories_count?: number | null
+          created_at?: string
+          deleted_by?: string
+          deleted_user_email?: string
+          deleted_user_id?: string
+          deleted_user_name?: string | null
+          deletion_reason?: string | null
+          id?: string
+          leads_count?: number | null
+          products_count?: number | null
         }
         Relationships: []
       }
