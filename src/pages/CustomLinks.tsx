@@ -14,19 +14,53 @@ import { usePlans } from "@/hooks/usePlans";
 import { useProfile } from "@/hooks/useProfile";
 import { PlanFeatureRestriction } from "@/components/PlanFeatureRestriction";
 
-// Popular icon options for links
-const iconOptions = [
-  { value: 'ExternalLink', label: 'Link Externo', icon: ExternalLink },
-  { value: 'Link', label: 'Link', icon: LinkIcon },
-  { value: 'Instagram', label: 'Instagram', icon: LinkIcon },
-  { value: 'Facebook', label: 'Facebook', icon: LinkIcon },
-  { value: 'Twitter', label: 'Twitter', icon: LinkIcon },
-  { value: 'Youtube', label: 'YouTube', icon: LinkIcon },
-  { value: 'Mail', label: 'Email', icon: LinkIcon },
-  { value: 'Phone', label: 'Telefone', icon: LinkIcon },
-  { value: 'MapPin', label: 'Localização', icon: LinkIcon },
-  { value: 'Globe', label: 'Website', icon: LinkIcon },
+// Icon type definition
+type IconOption = {
+  value: string;
+  label: string;
+  type: 'icon' | 'emoji';
+  icon?: React.ComponentType<{ className?: string }>;
+};
+
+// Popular icon options for links (icons + emojis)
+const iconOptions: IconOption[] = [
+  { value: 'ExternalLink', label: 'Link Externo', icon: ExternalLink, type: 'icon' },
+  { value: 'Link', label: 'Link', icon: LinkIcon, type: 'icon' },
+  { value: 'Instagram', label: 'Instagram', icon: LinkIcon, type: 'icon' },
+  { value: 'Facebook', label: 'Facebook', icon: LinkIcon, type: 'icon' },
+  { value: 'Twitter', label: 'Twitter', icon: LinkIcon, type: 'icon' },
+  { value: 'Youtube', label: 'YouTube', icon: LinkIcon, type: 'icon' },
+  { value: 'Mail', label: 'Email', icon: LinkIcon, type: 'icon' },
+  { value: 'Phone', label: 'Telefone', icon: LinkIcon, type: 'icon' },
+  { value: 'MapPin', label: 'Localização', icon: LinkIcon, type: 'icon' },
+  { value: 'Globe', label: 'Website', icon: LinkIcon, type: 'icon' },
 ];
+
+// Emoji options for links
+const emojiOptions: IconOption[] = [
+  { value: '🔗', label: 'Link', type: 'emoji' },
+  { value: '📱', label: 'Celular', type: 'emoji' },
+  { value: '💬', label: 'Mensagem', type: 'emoji' },
+  { value: '📧', label: 'Email', type: 'emoji' },
+  { value: '🌐', label: 'Web', type: 'emoji' },
+  { value: '📍', label: 'Localização', type: 'emoji' },
+  { value: '🎵', label: 'Música', type: 'emoji' },
+  { value: '🎥', label: 'Vídeo', type: 'emoji' },
+  { value: '📷', label: 'Foto', type: 'emoji' },
+  { value: '🛒', label: 'Loja', type: 'emoji' },
+  { value: '💰', label: 'Pagamento', type: 'emoji' },
+  { value: '⭐', label: 'Favorito', type: 'emoji' },
+  { value: '❤️', label: 'Coração', type: 'emoji' },
+  { value: '🎁', label: 'Presente', type: 'emoji' },
+  { value: '📦', label: 'Pacote', type: 'emoji' },
+  { value: '🚀', label: 'Foguete', type: 'emoji' },
+  { value: '💡', label: 'Ideia', type: 'emoji' },
+  { value: '🔥', label: 'Fogo', type: 'emoji' },
+  { value: '✨', label: 'Estrelas', type: 'emoji' },
+  { value: '🎯', label: 'Alvo', type: 'emoji' },
+];
+
+const allIconOptions: IconOption[] = [...iconOptions, ...emojiOptions];
 
 const CustomLinks = () => {
   const { customLinks, loading, createCustomLink, updateCustomLink, deleteCustomLink } = useCustomLinks();
@@ -212,7 +246,9 @@ const CustomLinks = () => {
             {customLinks.length > 0 ? (
               <div className="space-y-4">
                 {customLinks.map((link) => {
-                  const IconComponent = iconOptions.find(opt => opt.value === link.icon)?.icon || ExternalLink;
+                  const iconOption = allIconOptions.find(opt => opt.value === link.icon);
+                  const isEmoji = iconOption?.type === 'emoji';
+                  const IconComponent = (iconOption?.type === 'icon' && iconOption.icon) ? iconOption.icon : ExternalLink;
                   
                   return (
                     <div
@@ -226,7 +262,11 @@ const CustomLinks = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 flex-1">
-                        <IconComponent className="h-5 w-5 text-muted-foreground" />
+                        {isEmoji ? (
+                          <span className="text-2xl">{link.icon}</span>
+                        ) : (
+                          <IconComponent className="h-5 w-5 text-muted-foreground" />
+                        )}
                         <div className="flex-1">
                           <h3 className="font-medium">{link.title}</h3>
                           <p className="text-sm text-muted-foreground truncate">{link.url}</p>
@@ -316,7 +356,7 @@ const CustomLinks = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
+              <div className="space-y-2">
                   <Label htmlFor="icon">Ícone</Label>
                   <Select
                     value={formData.icon}
@@ -325,11 +365,25 @@ const CustomLinks = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um ícone" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[300px]">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                        Ícones
+                      </div>
                       {iconOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           <div className="flex items-center gap-2">
                             <option.icon className="h-4 w-4" />
+                            {option.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-2 pt-2">
+                        Emojis
+                      </div>
+                      {emojiOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{option.value}</span>
                             {option.label}
                           </div>
                         </SelectItem>
