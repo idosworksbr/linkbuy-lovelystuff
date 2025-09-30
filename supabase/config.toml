@@ -64,3 +64,21 @@ verify_jwt = true
 
 [functions.reset-catalog]
 verify_jwt = true
+
+[functions.admin-metrics]
+verify_jwt = false
+
+[functions.admin-stripe-revenue]
+verify_jwt = false
+
+[functions.admin-catalog-stats]
+verify_jwt = false
+
+[functions.export-users]
+verify_jwt = false
+
+[functions.master-login]
+verify_jwt = false
+
+[functions.verify-master-token]
+verify_jwt = false
