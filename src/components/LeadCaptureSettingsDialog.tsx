@@ -21,6 +21,7 @@ interface LeadCaptureSettings {
   whatsapp_product_enabled: boolean;
   instagram_enabled: boolean;
   show_on_catalog_open: boolean;
+  trigger_mode: 'always' | 'once_per_session';
 }
 
 export const LeadCaptureSettingsDialog = () => {
@@ -34,6 +35,7 @@ export const LeadCaptureSettingsDialog = () => {
     whatsapp_product_enabled: true,
     instagram_enabled: true,
     show_on_catalog_open: false,
+    trigger_mode: 'always',
   });
 
   useEffect(() => {
@@ -59,6 +61,7 @@ export const LeadCaptureSettingsDialog = () => {
           whatsapp_product_enabled: data.whatsapp_product_enabled,
           instagram_enabled: data.instagram_enabled,
           show_on_catalog_open: data.show_on_catalog_open,
+          trigger_mode: (data.trigger_mode === 'once_per_session' ? 'once_per_session' : 'always'),
         });
       }
     } catch (error) {
@@ -190,6 +193,26 @@ export const LeadCaptureSettingsDialog = () => {
                   setSettings({ ...settings, show_on_catalog_open: checked })
                 }
               />
+            </div>
+
+            <div className="flex items-center justify-between space-x-2 pt-2 border-t">
+              <Label htmlFor="trigger-mode" className="flex flex-col space-y-1">
+                <span className="font-medium">Quando acionar</span>
+                <span className="text-sm text-muted-foreground">
+                  Controla a frequência da captura
+                </span>
+              </Label>
+              <select
+                id="trigger-mode"
+                value={settings.trigger_mode}
+                onChange={(e) =>
+                  setSettings({ ...settings, trigger_mode: e.target.value as 'always' | 'once_per_session' })
+                }
+                className="border rounded-md px-3 py-2 text-sm"
+              >
+                <option value="always">Sempre</option>
+                <option value="once_per_session">Uma vez por sessão</option>
+              </select>
             </div>
           </div>
         )}

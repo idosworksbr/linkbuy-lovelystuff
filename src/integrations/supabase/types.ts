@@ -173,6 +173,7 @@ export type Database = {
           id: string
           instagram_enabled: boolean
           show_on_catalog_open: boolean
+          trigger_mode: string
           updated_at: string
           user_id: string
           whatsapp_feed_enabled: boolean
@@ -183,6 +184,7 @@ export type Database = {
           id?: string
           instagram_enabled?: boolean
           show_on_catalog_open?: boolean
+          trigger_mode?: string
           updated_at?: string
           user_id: string
           whatsapp_feed_enabled?: boolean
@@ -193,6 +195,7 @@ export type Database = {
           id?: string
           instagram_enabled?: boolean
           show_on_catalog_open?: boolean
+          trigger_mode?: string
           updated_at?: string
           user_id?: string
           whatsapp_feed_enabled?: boolean

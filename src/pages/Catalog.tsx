@@ -277,8 +277,24 @@ const Catalog = () => {
       return;
     }
     
+    // Check if lead was already captured in this session
+    const leadCapturedKey = `lead_captured_${catalogData.store.id}`;
+    const hasLeadCaptured = sessionStorage.getItem(leadCapturedKey) === 'true';
+    
     // Check if lead capture is enabled for WhatsApp feed
     if (leadCaptureSettings?.whatsapp_feed_enabled) {
+      // If trigger_mode is once_per_session and lead already captured, skip modal
+      if (leadCaptureSettings?.trigger_mode === 'once_per_session' && hasLeadCaptured) {
+        // Redirect directly
+        trackEvent('whatsapp_click', catalogData.store.id);
+        const phoneNumber = catalogData.store.whatsapp_number;
+        const message = encodeURIComponent(catalogData.store.custom_whatsapp_message || 'Olá! Vi seu catálogo MyLinkBuy e gostaria de saber mais sobre seus produtos.');
+        const phoneStr = phoneNumber.toString();
+        const whatsappUrl = `https://wa.me/${phoneStr}?text=${message}`;
+        window.open(whatsappUrl, '_blank');
+        return;
+      }
+      
       setLeadCaptureSource('whatsapp_feed');
       setShowLeadCapture(true);
       return;
@@ -307,8 +323,20 @@ const Catalog = () => {
       return;
     }
     
+    // Check if lead was already captured in this session
+    const leadCapturedKey = `lead_captured_${catalogData.store.id}`;
+    const hasLeadCaptured = sessionStorage.getItem(leadCapturedKey) === 'true';
+    
     // Check if lead capture is enabled for Instagram
     if (leadCaptureSettings?.instagram_enabled) {
+      // If trigger_mode is once_per_session and lead already captured, skip modal
+      if (leadCaptureSettings?.trigger_mode === 'once_per_session' && hasLeadCaptured) {
+        // Redirect directly
+        trackEvent('instagram_click', catalogData.store.id);
+        window.open(catalogData.store.instagram_url, '_blank');
+        return;
+      }
+      
       setLeadCaptureSource('instagram');
       setShowLeadCapture(true);
       return;
@@ -320,8 +348,14 @@ const Catalog = () => {
     window.open(catalogData.store.instagram_url, '_blank');
   };
 
-  const handleLeadCaptureSubmit = () => {
+  const handleLeadCaptureSubmit = (captured: boolean = true) => {
     setShowLeadCapture(false);
+    
+    // Mark lead as captured in session storage if captured
+    if (captured && catalogData?.store) {
+      const leadCapturedKey = `lead_captured_${catalogData.store.id}`;
+      sessionStorage.setItem(leadCapturedKey, 'true');
+    }
     
     // After submitting, proceed with the original action
     if (!catalogData?.store) return;
@@ -369,8 +403,25 @@ const Catalog = () => {
     setIsPreviewOpen(false);
     if (!catalogData?.store) return;
     
+    // Check if lead was already captured in this session
+    const leadCapturedKey = `lead_captured_${catalogData.store.id}`;
+    const hasLeadCaptured = sessionStorage.getItem(leadCapturedKey) === 'true';
+    
     // Check if lead capture is enabled for WhatsApp product
     if (leadCaptureSettings?.whatsapp_product_enabled) {
+      // If trigger_mode is once_per_session and lead already captured, skip modal
+      if (leadCaptureSettings?.trigger_mode === 'once_per_session' && hasLeadCaptured) {
+        // Redirect directly
+        trackEvent('whatsapp_click', catalogData.store.id, product.id);
+        const phoneNumber = catalogData.store.whatsapp_number;
+        const productMessage = `Olá! Vi o produto "${product.name}" no seu catálogo e gostaria de saber mais informações.`;
+        const message = encodeURIComponent(productMessage);
+        const phoneStr = phoneNumber.toString();
+        const whatsappUrl = `https://wa.me/${phoneStr}?text=${message}`;
+        window.open(whatsappUrl, '_blank');
+        return;
+      }
+      
       setLeadCaptureSource('whatsapp_product');
       setShowLeadCapture(true);
       return;

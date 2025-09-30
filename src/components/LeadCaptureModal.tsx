@@ -13,7 +13,7 @@ interface LeadCaptureModalProps {
   onOpenChange: (open: boolean) => void;
   storeId: string;
   sourceButton: string;
-  onSubmit: () => void;
+  onSubmit: (captured?: boolean) => void;
   theme?: string;
 }
 
@@ -77,7 +77,7 @@ export const LeadCaptureModal = ({
       // Clear form and close modal
       setFormData({ name: '', phone: '', city: '' });
       onOpenChange(false);
-      onSubmit();
+      onSubmit(true);
     } catch (error) {
       console.error('Error capturing lead:', error);
       toast({
@@ -167,7 +167,10 @@ export const LeadCaptureModal = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => {
+                    onOpenChange(false);
+                    onSubmit(false);
+                  }}
                   disabled={isSubmitting}
                   className="flex-1"
                 >
