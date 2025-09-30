@@ -5,10 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useWebsiteTracker } from "@/hooks/useWebsiteTracker";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  
+  // Track website visits
+  useWebsiteTracker();
 
   useEffect(() => {
     if (!loading && user) {

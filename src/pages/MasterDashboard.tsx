@@ -2,15 +2,14 @@ import { useState, useEffect } from 'react';
 import { useMasterAuth } from '@/hooks/useMasterAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogOut, RefreshCw, Download, Users, TrendingUp, DollarSign, Activity, ExternalLink, Package, Store, Loader2 } from 'lucide-react';
+import { LogOut, RefreshCw, Download, Users, TrendingUp, DollarSign, ExternalLink, Package, Loader2, BarChart3, Store } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { MasterAnalyticsTab } from '@/components/MasterAnalyticsTab';
 
 const MasterDashboard = () => {
   const { master, signOut } = useMasterAuth();
@@ -111,96 +110,115 @@ const MasterDashboard = () => {
       </header>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Usuários</CardTitle>
-              <Users className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics?.totalUsers || 0}</div>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">
+              <Store className="h-4 w-4 mr-2" />
+              Visão Geral
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics do Site
+            </TabsTrigger>
+          </TabsList>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Pagantes</CardTitle>
-              <TrendingUp className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics?.paidUsers || 0}</div>
-            </CardContent>
-          </Card>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Total Usuários</CardTitle>
+                  <Users className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metrics?.totalUsers || 0}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">MRR</CardTitle>
-              <DollarSign className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stripeRevenue?.mrr || metrics?.monthlyRevenue || 0)}</div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Pagantes</CardTitle>
+                  <TrendingUp className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metrics?.paidUsers || 0}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Produtos</CardTitle>
-              <Package className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{catalogStats?.totalProducts || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">MRR</CardTitle>
+                  <DollarSign className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(stripeRevenue?.mrr || metrics?.monthlyRevenue || 0)}</div>
+                </CardContent>
+              </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Usuários</CardTitle>
-              <Button onClick={handleExportUsers} size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Produtos</CardTitle>
+                  <Package className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{catalogStats?.totalProducts || 0}</div>
+                </CardContent>
+              </Card>
             </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Loja</TableHead>
-                  <TableHead>Plano</TableHead>
-                  <TableHead>Produtos</TableHead>
-                  <TableHead>Leads</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.slice(0, 50).map((user: any) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-xs text-muted-foreground">{user.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{user.store_name}</TableCell>
-                    <TableCell>
-                      <Badge>{user.subscription_plan}</Badge>
-                    </TableCell>
-                    <TableCell>{user.product_count}</TableCell>
-                    <TableCell>{user.lead_count}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => window.open(user.catalog_url, '_blank')}>
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Usuários</CardTitle>
+                  <Button onClick={handleExportUsers} size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Loja</TableHead>
+                      <TableHead>Plano</TableHead>
+                      <TableHead>Produtos</TableHead>
+                      <TableHead>Leads</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.slice(0, 50).map((user: any) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{user.name}</div>
+                            <div className="text-xs text-muted-foreground">{user.email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.store_name}</TableCell>
+                        <TableCell>
+                          <Badge>{user.subscription_plan}</Badge>
+                        </TableCell>
+                        <TableCell>{user.product_count}</TableCell>
+                        <TableCell>{user.lead_count}</TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm" onClick={() => window.open(user.catalog_url, '_blank')}>
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <MasterAnalyticsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

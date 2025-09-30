@@ -22,6 +22,7 @@ export type Database = {
           ip_address: string | null
           product_id: string | null
           referrer: string | null
+          session_id: string | null
           store_id: string
           user_agent: string | null
         }
@@ -32,6 +33,7 @@ export type Database = {
           ip_address?: string | null
           product_id?: string | null
           referrer?: string | null
+          session_id?: string | null
           store_id: string
           user_agent?: string | null
         }
@@ -42,6 +44,7 @@ export type Database = {
           ip_address?: string | null
           product_id?: string | null
           referrer?: string | null
+          session_id?: string | null
           store_id?: string
           user_agent?: string | null
         }
@@ -230,6 +233,39 @@ export type Database = {
           password_hash?: string
           role?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      page_views: {
+        Row: {
+          bounce: boolean
+          created_at: string
+          id: string
+          page_title: string | null
+          page_url: string
+          referrer_page: string | null
+          session_id: string
+          time_on_page_seconds: number | null
+        }
+        Insert: {
+          bounce?: boolean
+          created_at?: string
+          id?: string
+          page_title?: string | null
+          page_url: string
+          referrer_page?: string | null
+          session_id: string
+          time_on_page_seconds?: number | null
+        }
+        Update: {
+          bounce?: boolean
+          created_at?: string
+          id?: string
+          page_title?: string | null
+          page_url?: string
+          referrer_page?: string | null
+          session_id?: string
+          time_on_page_seconds?: number | null
         }
         Relationships: []
       }
@@ -576,6 +612,87 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      website_sessions: {
+        Row: {
+          converted_to_signup: boolean
+          created_at: string
+          duration_seconds: number
+          end_time: string | null
+          id: string
+          ip_address: string | null
+          landing_page: string | null
+          page_count: number
+          referrer: string | null
+          session_id: string
+          start_time: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          converted_to_signup?: boolean
+          created_at?: string
+          duration_seconds?: number
+          end_time?: string | null
+          id?: string
+          ip_address?: string | null
+          landing_page?: string | null
+          page_count?: number
+          referrer?: string | null
+          session_id: string
+          start_time?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          converted_to_signup?: boolean
+          created_at?: string
+          duration_seconds?: number
+          end_time?: string | null
+          id?: string
+          ip_address?: string | null
+          landing_page?: string | null
+          page_count?: number
+          referrer?: string | null
+          session_id?: string
+          start_time?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "website_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_store_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
