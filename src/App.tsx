@@ -39,10 +39,7 @@ import DemoLanchonete from "./pages/demos/DemoLanchonete";
 const queryClient = new QueryClient();
 
 const App = () => {
-  useEffect(() => {
-    // Register service worker for PWA
-    registerServiceWorker();
-  }, []);
+  // Temporarily disabled to debug React hooks issue
 
   return (
     <QueryClientProvider client={queryClient}>
