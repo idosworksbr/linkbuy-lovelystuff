@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Toaster as Sonner } from "@/components/ui/sonner";;
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -39,13 +40,17 @@ import DemoLanchonete from "./pages/demos/DemoLanchonete";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Temporarily disabled to debug React hooks issue
+  useEffect(() => {
+    // Register service worker for PWA
+    registerServiceWorker();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <MasterAuthProvider>
+      <AuthProvider>
+        <MasterAuthProvider>
           <TooltipProvider>
+          <Toaster />
           <Sonner />
           <PWAInstallPrompt />
           <BrowserRouter>

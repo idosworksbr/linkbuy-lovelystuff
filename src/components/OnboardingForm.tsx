@@ -586,27 +586,6 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                     </div>
                   </div>
                 </div>
-
-                {/* Plan Upgrade Option */}
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="space-y-3">
-                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      🚀 Deseja impulsionar sua loja?
-                    </p>
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                      Com nossos planos pagos você terá acesso a recursos premium como descrição da loja, mais produtos, analytics avançado e muito mais!
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open('/plans', '_blank')}
-                      className="w-full border-blue-300 text-blue-700 hover:bg-blue-100"
-                    >
-                      Ver Planos Disponíveis
-                    </Button>
-                  </div>
-                </div>
               </div>
             )}
 

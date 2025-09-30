@@ -64,22 +64,15 @@ const Dashboard = () => {
   const paginatedProducts = displayProducts.slice(startIndex, endIndex);
   const navigate = useNavigate();
 
-  // Check if user needs onboarding - verifica se tem produtos E se acabou de confirmar email
-  const needsOnboarding = !profile?.store_name || !profile?.store_url || products.length === 0;
+  // Check if user needs onboarding and show automatically for first-time users
+  const needsOnboarding = !profile?.store_name || !profile?.store_url;
   
-  // Auto-show onboarding for new users who just confirmed email
+  // Auto-show onboarding for new users
   useEffect(() => {
-    // Só mostra onboarding se:
-    // 1. O usuário precisa do onboarding E
-    // 2. Não está carregando E
-    // 3. Tem perfil E
-    // 4. Não está mostrando já E
-    // 5. Tem menos de 1 produto (ou seja, é primeiro login após confirmação)
-    if (needsOnboarding && !loading && profile && !showOnboarding && products.length === 0) {
-      console.log('🚀 Ativando onboarding para novo usuário');
+    if (needsOnboarding && !loading && profile && !showOnboarding) {
       setShowOnboarding(true);
     }
-  }, [needsOnboarding, loading, profile, showOnboarding, products.length]);
+  }, [needsOnboarding, loading, profile, showOnboarding]);
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
