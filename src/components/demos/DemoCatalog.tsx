@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Instagram, ShieldCheck, Link2, ArrowLeft, Info } from 'lucide-react';
+import { MessageCircle, Instagram, ShieldCheck, Link2, ArrowLeft, Info, Grid3x3, List, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DemoProduct, DemoProductData } from './DemoProduct';
 import { cn } from '@/lib/utils';
@@ -99,87 +99,161 @@ export const DemoCatalog: React.FC<DemoCatalogProps> = ({
       </div>
 
       {/* Header do Perfil */}
-      <div className={cn("pt-8 pb-6 px-4", themeClasses.text)}>
+      <div className="px-4 pt-6 pb-4">
         <div className="container mx-auto max-w-4xl">
-          <div className="flex flex-col items-center text-center space-y-4">
-            {/* Foto de Perfil (Emoji) */}
-            <div className="w-24 h-24 rounded-full bg-card border-4 border-border flex items-center justify-center text-5xl shadow-lg">
+          {/* Linha superior: Foto + Info + Compartilhar */}
+          <div className="flex items-start gap-4 mb-4">
+            {/* Foto de Perfil */}
+            <div className="w-20 h-20 rounded-2xl bg-card border-4 border-white shadow-lg flex items-center justify-center text-4xl flex-shrink-0">
               {profile.emoji}
             </div>
 
-            {/* Nome da Loja */}
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold">{profile.storeName}</h1>
-              {profile.isVerified && (
-                <ShieldCheck className="w-6 h-6 text-whatsapp fill-whatsapp" />
-              )}
+            {/* Nome e Métricas */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className={cn("text-xl font-bold", themeClasses.text)}>{profile.storeName}</h1>
+                {profile.isVerified && (
+                  <ShieldCheck className="w-5 h-5 text-blue-500 fill-blue-500 flex-shrink-0" />
+                )}
+              </div>
+
+              {/* Métricas em linha */}
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex flex-col items-center">
+                  <span className={cn("font-bold", themeClasses.text)}>{products.length}</span>
+                  <span className={cn("text-xs", themeClasses.textMuted)}>Produtos</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className={cn("font-bold", themeClasses.text)}>
+                    {Math.floor(Math.random() * 500) + 100}
+                  </span>
+                  <span className={cn("text-xs", themeClasses.textMuted)}>Visualizações</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className={cn("font-bold", themeClasses.text)}>
+                    {Math.floor(Math.random() * 50) + 10}
+                  </span>
+                  <span className={cn("text-xs", themeClasses.textMuted)}>Conversas</span>
+                </div>
+              </div>
             </div>
 
-            {/* Descrição */}
-            {profile.description && (
-              <p className={cn("text-base max-w-md", themeClasses.textMuted)}>
-                {profile.description}
-              </p>
+            {/* Botão Compartilhar */}
+            <Button size="icon" variant="ghost" className="flex-shrink-0">
+              <Share2 className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Descrição */}
+          {profile.description && (
+            <p className={cn("text-sm mb-4", themeClasses.text)}>
+              {profile.description}
+            </p>
+          )}
+
+          {/* Botões de Contato */}
+          <div className="flex gap-2">
+            {profile.instagram && (
+              <Button className="flex-1 gap-2" variant="default">
+                <Instagram className="w-4 h-4" />
+                Seguir
+              </Button>
             )}
-
-            {/* Botões de Contato */}
-            <div className="flex gap-3 pt-2">
-              {profile.whatsapp && (
-                <Button className="whatsapp-btn">
-                  <MessageCircle className="w-5 h-5" />
-                  WhatsApp
-                </Button>
-              )}
-              {profile.instagram && (
-                <Button variant="outline" className="gap-2">
-                  <Instagram className="w-5 h-5" />
-                  Instagram
-                </Button>
-              )}
-            </div>
+            {profile.whatsapp && (
+              <Button className="flex-1 gap-2" variant="outline">
+                <MessageCircle className="w-4 h-4" />
+                Mensagem
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Tabs de Navegação */}
-      <div className={cn("sticky top-[52px] z-40 border-b border-border", themeClasses.header)} style={{ backdropFilter: 'blur(8px)' }}>
-        <div className="container mx-auto max-w-4xl px-4">
-          <div className="flex gap-1">
+      {/* Seção de Categorias */}
+      {categories.length > 0 && (
+        <div className="px-4 py-4 border-t border-border">
+          <div className="container mx-auto max-w-4xl">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className={cn("font-semibold", themeClasses.text)}>Categorias</h2>
+              <button 
+                onClick={() => setActiveTab('categories')}
+                className={cn("text-sm", themeClasses.textMuted, "hover:opacity-80")}
+              >
+                Ver todas
+              </button>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {categories.slice(0, 6).map((category) => (
+                <div
+                  key={category.id}
+                  className="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer"
+                >
+                  <div className="w-16 h-16 rounded-full bg-card border-2 border-border flex items-center justify-center text-2xl hover:scale-105 transition-transform">
+                    {category.emoji}
+                  </div>
+                  <span className={cn("text-xs text-center line-clamp-1", themeClasses.text)}>
+                    {category.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tabs de Navegação - Ícones */}
+      <div className={cn("sticky top-[52px] z-40 border-t border-b border-border bg-background/80")} style={{ backdropFilter: 'blur(8px)' }}>
+        <div className="container mx-auto max-w-4xl">
+          <div className="flex items-center justify-center gap-12 py-4">
             <button
               onClick={() => setActiveTab('products')}
               className={cn(
-                "flex-1 py-3 px-4 font-medium transition-all",
-                activeTab === 'products'
-                  ? "text-whatsapp border-b-2 border-whatsapp"
-                  : cn("text-muted-foreground hover:text-foreground")
+                "flex flex-col items-center gap-1 transition-all",
+                activeTab === 'products' && "relative"
               )}
             >
-              Produtos ({products.length})
+              <Grid3x3 className={cn(
+                "w-6 h-6",
+                activeTab === 'products' ? "text-foreground" : "text-muted-foreground"
+              )} />
+              {activeTab === 'products' && (
+                <div className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-foreground" />
+              )}
             </button>
+
             {customLinks.length > 0 && (
-                <button
+              <button
                 onClick={() => setActiveTab('links')}
                 className={cn(
-                  "flex-1 py-3 px-4 font-medium transition-all",
-                  activeTab === 'links'
-                    ? "text-whatsapp border-b-2 border-whatsapp"
-                    : cn(themeClasses.textMuted, "hover:opacity-80")
+                  "flex flex-col items-center gap-1 transition-all",
+                  activeTab === 'links' && "relative"
                 )}
               >
-                Links ({customLinks.length})
+                <Link2 className={cn(
+                  "w-6 h-6",
+                  activeTab === 'links' ? "text-foreground" : "text-muted-foreground"
+                )} />
+                {activeTab === 'links' && (
+                  <div className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-foreground" />
+                )}
               </button>
             )}
+
             {categories.length > 0 && (
               <button
                 onClick={() => setActiveTab('categories')}
                 className={cn(
-                  "flex-1 py-3 px-4 font-medium transition-all",
-                  activeTab === 'categories'
-                    ? "text-whatsapp border-b-2 border-whatsapp"
-                    : cn(themeClasses.textMuted, "hover:opacity-80")
+                  "flex flex-col items-center gap-1 transition-all",
+                  activeTab === 'categories' && "relative"
                 )}
               >
-                Categorias ({categories.length})
+                <List className={cn(
+                  "w-6 h-6",
+                  activeTab === 'categories' ? "text-foreground" : "text-muted-foreground"
+                )} />
+                {activeTab === 'categories' && (
+                  <div className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-foreground" />
+                )}
               </button>
             )}
           </div>

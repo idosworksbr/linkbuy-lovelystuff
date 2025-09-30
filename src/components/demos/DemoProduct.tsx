@@ -56,7 +56,7 @@ export const DemoProduct: React.FC<DemoProductProps> = ({
 
     // Estilo do container de texto
     const textContainerStyle = cn(
-      "p-4 space-y-2",
+      "p-3 space-y-1",
       isOverlay && "absolute bottom-0 left-0 right-0",
       textBackgroundEnabled && isOverlay && "backdrop-blur-sm",
       !isOverlay && "bg-card"
@@ -80,29 +80,26 @@ export const DemoProduct: React.FC<DemoProductProps> = ({
         {/* Informações do produto */}
         <div className={textContainerStyle} style={isOverlay ? textBackgroundStyle : {}}>
           <h3 
-            className={cn("font-semibold text-base line-clamp-2", nameTextColor ? "" : "text-foreground")}
+            className={cn("font-bold text-sm line-clamp-2 uppercase", nameTextColor ? "" : "text-foreground")}
             style={nameTextColor ? { color: nameTextColor } : {}}
           >
             {product.name}
           </h3>
           
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-col gap-0.5">
             {hasDiscount && (
-              <span className={cn("text-sm line-through", priceTextColor ? "opacity-70" : "text-muted-foreground")} style={priceTextColor ? { color: priceTextColor, opacity: 0.7 } : {}}>
+              <span className={cn("text-xs line-through", priceTextColor ? "opacity-60" : "text-muted-foreground")} style={priceTextColor ? { color: priceTextColor, opacity: 0.6 } : {}}>
                 R$ {formattedOriginalPrice}
               </span>
             )}
-            <span 
-              className={cn("font-bold text-lg", priceTextColor ? "" : "text-whatsapp")}
-              style={priceTextColor ? { color: priceTextColor } : {}}
-            >
-              R$ {formattedFinalPrice}
-            </span>
-            {hasDiscount && (
-              <span className="bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded-full font-semibold">
-                -{discountPercentage}%
+            <div className="flex items-center gap-2">
+              <span 
+                className={cn("font-bold text-base", hasDiscount ? "text-whatsapp" : "text-foreground")}
+                style={priceTextColor && !hasDiscount ? { color: priceTextColor } : {}}
+              >
+                R$ {formattedFinalPrice}
               </span>
-            )}
+            </div>
           </div>
         </div>
       </>
