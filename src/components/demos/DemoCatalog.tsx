@@ -264,10 +264,7 @@ export const DemoCatalog: React.FC<DemoCatalogProps> = ({
       <div className="container mx-auto max-w-4xl px-4 py-8">
         {/* Grid de Produtos */}
         {activeTab === 'products' && (
-          <div className={cn(
-            "grid gap-4",
-            profile.gridStyle === 'instagram' ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
-          )}>
+          <div className="grid grid-cols-3 gap-3">
             {filteredProducts.map((product) => (
               <DemoProduct
                 key={product.id}

@@ -51,7 +51,7 @@ const DemoLanchonete = () => {
         isVerified: false,
         theme: 'mint',
         layout: 'bottom',
-        gridStyle: 'round',
+        gridStyle: 'default',
         backgroundType: 'gradient',
         backgroundColor: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
       }}

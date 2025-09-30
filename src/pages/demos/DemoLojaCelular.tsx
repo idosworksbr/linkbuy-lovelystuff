@@ -40,7 +40,7 @@ const DemoLojaCelular = () => {
         isVerified: true,
         theme: 'dark',
         layout: 'bottom',
-        gridStyle: 'round',
+        gridStyle: 'default',
         backgroundColor: '#0f172a',
       }}
       products={products}
