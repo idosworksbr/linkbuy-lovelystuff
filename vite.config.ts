@@ -27,11 +27,13 @@ export default defineConfig(({ mode }) => ({
     ],
   },
   optimizeDeps: {
-    include: [
+    // Prevent Vite from pre-bundling its own copy of React to avoid duplicate instances
+    exclude: [
       "react",
       "react-dom",
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
+      "scheduler",
     ],
     force: true,
   },

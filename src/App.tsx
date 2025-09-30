@@ -35,8 +35,10 @@ import DemoLanchonete from "./pages/demos/DemoLanchonete";
 
 const App = () => {
   useEffect(() => {
-    // Register service worker for PWA
-    registerServiceWorker();
+    // Register service worker for PWA only in production to avoid dev cache issues
+    if (import.meta.env.MODE === 'production') {
+      registerServiceWorker();
+    }
   }, []);
 
   return (
