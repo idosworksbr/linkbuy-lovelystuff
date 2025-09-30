@@ -43,8 +43,8 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <MasterAuthProvider>
+        <>
+          <MasterAuthProvider>
           <TooltipProvider>
           <Sonner />
           <PWAInstallPrompt />
@@ -125,7 +125,7 @@ const App = () => {
         </BrowserRouter>
       </TooltipProvider>
     </MasterAuthProvider>
-    </AuthProvider>
+    </>
   </QueryClientProvider>
   );
 };
