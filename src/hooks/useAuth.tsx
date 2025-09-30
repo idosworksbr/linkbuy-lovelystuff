@@ -62,11 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
-    // Define redirect URL ensuring production points to the correct domain
-    const redirectUrl =
-      typeof window !== 'undefined' && window.location.origin.includes('mylinkbuy.com.br')
-        ? 'https://www.mylinkbuy.com.br/login'
-        : `${window.location.origin}/login`;
+    const redirectUrl = `${window.location.origin}/login`;
     
     const { error } = await supabase.auth.signUp({
       email,
