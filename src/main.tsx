@@ -7,6 +7,16 @@ import { MasterAuthProvider } from "@/hooks/useMasterAuth";
 import App from './App.tsx'
 import './index.css'
 
+// Debug: ensure single React instance at runtime
+if (typeof window !== 'undefined') {
+  // @ts-ignore
+  // eslint-disable-next-line no-console
+  console.debug('[Runtime] React version:', React.version);
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__REACT_SINGLETON__ = true;
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -17,16 +27,14 @@ const queryClient = new QueryClient({
 });
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <MasterAuthProvider>
-          <TooltipProvider>
-            <App />
-          </TooltipProvider>
-        </MasterAuthProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <MasterAuthProvider>
+        <TooltipProvider>
+          <App />
+        </TooltipProvider>
+      </MasterAuthProvider>
+    </AuthProvider>
+  </QueryClientProvider>
 );
 
