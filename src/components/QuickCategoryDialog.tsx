@@ -52,6 +52,32 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
     reader.readAsDataURL(file);
   };
 
+  const createColorImage = async (color: string): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 400;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        reject(new Error('Não foi possível criar a imagem'));
+        return;
+      }
+
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, 400, 400);
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error('Não foi possível criar a imagem'));
+          return;
+        }
+        const file = new File([blob], 'category-color.png', { type: 'image/png' });
+        resolve(file);
+      }, 'image/png');
+    });
+  };
+
   const uploadImage = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -92,11 +118,8 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
       let imageUrl = '';
 
       if (useColor) {
-        // Criar uma imagem SVG com a cor sólida
-        const svg = `<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="400" fill="${color}"/></svg>`;
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
-        const file = new File([blob], 'color.svg', { type: 'image/svg+xml' });
-        imageUrl = await uploadImage(file);
+        const colorImageFile = await createColorImage(color);
+        imageUrl = await uploadImage(colorImageFile);
       } else if (imageFile) {
         imageUrl = await uploadImage(imageFile);
       }
