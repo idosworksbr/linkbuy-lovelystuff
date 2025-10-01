@@ -1,4 +1,4 @@
-
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MasterAuthProvider } from "@/hooks/useMasterAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { registerServiceWorker } from "@/lib/pwaUtils";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -37,14 +39,21 @@ import DemoLanchonete from "./pages/demos/DemoLanchonete";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <MasterAuthProvider>
-        <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+const App = () => {
+  useEffect(() => {
+    // Register service worker for PWA
+    registerServiceWorker();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <MasterAuthProvider>
+          <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <PWAInstallPrompt />
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -123,6 +132,7 @@ const App = () => (
     </MasterAuthProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
