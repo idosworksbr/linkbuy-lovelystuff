@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+// import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -44,7 +44,6 @@ const App = () => {
   return (
     <>
       <Toaster />
-      <Sonner />
       <PWAInstallPrompt />
       <BrowserRouter>
           <Routes>
