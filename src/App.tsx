@@ -51,8 +51,8 @@ const queryClient = new QueryClient({
 const AnimatedRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+      <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
       
       {/* Demo Routes */}
       <Route path="/demo/restaurante-elegante" element={<DemoRestaurante />} />

@@ -120,8 +120,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+      
+      // Redirect to landing page after successful logout
+      window.location.href = '/';
+    } catch (error: any) {
       toast({
         title: "Erro ao sair",
         description: error.message,
