@@ -18,8 +18,8 @@ export const CatalogTheme = ({ theme, backgroundColor, backgroundImage, backgrou
           card: 'bg-gray-800 border-gray-700',
           text: 'text-gray-100',
           textMuted: 'text-gray-300',
-          button: 'bg-blue-600 hover:bg-blue-700 text-gray-100',
-          buttonOutline: 'border-gray-600 text-gray-300 hover:bg-gray-700',
+          button: 'bg-blue-600 hover:bg-blue-700 text-white',
+          buttonOutline: 'bg-white border-gray-600 text-gray-900 hover:bg-gray-100 hover:text-gray-900',
           header: 'border-gray-700 bg-gray-800',
           accent: 'bg-gray-700'
         };
@@ -96,7 +96,7 @@ export const CatalogTheme = ({ theme, backgroundColor, backgroundImage, backgrou
           text: 'text-blue-50',
           textMuted: 'text-blue-200',
           button: 'bg-blue-600 hover:bg-blue-700 text-white',
-          buttonOutline: 'border-blue-700 text-blue-200 hover:bg-blue-800',
+          buttonOutline: 'bg-white border-blue-700 text-blue-950 hover:bg-blue-50 hover:text-blue-950',
           header: 'border-blue-800 bg-blue-900/90',
           accent: 'bg-blue-800'
         };
@@ -107,7 +107,7 @@ export const CatalogTheme = ({ theme, backgroundColor, backgroundImage, backgrou
           text: 'text-green-50',
           textMuted: 'text-green-200',
           button: 'bg-green-600 hover:bg-green-700 text-white',
-          buttonOutline: 'border-green-700 text-green-200 hover:bg-green-800',
+          buttonOutline: 'bg-white border-green-700 text-green-950 hover:bg-green-50 hover:text-green-950',
           header: 'border-green-800 bg-green-900/90',
           accent: 'bg-green-800'
         };
@@ -140,7 +140,7 @@ export const CatalogTheme = ({ theme, backgroundColor, backgroundImage, backgrou
           text: 'text-slate-100',
           textMuted: 'text-slate-300',
           button: 'bg-slate-700 hover:bg-slate-600 text-white',
-          buttonOutline: 'border-slate-600 text-slate-300 hover:bg-slate-700',
+          buttonOutline: 'bg-white border-slate-600 text-slate-900 hover:bg-slate-100 hover:text-slate-900',
           header: 'border-slate-700 bg-slate-800/90',
           accent: 'bg-slate-700'
         };
@@ -204,7 +204,7 @@ export const useThemeClasses = (theme: 'light' | 'dark' | 'beige' | 'rose' | 'go
         text: 'text-gray-100',
         textMuted: 'text-gray-300',
         button: 'bg-blue-600 hover:bg-blue-700 text-white',
-        buttonOutline: 'border-gray-600 text-gray-300 hover:bg-gray-700',
+        buttonOutline: 'bg-white border-gray-600 text-gray-900 hover:bg-gray-100 hover:text-gray-900',
         header: 'border-gray-700 bg-gray-800',
         accent: 'bg-gray-700'
       };
@@ -281,7 +281,7 @@ export const useThemeClasses = (theme: 'light' | 'dark' | 'beige' | 'rose' | 'go
         text: 'text-blue-50',
         textMuted: 'text-blue-200',
         button: 'bg-blue-600 hover:bg-blue-700 text-white',
-        buttonOutline: 'border-blue-700 text-blue-200 hover:bg-blue-800',
+        buttonOutline: 'bg-white border-blue-700 text-blue-950 hover:bg-blue-50 hover:text-blue-950',
         header: 'border-blue-800 bg-blue-900/90',
         accent: 'bg-blue-800'
       };
@@ -292,7 +292,7 @@ export const useThemeClasses = (theme: 'light' | 'dark' | 'beige' | 'rose' | 'go
         text: 'text-green-50',
         textMuted: 'text-green-200',
         button: 'bg-green-600 hover:bg-green-700 text-white',
-        buttonOutline: 'border-green-700 text-green-200 hover:bg-green-800',
+        buttonOutline: 'bg-white border-green-700 text-green-950 hover:bg-green-50 hover:text-green-950',
         header: 'border-green-800 bg-green-900/90',
         accent: 'bg-green-800'
       };
@@ -325,7 +325,7 @@ export const useThemeClasses = (theme: 'light' | 'dark' | 'beige' | 'rose' | 'go
         text: 'text-slate-100',
         textMuted: 'text-slate-300',
         button: 'bg-slate-700 hover:bg-slate-600 text-white',
-        buttonOutline: 'border-slate-600 text-slate-300 hover:bg-slate-700',
+        buttonOutline: 'bg-white border-slate-600 text-slate-900 hover:bg-slate-100 hover:text-slate-900',
         header: 'border-slate-700 bg-slate-800/90',
         accent: 'bg-slate-700'
       };
