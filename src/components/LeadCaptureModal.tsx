@@ -23,7 +23,7 @@ export const LeadCaptureModal = ({
   storeId, 
   sourceButton, 
   onSubmit,
-  theme = 'light'
+  theme = 'dark'
 }: LeadCaptureModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
