@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LogOut, RefreshCw, Download, Users, TrendingUp, DollarSign, ExternalLink, Package, Loader2, BarChart3, Store } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { MasterAnalyticsTab } from '@/components/MasterAnalyticsTab';
+import { MasterUserManagement } from '@/components/MasterUserManagement';
 
 const MasterDashboard = () => {
   const { master, signOut } = useMasterAuth();
@@ -168,49 +169,15 @@ const MasterDashboard = () => {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Usuários</CardTitle>
+                  <CardTitle>Gerenciamento de Usuários</CardTitle>
                   <Button onClick={handleExportUsers} size="sm">
                     <Download className="h-4 w-4 mr-2" />
-                    Exportar
+                    Exportar CSV
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Loja</TableHead>
-                      <TableHead>Plano</TableHead>
-                      <TableHead>Produtos</TableHead>
-                      <TableHead>Leads</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.slice(0, 50).map((user: any) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{user.name}</div>
-                            <div className="text-xs text-muted-foreground">{user.email}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{user.store_name}</TableCell>
-                        <TableCell>
-                          <Badge>{user.subscription_plan}</Badge>
-                        </TableCell>
-                        <TableCell>{user.product_count}</TableCell>
-                        <TableCell>{user.lead_count}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm" onClick={() => window.open(user.catalog_url, '_blank')}>
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <MasterUserManagement users={users} onRefresh={loadDashboardData} />
               </CardContent>
             </Card>
           </TabsContent>

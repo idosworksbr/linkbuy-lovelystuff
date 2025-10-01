@@ -64,8 +64,8 @@ const Dashboard = () => {
   const paginatedProducts = displayProducts.slice(startIndex, endIndex);
   const navigate = useNavigate();
 
-  // Check if user needs onboarding and show automatically for first-time users
-  const needsOnboarding = !profile?.store_name || !profile?.store_url;
+  // Check if user needs onboarding - usar onboarding_completed ao invés de store_name/url
+  const needsOnboarding = profile && !profile.onboarding_completed;
   
   // Auto-show onboarding for new users
   useEffect(() => {
@@ -135,10 +135,14 @@ const Dashboard = () => {
   const handleOnboardingComplete = async (data: any) => {
     setIsLoading(true);
     try {
-      // TODO: Process onboarding data
-      // Create category, product, update profile, etc.
+      // Marcar onboarding como completo
+      await updateProfile({ onboarding_completed: true });
       console.log('Onboarding data:', data);
       setShowOnboarding(false);
+      // Reload para pegar dados atualizados
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error('Error completing onboarding:', error);
     } finally {

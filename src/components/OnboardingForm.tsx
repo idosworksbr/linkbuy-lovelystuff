@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { ImageUploadField } from '@/components/ImageUploadField';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useToast } from '@/hooks/use-toast';
@@ -69,7 +70,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const [productImagePreviews, setProductImagePreviews] = useState<string[]>([]);
   const { completeOnboarding, loading } = useOnboarding();
   const { toast } = useToast();
-  const totalSteps = 4;
+  const totalSteps = 5; // Aumentado para incluir step de planos
   const [canSkipProduct, setCanSkipProduct] = useState(false);
 
   const form = useForm<OnboardingFormData>({
@@ -585,6 +586,80 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Etapa 5: Opções de Planos */}
+            {currentStep === 5 && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="text-center mb-6">
+                  <h3 className="text-lg font-medium">Escolha seu Plano</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Desbloqueie recursos premium para impulsionar suas vendas
+                  </p>
+                </div>
+
+                <div className="grid gap-4">
+                  <div className="p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-semibold">Plano Free</h4>
+                        <p className="text-2xl font-bold">R$ 0<span className="text-sm font-normal">/mês</span></p>
+                      </div>
+                      <Badge>Atual</Badge>
+                    </div>
+                    <ul className="text-sm space-y-2 text-muted-foreground">
+                      <li>✓ Catálogo básico</li>
+                      <li>✓ Até 50 produtos</li>
+                      <li>✓ WhatsApp e Instagram</li>
+                      <li>✓ Analytics básico</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 border-2 border-primary rounded-lg bg-primary/5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-semibold">Plano Pro</h4>
+                        <p className="text-2xl font-bold text-primary">R$ 29,90<span className="text-sm font-normal">/mês</span></p>
+                      </div>
+                      <Badge className="bg-primary">Recomendado</Badge>
+                    </div>
+                    <ul className="text-sm space-y-2">
+                      <li>✓ Produtos ilimitados</li>
+                      <li>✓ Descrição da loja</li>
+                      <li>✓ Background personalizado</li>
+                      <li>✓ Analytics avançado</li>
+                      <li>✓ Links personalizados</li>
+                      <li>✓ Captura de leads</li>
+                    </ul>
+                    <Button className="w-full mt-4" onClick={() => window.location.href = '/plans'}>
+                      Começar Trial Gratuito
+                    </Button>
+                  </div>
+
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-semibold">Plano Pro+</h4>
+                        <p className="text-2xl font-bold">R$ 49,90<span className="text-sm font-normal">/mês</span></p>
+                      </div>
+                      <Badge variant="outline">Premium</Badge>
+                    </div>
+                    <ul className="text-sm space-y-2 text-muted-foreground">
+                      <li>✓ Tudo do Pro</li>
+                      <li>✓ Selo de verificado</li>
+                      <li>✓ Suporte prioritário</li>
+                      <li>✓ Recursos exclusivos</li>
+                    </ul>
+                    <Button variant="outline" className="w-full mt-4" onClick={() => window.location.href = '/plans'}>
+                      Ver Detalhes
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="text-center text-sm text-muted-foreground mt-6">
+                  Você pode atualizar ou cancelar seu plano a qualquer momento
                 </div>
               </div>
             )}

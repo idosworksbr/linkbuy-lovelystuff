@@ -26,6 +26,7 @@ export interface Profile {
   subscription_plan: 'free' | 'pro' | 'pro_plus' | 'verified' | 'pro_plus_verified';
   subscription_expires_at?: string | null;
   catalog_visible?: boolean;
+  onboarding_completed?: boolean;
   
   created_at: string;
   updated_at: string;
