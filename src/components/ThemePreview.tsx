@@ -2,8 +2,8 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ThemePreviewProps {
-  selectedTheme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
-  onSelect: (theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') => void;
+  selectedTheme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset' | 'ocean' | 'forest' | 'lavender' | 'coral' | 'charcoal' | 'cream';
+  onSelect: (theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset' | 'ocean' | 'forest' | 'lavender' | 'coral' | 'charcoal' | 'cream') => void;
   disabled?: boolean;
 }
 
@@ -21,12 +21,12 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
     {
       value: 'dark' as const,
       label: 'Escuro',
-      colors: ['#1f2937', '#111827', '#f9fafb'],
+      colors: ['#111827', '#1f2937', '#f3f4f6'],
     },
     {
       value: 'beige' as const,
       label: 'Bege',
-      colors: ['#f5f5dc', '#d4c5a0', '#5c4f3d'],
+      colors: ['#fffbeb', '#fed7aa', '#451a03'],
     },
     {
       value: 'rose' as const,
@@ -36,7 +36,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
     {
       value: 'gold' as const,
       label: 'Dourado',
-      colors: ['#fef3c7', '#fbbf24', '#78350f'],
+      colors: ['#fefce8', '#fef08a', '#713f12'],
     },
     {
       value: 'purple' as const,
@@ -46,12 +46,42 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
     {
       value: 'mint' as const,
       label: 'Menta',
-      colors: ['#f0fdfa', '#5eead4', '#134e4a'],
+      colors: ['#ecfdf5', '#6ee7b7', '#064e3b'],
     },
     {
       value: 'sunset' as const,
       label: 'Pôr do Sol',
-      colors: ['#fff7ed', '#fb923c', '#7c2d12'],
+      colors: ['#fff7ed', '#fdba74', '#7c2d12'],
+    },
+    {
+      value: 'ocean' as const,
+      label: 'Oceano',
+      colors: ['#172554', '#1e40af', '#dbeafe'],
+    },
+    {
+      value: 'forest' as const,
+      label: 'Floresta',
+      colors: ['#052e16', '#166534', '#d1fae5'],
+    },
+    {
+      value: 'lavender' as const,
+      label: 'Lavanda',
+      colors: ['#f5f3ff', '#ddd6fe', '#5b21b6'],
+    },
+    {
+      value: 'coral' as const,
+      label: 'Coral',
+      colors: ['#fef2f2', '#fecaca', '#7f1d1d'],
+    },
+    {
+      value: 'charcoal' as const,
+      label: 'Carvão',
+      colors: ['#0f172a', '#1e293b', '#cbd5e1'],
+    },
+    {
+      value: 'cream' as const,
+      label: 'Creme',
+      colors: ['#fafaf9', '#e7e5e4', '#44403c'],
     },
   ];
 

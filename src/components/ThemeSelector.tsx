@@ -3,58 +3,94 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface ThemeSelectorProps {
-  selectedTheme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset';
-  onThemeChange: (theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset') => void;
+  selectedTheme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset' | 'ocean' | 'forest' | 'lavender' | 'coral' | 'charcoal' | 'cream';
+  onThemeChange: (theme: 'light' | 'dark' | 'beige' | 'rose' | 'gold' | 'purple' | 'mint' | 'sunset' | 'ocean' | 'forest' | 'lavender' | 'coral' | 'charcoal' | 'cream') => void;
 }
 
 const themes = [
   { 
     key: 'light' as const, 
     name: 'Claro', 
-    colors: ['#ffffff', '#f8fafc', '#e2e8f0'],
+    colors: ['#ffffff', '#f8fafc', '#1f2937'],
     description: 'Limpo e profissional'
   },
   { 
     key: 'dark' as const, 
     name: 'Escuro', 
-    colors: ['#0f172a', '#1e293b', '#334155'],
+    colors: ['#111827', '#1f2937', '#f3f4f6'],
     description: 'Moderno e elegante'
   },
   { 
     key: 'beige' as const, 
     name: 'Bege', 
-    colors: ['#f5f5dc', '#deb887', '#d2b48c'],
+    colors: ['#fffbeb', '#fed7aa', '#451a03'],
     description: 'Caloroso e acolhedor'
   },
   { 
     key: 'rose' as const, 
     name: 'Rosa', 
-    colors: ['#fdf2f8', '#fce7f3', '#fbcfe8'],
+    colors: ['#fff1f2', '#fecdd3', '#881337'],
     description: 'Delicado e feminino'
   },
   { 
     key: 'gold' as const, 
     name: 'Dourado', 
-    colors: ['#fffbeb', '#fef3c7', '#fcd34d'],
+    colors: ['#fefce8', '#fef08a', '#713f12'],
     description: 'Luxuoso e premium'
   },
   { 
     key: 'purple' as const, 
     name: 'Roxo', 
-    colors: ['#faf5ff', '#f3e8ff', '#ddd6fe'],
+    colors: ['#faf5ff', '#e9d5ff', '#581c87'],
     description: 'Criativo e único'
   },
   { 
     key: 'mint' as const, 
     name: 'Menta', 
-    colors: ['#f0fdfa', '#ccfbf1', '#99f6e4'],
+    colors: ['#ecfdf5', '#6ee7b7', '#064e3b'],
     description: 'Fresco e natural'
   },
   { 
     key: 'sunset' as const, 
     name: 'Pôr do Sol', 
-    colors: ['#fff7ed', '#fed7aa', '#fb923c'],
+    colors: ['#fff7ed', '#fdba74', '#7c2d12'],
     description: 'Vibrante e energético'
+  },
+  { 
+    key: 'ocean' as const, 
+    name: 'Oceano', 
+    colors: ['#172554', '#1e40af', '#dbeafe'],
+    description: 'Profundo e sereno'
+  },
+  { 
+    key: 'forest' as const, 
+    name: 'Floresta', 
+    colors: ['#052e16', '#166534', '#d1fae5'],
+    description: 'Natural e tranquilo'
+  },
+  { 
+    key: 'lavender' as const, 
+    name: 'Lavanda', 
+    colors: ['#f5f3ff', '#ddd6fe', '#5b21b6'],
+    description: 'Suave e relaxante'
+  },
+  { 
+    key: 'coral' as const, 
+    name: 'Coral', 
+    colors: ['#fef2f2', '#fecaca', '#7f1d1d'],
+    description: 'Vibrante e acolhedor'
+  },
+  { 
+    key: 'charcoal' as const, 
+    name: 'Carvão', 
+    colors: ['#0f172a', '#1e293b', '#cbd5e1'],
+    description: 'Sofisticado e moderno'
+  },
+  { 
+    key: 'cream' as const, 
+    name: 'Creme', 
+    colors: ['#fafaf9', '#e7e5e4', '#44403c'],
+    description: 'Clássico e elegante'
   }
 ];
 
