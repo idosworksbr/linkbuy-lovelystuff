@@ -41,8 +41,10 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    // Register service worker for PWA
-    registerServiceWorker();
+    // Register service worker for PWA only in production
+    if (import.meta.env.PROD) {
+      registerServiceWorker();
+    }
   }, []);
 
   return (
