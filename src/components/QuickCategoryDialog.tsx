@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { supabase } from '@/integrations/supabase/client';
 import { messages } from '@/lib/messages';
@@ -29,6 +30,7 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
   const [imagePreview, setImagePreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
   const { createCategory, fetchCategories } = useCategories();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,12 +126,28 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
         imageUrl = await uploadImage(imageFile);
       }
 
+      // Get the highest display_order to add this category at the end
+      const { data: existingCategories } = await supabase
+        .from('categories')
+        .select('display_order')
+        .eq('user_id', user?.id)
+        .order('display_order', { ascending: false })
+        .limit(1);
+
+      const nextOrder = existingCategories && existingCategories.length > 0 
+        ? (existingCategories[0].display_order || 0) + 1 
+        : 0;
+
       const newCategory = await createCategory({
         name: name.trim(),
         image_url: imageUrl || null,
-        display_order: 0,
+        display_order: nextOrder,
         is_active: true,
       });
+
+      if (!newCategory) {
+        throw new Error('Não foi possível criar a categoria');
+      }
 
       await fetchCategories();
 
@@ -140,10 +158,16 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
 
       onCategoryCreated(newCategory.id);
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao criar categoria:', error);
+      
+      const errorMessage = error?.message?.includes('mime type') 
+        ? 'Formato de imagem não suportado. Use PNG, JPG ou WEBP.'
+        : error?.message || 'Não foi possível criar a categoria. Tente novamente';
+      
       toast({
-        ...messages.categories.createError,
+        title: messages.categories.createError.title,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

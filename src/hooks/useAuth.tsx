@@ -121,20 +121,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw error;
-      }
+      // Clear session regardless of API response
+      setSession(null);
+      setUser(null);
       
-      // Redirect to landing page after successful logout
+      await supabase.auth.signOut({ scope: 'local' });
+      
+      // Force redirect to landing page
       window.location.href = '/';
     } catch (error: any) {
-      toast({
-        title: "Erro ao sair",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
+      // Even if there's an error, clear local state and redirect
+      setSession(null);
+      setUser(null);
+      window.location.href = '/';
     }
   };
 
