@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Phone, User, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
 interface LeadCaptureModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -16,12 +15,11 @@ interface LeadCaptureModalProps {
   onSubmit: (captured?: boolean) => void;
   theme?: string;
 }
-
-export const LeadCaptureModal = ({ 
-  open, 
-  onOpenChange, 
-  storeId, 
-  sourceButton, 
+export const LeadCaptureModal = ({
+  open,
+  onOpenChange,
+  storeId,
+  sourceButton,
   onSubmit,
   theme = 'dark'
 }: LeadCaptureModalProps) => {
@@ -31,31 +29,30 @@ export const LeadCaptureModal = ({
     city: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.name.trim() || !formData.phone.trim() || !formData.city.trim()) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setIsSubmitting(true);
-
     try {
-      const { error } = await supabase.functions.invoke('capture-lead', {
+      const {
+        error
+      } = await supabase.functions.invoke('capture-lead', {
         body: {
           store_id: storeId,
           name: formData.name.trim(),
@@ -66,16 +63,18 @@ export const LeadCaptureModal = ({
           ip_address: null // Will be captured server-side
         }
       });
-
       if (error) throw error;
-
       toast({
         title: "Obrigado!",
-        description: "Seus dados foram registrados com sucesso.",
+        description: "Seus dados foram registrados com sucesso."
       });
 
       // Clear form and close modal
-      setFormData({ name: '', phone: '', city: '' });
+      setFormData({
+        name: '',
+        phone: '',
+        city: ''
+      });
       onOpenChange(false);
       onSubmit(true);
     } catch (error) {
@@ -83,20 +82,15 @@ export const LeadCaptureModal = ({
       toast({
         title: "Erro",
         description: "Erro ao registrar seus dados. Tente novamente.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
   const isDarkTheme = theme === 'dark';
-  const cardClass = isDarkTheme 
-    ? "bg-gray-800 border-gray-700 text-white" 
-    : "bg-white border-gray-200";
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  const cardClass = isDarkTheme ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-200";
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`sm:max-w-md ${cardClass}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-center justify-center">
@@ -122,14 +116,7 @@ export const LeadCaptureModal = ({
                   <User className="h-4 w-4" />
                   Nome
                 </Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Seu nome"
-                  required
-                  disabled={isSubmitting}
-                />
+                <Input id="name" value={formData.name} onChange={e => handleInputChange('name', e.target.value)} placeholder="Seu nome" required disabled={isSubmitting} />
               </div>
 
               <div className="space-y-2">
@@ -137,15 +124,7 @@ export const LeadCaptureModal = ({
                   <Phone className="h-4 w-4" />
                   WhatsApp
                 </Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="(11) 99999-9999"
-                  type="tel"
-                  required
-                  disabled={isSubmitting}
-                />
+                <Input id="phone" value={formData.phone} onChange={e => handleInputChange('phone', e.target.value)} placeholder="(11) 99999-9999" type="tel" required disabled={isSubmitting} />
               </div>
 
               <div className="space-y-2">
@@ -153,34 +132,17 @@ export const LeadCaptureModal = ({
                   <MapPin className="h-4 w-4" />
                   Cidade
                 </Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  placeholder="São Paulo, SP"
-                  required
-                  disabled={isSubmitting}
-                />
+                <Input id="city" value={formData.city} onChange={e => handleInputChange('city', e.target.value)} placeholder="São Paulo, SP" required disabled={isSubmitting} />
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    onOpenChange(false);
-                    onSubmit(false);
-                  }}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
+                <Button type="button" variant="outline" onClick={() => {
+                onOpenChange(false);
+                onSubmit(false);
+              }} disabled={isSubmitting} className="flex-1 text-zinc-950">
                   Agora não
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
+                <Button type="submit" disabled={isSubmitting} className="flex-1">
                   {isSubmitting ? "Enviando..." : "Receber Ofertas"}
                 </Button>
               </div>
@@ -192,6 +154,5 @@ export const LeadCaptureModal = ({
           </CardContent>
         </Card>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
