@@ -16,7 +16,7 @@ export const CatalogTheme = ({ theme, backgroundColor, backgroundImage, backgrou
         return {
           container: 'bg-gray-900 text-gray-100',
           card: 'bg-gray-800 border-gray-700',
-          text: 'text-gray-100',
+          text: 'text-white',
           textMuted: 'text-gray-300',
           button: 'bg-blue-600 hover:bg-blue-700 text-white',
           buttonOutline: 'border-gray-600 text-gray-300 hover:bg-gray-700',
