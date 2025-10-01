@@ -15,13 +15,13 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
   ].filter(Boolean),
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react/jsx-runtime'],
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
     exclude: ['lovable-tagger']
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ['react', 'react-dom']
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime']
   },
 }));
