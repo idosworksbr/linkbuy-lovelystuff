@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+
 import { Toaster } from "@/components/ui/toaster";
-// import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { MasterAuthProvider } from "@/hooks/useMasterAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
-import { registerServiceWorker } from "@/lib/pwaUtils";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -33,19 +35,16 @@ import DemoCosmeticos from "./pages/demos/DemoCosmeticos";
 import DemoJoalheria from "./pages/demos/DemoJoalheria";
 import DemoLanchonete from "./pages/demos/DemoLanchonete";
 
-const App = () => {
-  useEffect(() => {
-    // Register service worker only in production to avoid dev cache issues
-    if (import.meta.env.MODE === 'production') {
-      registerServiceWorker();
-    }
-  }, []);
+const queryClient = new QueryClient();
 
-  return (
-    <>
-      <Toaster />
-      <PWAInstallPrompt />
-      <BrowserRouter>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <MasterAuthProvider>
+        <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -120,8 +119,10 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-    </>
-  );
-};
+      </TooltipProvider>
+    </MasterAuthProvider>
+    </AuthProvider>
+  </QueryClientProvider>
+);
 
 export default App;
