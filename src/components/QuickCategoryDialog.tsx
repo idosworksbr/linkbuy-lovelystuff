@@ -83,7 +83,7 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
   const uploadImage = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const filePath = `${user?.id ?? 'public'}/${fileName}`;
 
     const { error: uploadError, data } = await supabase.storage
       .from('background-images')
