@@ -365,19 +365,90 @@ const Index = () => {
             Escolha o melhor plano para o seu negócio
           </p>
           
-          <div className="overflow-x-auto">
+          {/* Mobile View - Cards */}
+          <div className="md:hidden space-y-6">
+            {[
+              { name: "Free", popular: false, features: [
+                { name: "Produtos ilimitados", included: true },
+                { name: "Link Instagram e WhatsApp", included: true },
+                { name: "Temas personalizados", included: false },
+                { name: "Background customizado", included: false },
+                { name: "Layouts de grade personalizados", included: false },
+                { name: "Links personalizados", included: false },
+                { name: "Mensagem personalizada WhatsApp", included: false },
+                { name: "URL da loja personalizada", included: false },
+                { name: "Analytics avançado", included: false },
+                { name: "Esconder rodapé", included: false },
+                { name: "Configurações avançadas", included: false },
+              ]},
+              { name: "Pro", popular: true, features: [
+                { name: "Produtos ilimitados", included: true },
+                { name: "Link Instagram e WhatsApp", included: true },
+                { name: "Temas personalizados", included: true },
+                { name: "Background customizado", included: true },
+                { name: "Layouts de grade personalizados", included: true },
+                { name: "Links personalizados", included: true },
+                { name: "Mensagem personalizada WhatsApp", included: true },
+                { name: "URL da loja personalizada", included: false },
+                { name: "Analytics avançado", included: false },
+                { name: "Esconder rodapé", included: false },
+                { name: "Configurações avançadas", included: false },
+              ]},
+              { name: "Pro+", popular: false, features: [
+                { name: "Produtos ilimitados", included: true },
+                { name: "Link Instagram e WhatsApp", included: true },
+                { name: "Temas personalizados", included: true },
+                { name: "Background customizado", included: true },
+                { name: "Layouts de grade personalizados", included: true },
+                { name: "Links personalizados", included: true },
+                { name: "Mensagem personalizada WhatsApp", included: true },
+                { name: "URL da loja personalizada", included: true },
+                { name: "Analytics avançado", included: true },
+                { name: "Esconder rodapé", included: true },
+                { name: "Configurações avançadas", included: true },
+              ]},
+            ].map((plan, index) => (
+              <Card key={index} className={plan.popular ? "border-2 border-whatsapp" : ""}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold">{plan.name}</h3>
+                    {plan.popular && (
+                      <Badge className="bg-whatsapp text-white">Mais Popular</Badge>
+                    )}
+                  </div>
+                  <div className="space-y-3">
+                    {plan.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        {feature.included ? (
+                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                        ) : (
+                          <div className="h-5 w-5 flex-shrink-0 text-muted-foreground">-</div>
+                        )}
+                        <span className={feature.included ? "" : "text-muted-foreground"}>
+                          {feature.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop View - Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b-2">
-                  <th className="text-left p-4 font-semibold">Recurso</th>
-                  <th className="text-center p-4 font-semibold">Free</th>
-                  <th className="text-center p-4 font-semibold bg-whatsapp/5">
+                  <th className="text-left p-4 font-semibold min-w-[200px]">Recurso</th>
+                  <th className="text-center p-4 font-semibold w-24">Free</th>
+                  <th className="text-center p-4 font-semibold bg-whatsapp/5 w-24">
                     <div className="flex flex-col items-center gap-1">
                       <span>Pro</span>
                       <Badge variant="secondary" className="text-xs">Mais Popular</Badge>
                     </div>
                   </th>
-                  <th className="text-center p-4 font-semibold">Pro+</th>
+                  <th className="text-center p-4 font-semibold w-24">Pro+</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
