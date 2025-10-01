@@ -60,28 +60,6 @@ export const defaultPlans: PlanPricing[] = [
       "Escolher URL da loja",
       "Acesso ao analytics"
     ]
-  },
-  {
-    name: "Selo Verificado",
-    stripeId: STRIPE_CONFIG.priceIds.verified,
-    price: "Carregando...",
-    verified: true,
-    features: [
-      "Selo de verificado para catálogo",
-      "Pode ser combinado com outros planos",
-      "Aumenta credibilidade da loja"
-    ]
-  },
-  {
-    name: "Pro+ Verificado",
-    stripeId: STRIPE_CONFIG.priceIds.pro_plus_verified,
-    price: "Carregando...",
-    verified: true,
-    features: [
-      "Toda a plataforma inclusa",
-      "Todos os recursos Pro+",
-      "Selo de verificado"
-    ]
   }
 ];
 

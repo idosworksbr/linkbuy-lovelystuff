@@ -355,6 +355,145 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Pricing Comparison Table */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-4xl font-bold text-center mb-4">
+            Compare os Planos
+          </h2>
+          <p className="text-xl text-muted-foreground text-center mb-12">
+            Escolha o melhor plano para o seu negócio
+          </p>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b-2">
+                  <th className="text-left p-4 font-semibold">Recurso</th>
+                  <th className="text-center p-4 font-semibold">Free</th>
+                  <th className="text-center p-4 font-semibold bg-whatsapp/5">
+                    <div className="flex flex-col items-center gap-1">
+                      <span>Pro</span>
+                      <Badge variant="secondary" className="text-xs">Mais Popular</Badge>
+                    </div>
+                  </th>
+                  <th className="text-center p-4 font-semibold">Pro+</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                <tr>
+                  <td className="p-4">Produtos ilimitados</td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4 bg-whatsapp/5"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Link Instagram e WhatsApp</td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4 bg-whatsapp/5"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Temas personalizados</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Background customizado</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Layouts de grade personalizados</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Links personalizados</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Mensagem personalizada WhatsApp</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">URL da loja personalizada</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5">-</td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Analytics avançado</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5">-</td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Esconder rodapé</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5">-</td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4">Configurações avançadas</td>
+                  <td className="text-center p-4">-</td>
+                  <td className="text-center p-4 bg-whatsapp/5">-</td>
+                  <td className="text-center p-4"><CheckCircle className="h-5 w-5 text-green-500 mx-auto" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link to="/login">
+              <Button size="lg" className="text-lg px-8 py-4">
+                Começar Agora
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold mb-4">Quem sou eu</h2>
+          </div>
+          
+          <Card className="p-8">
+            <CardContent className="space-y-4">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Eu sou <strong>Marcelo Rocha</strong>, apaixonado por criar soluções que tornam o dia a dia mais prático, sustentável e eficiente. Sempre busquei maneiras de simplificar processos e gerar valor real para as pessoas.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Foi dessa vontade que nasceu o <strong className="text-whatsapp">MyLinkBuy</strong>: uma plataforma pensada para oferecer uma experiência estética simples e intuitiva aos clientes, ao mesmo tempo em que me proporciona total controle sobre produtos e relacionamentos com meus clientes.
+              </p>
+              <div className="pt-6 border-t mt-6">
+                <div className="flex items-center justify-center gap-8 flex-wrap">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-whatsapp">2000+</div>
+                    <div className="text-sm text-muted-foreground">Empreendedores usando</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-whatsapp">🚀</div>
+                    <div className="text-sm text-muted-foreground">Em constante desenvolvimento</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-3xl mx-auto">
@@ -362,7 +501,7 @@ const Index = () => {
             Pronto para transformar suas vendas?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Junte-se a milhares de empreendedores que já descobriram o poder de um catálogo profissional
+            Junte-se a mais de 2000 empreendedores que já descobriram o poder de um catálogo profissional
           </p>
           <Link to="/login">
             <Button size="lg" className="text-lg px-8 py-4">
@@ -377,6 +516,9 @@ const Index = () => {
       <footer className="border-t mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
           <p>&copy; 2024 <a href="https://www.mylinkbuy.com.br" target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">MyLinkBuy</a>. Feito com ❤️ para empreendedores.</p>
+          <p className="mt-2 text-sm">
+            Suporte: <a href="mailto:suporte@mylinkbuy.com.br" className="hover:underline text-whatsapp">suporte@mylinkbuy.com.br</a>
+          </p>
         </div>
       </footer>
     </div>
