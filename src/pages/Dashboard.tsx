@@ -18,13 +18,20 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProductPrices } from '@/lib/priceUtils';
+import { useStoreUrlGeneration } from "@/hooks/useStoreUrlGeneration";
+import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
   usePageTitle(); // Set dynamic page title
+  const { user } = useAuth();
   const { products, loading, updateProduct, deleteProduct, createProduct } = useProducts();
   const { categories } = useCategories();
   const { profile, updateProfile } = useProfile();
   const { storeAnalytics, loading: analyticsLoading } = useAnalytics();
+  
+  // Gerar store_url no primeiro login se for NULL
+  useStoreUrlGeneration(user?.id, profile?.store_url);
+  
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);

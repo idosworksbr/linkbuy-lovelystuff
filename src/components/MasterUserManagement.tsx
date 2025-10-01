@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, Filter, ChevronLeft, ChevronRight, ExternalLink, 
-  Trash2, AlertTriangle, X, CheckCircle 
+  Trash2, AlertTriangle, X, CheckCircle, Clock 
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -28,6 +28,7 @@ interface User {
   store_name: string;
   store_url: string;
   subscription_plan: string;
+  subscription_expires_at: string | null;
   is_verified: boolean;
   product_count: number;
   lead_count: number;
@@ -101,20 +102,9 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
 
     setIsDeleting(true);
     try {
-      // Obter senha do master (você pode implementar um campo de senha aqui)
-      const password = prompt('Digite sua senha de master para confirmar:');
-      if (!password) {
-        toast({
-          title: 'Operação cancelada',
-          description: 'Senha não fornecida',
-        });
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('delete-user-account', {
+      const { data, error } = await supabase.functions.invoke('delete-user-by-master', {
         body: { 
-          userId: userToDelete.id,
-          password: password 
+          userId: userToDelete.id
         }
       });
 
@@ -138,6 +128,31 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const getAccountStatus = (user: User) => {
+    const now = new Date();
+    const expiresAt = user.subscription_expires_at ? new Date(user.subscription_expires_at) : null;
+    
+    if (user.subscription_plan === 'free') {
+      return { label: 'Gratuito', color: 'bg-gray-500' };
+    }
+    
+    if (!expiresAt) {
+      return { label: 'Ativo', color: 'bg-green-500' };
+    }
+    
+    if (expiresAt < now) {
+      return { label: 'Expirado', color: 'bg-red-500' };
+    }
+    
+    const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntilExpiry <= 7) {
+      return { label: `Expira em ${daysUntilExpiry}d`, color: 'bg-orange-500' };
+    }
+    
+    return { label: 'Ativo', color: 'bg-green-500' };
   };
 
   const getPlanBadgeColor = (plan: string) => {
@@ -220,7 +235,8 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
               <TableHead>Usuário</TableHead>
               <TableHead>Loja</TableHead>
               <TableHead>Plano</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Status Conta</TableHead>
+              <TableHead>Verificação</TableHead>
               <TableHead className="text-right">Produtos</TableHead>
               <TableHead className="text-right">Leads</TableHead>
               <TableHead>Criado em</TableHead>
@@ -243,6 +259,12 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
                 <TableCell>
                   <Badge className={getPlanBadgeColor(user.subscription_plan)}>
                     {user.subscription_plan}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className={getAccountStatus(user).color}>
+                    <Clock className="h-3 w-3 mr-1" />
+                    {getAccountStatus(user).label}
                   </Badge>
                 </TableCell>
                 <TableCell>
