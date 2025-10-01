@@ -1,10 +1,7 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { registerReactInstance } from '@/lib/reactDebug';
-// Temporarily disabled to diagnose React duplication issue
-// import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProfileUpdateData {
   name?: string;
@@ -38,13 +35,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  registerReactInstance('useAuth.tsx - AuthProvider');
-  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  // Temporarily disabled to diagnose React duplication issue
-  // const { toast } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Pegar sessão inicial
@@ -83,20 +77,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (error) {
-      console.log('[Auth Error] Erro no cadastro:', error.message);
-      // toast({
-      //   title: "Erro no cadastro",
-      //   description: error.message,
-      //   variant: "destructive",
-      // });
+      toast({
+        title: "Erro no cadastro",
+        description: error.message,
+        variant: "destructive",
+      });
       throw error;
     }
 
-    console.log('[Auth Success] Conta criada! Verifique seu email para confirmar a conta.');
-    // toast({
-    //   title: "Conta criada!",
-    //   description: "Verifique seu email para confirmar a conta.",
-    // });
+    toast({
+      title: "Conta criada!",
+      description: "Verifique seu email para confirmar a conta.",
+    });
   };
 
   const signIn = async (email: string, password: string) => {
@@ -106,31 +98,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (error) {
-      console.log('[Auth Error] Erro no login:', error.message);
-      // toast({
-      //   title: "Erro no login",
-      //   description: error.message,
-      //   variant: "destructive",
-      // });
+      toast({
+        title: "Erro no login",
+        description: error.message,
+        variant: "destructive",
+      });
       throw error;
     }
 
-    console.log('[Auth Success] Login realizado! Bem-vindo de volta!');
-    // toast({
-    //   title: "Login realizado!",
-    //   description: "Bem-vindo de volta!",
-    // });
+    toast({
+      title: "Login realizado!",
+      description: "Bem-vindo de volta!",
+    });
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.log('[Auth Error] Erro ao sair:', error.message);
-      // toast({
-      //   title: "Erro ao sair",
-      //   description: error.message,
-      //   variant: "destructive",
-      // });
+      toast({
+        title: "Erro ao sair",
+        description: error.message,
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -143,23 +132,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Validate whatsapp_number if provided
     if (sanitizedData.whatsapp_number && (sanitizedData.whatsapp_number < 1000000000 || sanitizedData.whatsapp_number > 999999999999999)) {
-      console.log('[Auth Error] Número do WhatsApp deve ter entre 10 e 15 dígitos.');
-      // toast({
-      //   title: "Erro de validação",
-      //   description: "Número do WhatsApp deve ter entre 10 e 15 dígitos.",
-      //   variant: "destructive",
-      // });
+      toast({
+        title: "Erro de validação",
+        description: "Número do WhatsApp deve ter entre 10 e 15 dígitos.",
+        variant: "destructive",
+      });
       throw new Error("Invalid WhatsApp number format");
     }
 
     // Validate store_url if provided
     if (sanitizedData.store_url && !/^[a-z0-9-]+$/.test(sanitizedData.store_url)) {
-      console.log('[Auth Error] URL da loja deve conter apenas letras minúsculas, números e hífens.');
-      // toast({
-      //   title: "Erro de validação", 
-      //   description: "URL da loja deve conter apenas letras minúsculas, números e hífens.",
-      //   variant: "destructive",
-      // });
+      toast({
+        title: "Erro de validação", 
+        description: "URL da loja deve conter apenas letras minúsculas, números e hífens.",
+        variant: "destructive",
+      });
       throw new Error("Invalid store URL format");
     }
 
@@ -169,20 +156,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq('id', user.id);
 
     if (error) {
-      console.log('[Auth Error] Erro ao atualizar perfil:', error.message);
-      // toast({
-      //   title: "Erro ao atualizar",
-      //   description: error.message,
-      //   variant: "destructive",
-      // });
+      toast({
+        title: "Erro ao atualizar",
+        description: error.message,
+        variant: "destructive",
+      });
       throw error;
     }
 
-    console.log('[Auth Success] Perfil atualizado! Suas informações foram salvas.');
-    // toast({
-    //   title: "Perfil atualizado!",
-    //   description: "Suas informações foram salvas.",
-    // });
+    toast({
+      title: "Perfil atualizado!",
+      description: "Suas informações foram salvas.",
+    });
   };
 
   const value = {

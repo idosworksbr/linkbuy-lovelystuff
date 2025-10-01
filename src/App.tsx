@@ -1,13 +1,10 @@
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
-// Temporarily disabled to diagnose React duplication issue
-// import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { registerServiceWorker } from "@/lib/pwaUtils";
-import { registerReactInstance } from "@/lib/reactDebug";
-import { MinimalApp } from "@/components/MinimalApp";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -38,18 +35,14 @@ import DemoLanchonete from "./pages/demos/DemoLanchonete";
 
 const App = () => {
   useEffect(() => {
-    registerReactInstance('App.tsx');
-    
-    // Register service worker for PWA only in production to avoid dev cache issues
-    if (import.meta.env.MODE === 'production') {
-      registerServiceWorker();
-    }
+    // Register service worker for PWA
+    registerServiceWorker();
   }, []);
 
   return (
     <>
       <Toaster />
-      {/* Sonner temporarily disabled to diagnose React duplication */}
+      <Sonner />
       <PWAInstallPrompt />
       <BrowserRouter>
           <Routes>
@@ -62,9 +55,6 @@ const App = () => {
             <Route path="/demo/cosmeticos-premium" element={<DemoCosmeticos />} />
             <Route path="/demo/joalheria-luxo" element={<DemoJoalheria />} />
             <Route path="/demo/lanchonete-delivery" element={<DemoLanchonete />} />
-            
-            {/* Diagnostic Route - Minimal App to test React hooks */}
-            <Route path="/health" element={<MinimalApp />} />
             
             <Route path="/dashboard" element={
               <ProtectedRoute>

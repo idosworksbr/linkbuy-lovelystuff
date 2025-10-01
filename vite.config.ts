@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
 import path from "path";
 // Temporarily disabled to diagnose React duplication issue
 // import { componentTagger } from "lovable-tagger";
@@ -23,24 +23,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force all React imports to use the same instance
-      "react": path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
     },
-    dedupe: [
-      "react",
-      "react-dom",
-      "react/jsx-runtime",
-      "react/jsx-dev-runtime",
-      "scheduler",
-    ],
-  },
-  optimizeDeps: {
-    // Let Vite prebundle React to ensure a single optimized copy
-    include: [
-      "react",
-      "react-dom",
-    ],
-    force: true,
   },
 }));
