@@ -3,6 +3,8 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { messages, getErrorMessage } from '@/lib/messages';
+import { storeUrlSchema, whatsappSchema } from '@/lib/validation';
 
 interface ProfileUpdateData {
   name?: string;
@@ -62,57 +64,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
-    // Define redirect URL ensuring production points to the correct domain
-    const redirectUrl =
-      typeof window !== 'undefined' && window.location.origin.includes('mylinkbuy.com.br')
-        ? 'https://www.mylinkbuy.com.br/login'
-        : `${window.location.origin}/login`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          name: name,
+    try {
+      // Define redirect URL ensuring production points to the correct domain
+      const redirectUrl =
+        typeof window !== 'undefined' && window.location.origin.includes('mylinkbuy.com.br')
+          ? 'https://www.mylinkbuy.com.br/login'
+          : `${window.location.origin}/login`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: name,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      toast(messages.auth.signupSuccess);
+    } catch (error: any) {
+      const errorMsg = getErrorMessage(error);
       toast({
-        title: "Erro no cadastro",
-        description: error.message,
+        ...errorMsg,
         variant: "destructive",
       });
       throw error;
     }
-
-    toast({
-      title: "Conta criada!",
-      description: "Verifique seu email para confirmar a conta.",
-    });
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      toast(messages.auth.loginSuccess);
+    } catch (error: any) {
+      const errorMsg = getErrorMessage(error);
       toast({
-        title: "Erro no login",
-        description: error.message,
+        ...errorMsg,
         variant: "destructive",
       });
       throw error;
     }
-
-    toast({
-      title: "Login realizado!",
-      description: "Bem-vindo de volta!",
-    });
   };
 
   const signOut = async () => {
@@ -130,47 +134,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateProfile = async (data: ProfileUpdateData) => {
     if (!user) return;
 
-    // Input validation for security
-    const sanitizedData = { ...data };
-    
-    // Validate whatsapp_number if provided
-    if (sanitizedData.whatsapp_number && (sanitizedData.whatsapp_number < 1000000000 || sanitizedData.whatsapp_number > 999999999999999)) {
-      toast({
-        title: "Erro de validação",
-        description: "Número do WhatsApp deve ter entre 10 e 15 dígitos.",
-        variant: "destructive",
-      });
-      throw new Error("Invalid WhatsApp number format");
-    }
+    try {
+      // Input validation for security
+      const sanitizedData = { ...data };
+      
+      // Validate whatsapp_number if provided
+      if (sanitizedData.whatsapp_number) {
+        const whatsappStr = sanitizedData.whatsapp_number.toString();
+        const result = whatsappSchema.safeParse(whatsappStr);
+        if (!result.success) {
+          toast({
+            ...messages.profile.whatsappInvalid,
+            variant: "destructive",
+          });
+          throw new Error("Invalid WhatsApp number format");
+        }
+      }
 
-    // Validate store_url if provided
-    if (sanitizedData.store_url && !/^[a-z0-9-]+$/.test(sanitizedData.store_url)) {
-      toast({
-        title: "Erro de validação", 
-        description: "URL da loja deve conter apenas letras minúsculas, números e hífens.",
-        variant: "destructive",
-      });
-      throw new Error("Invalid store URL format");
-    }
+      // Validate store_url if provided
+      if (sanitizedData.store_url) {
+        const result = storeUrlSchema.safeParse(sanitizedData.store_url);
+        if (!result.success) {
+          toast({
+            ...messages.profile.invalidStoreUrl,
+            variant: "destructive",
+          });
+          throw new Error("Invalid store URL format");
+        }
+      }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(sanitizedData)
-      .eq('id', user.id);
+      const { error } = await supabase
+        .from('profiles')
+        .update(sanitizedData)
+        .eq('id', user.id);
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      toast(messages.profile.updated);
+    } catch (error: any) {
+      if (error.message.includes('Invalid')) {
+        // Validação já exibiu o toast
+        return;
+      }
+      const errorMsg = getErrorMessage(error);
       toast({
-        title: "Erro ao atualizar",
-        description: error.message,
+        ...errorMsg,
         variant: "destructive",
       });
       throw error;
     }
-
-    toast({
-      title: "Perfil atualizado!",
-      description: "Suas informações foram salvas.",
-    });
   };
 
   const value = {

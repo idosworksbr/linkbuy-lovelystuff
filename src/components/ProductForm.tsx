@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,13 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const productSchema = z.object({
-  name: z.string().min(1, "Nome do produto é obrigatório"),
-  price: z.string().min(1, "Preço é obrigatório"),
-  description: z.string().min(1, "Descrição é obrigatória"),
-  category_id: z.string().optional(),
-});
+import { productSchema } from "@/lib/validation";
+import { messages } from "@/lib/messages";
+import { validateImage } from "@/lib/validation";
+import { z } from "zod";
 
 type ProductFormData = z.infer<typeof productSchema>;
 
@@ -50,19 +46,12 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading = false }: Product
     const files = Array.from(event.target.files || []);
     
     for (const file of files) {
-      if (file.size > 5 * 1024 * 1024) {
+      const validation = validateImage(file);
+      
+      if (!validation.valid) {
         toast({
-          title: "Arquivo muito grande",
-          description: "A imagem deve ter no máximo 5MB",
-          variant: "destructive",
-        });
-        continue;
-      }
-
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Formato inválido",
-          description: "Por favor, selecione apenas arquivos de imagem",
+          title: validation.error?.includes('5MB') ? messages.products.imageTooBig.title : messages.products.invalidImageFormat.title,
+          description: validation.error,
           variant: "destructive",
         });
         continue;

@@ -8,6 +8,8 @@ import { Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCategories } from '@/hooks/useCategories';
 import { supabase } from '@/integrations/supabase/client';
+import { messages } from '@/lib/messages';
+import { validateImage } from '@/lib/validation';
 
 interface QuickCategoryDialogProps {
   open: boolean;
@@ -33,10 +35,10 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
+    const validation = validateImage(file);
+    if (!validation.valid) {
       toast({
-        title: "Arquivo muito grande",
-        description: "A imagem deve ter no máximo 5MB",
+        ...messages.products.imageTooBig,
         variant: "destructive",
       });
       return;
@@ -78,8 +80,7 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
     
     if (!name.trim()) {
       toast({
-        title: "Nome obrigatório",
-        description: "Por favor, insira um nome para a categoria.",
+        ...messages.categories.nameRequired,
         variant: "destructive",
       });
       return;
@@ -110,8 +111,8 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
       await fetchCategories();
 
       toast({
-        title: "Categoria criada!",
-        description: `${name} foi adicionada com sucesso.`,
+        ...messages.categories.created,
+        description: `${name} foi adicionada com sucesso.`
       });
 
       onCategoryCreated(newCategory.id);
@@ -119,8 +120,7 @@ export const QuickCategoryDialog: React.FC<QuickCategoryDialogProps> = ({
     } catch (error) {
       console.error('Erro ao criar categoria:', error);
       toast({
-        title: "Erro ao criar categoria",
-        description: "Não foi possível criar a categoria. Tente novamente.",
+        ...messages.categories.createError,
         variant: "destructive",
       });
     } finally {
