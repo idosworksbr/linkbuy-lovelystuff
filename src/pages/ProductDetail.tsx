@@ -215,9 +215,11 @@ const ProductDetail = () => {
           {product.description && (
             <div className={`${themeClasses.card} rounded-xl p-4 shadow-sm border`}>
               <h2 className={`font-semibold mb-3 text-lg ${themeClasses.text}`}>Descrição</h2>
-              <p className={`${themeClasses.textMuted} leading-relaxed`}>
-                {product.description}
-              </p>
+              <div className="max-h-60 overflow-y-auto">
+                <p className={`${themeClasses.textMuted} leading-relaxed`}>
+                  {product.description}
+                </p>
+              </div>
             </div>
           )}
 
