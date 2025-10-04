@@ -94,7 +94,7 @@ export const NotificationDropdown = ({ onClose, onMarkAllAsRead }: NotificationD
   };
 
   return (
-    <Card ref={dropdownRef} className="absolute right-0 top-12 w-[calc(100vw-2rem)] sm:w-96 max-h-[70vh] shadow-lg z-50">
+    <Card ref={dropdownRef} className="absolute right-0 sm:right-0 left-0 sm:left-auto top-12 w-[90vw] sm:w-96 max-w-md mx-auto sm:mx-0 max-h-[70vh] shadow-lg z-50">
       <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-lg">Notificações</CardTitle>
         <div className="flex items-center gap-2">
