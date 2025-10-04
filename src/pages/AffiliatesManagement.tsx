@@ -90,8 +90,7 @@ const AffiliatesManagement = () => {
   };
 
   const handleViewDetails = (affiliate: Affiliate) => {
-    setSelectedAffiliate(affiliate);
-    setShowForm(false);
+    navigate(`/master/affiliates/${affiliate.id}`);
   };
 
   return (

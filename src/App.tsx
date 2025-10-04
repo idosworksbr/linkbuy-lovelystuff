@@ -32,6 +32,7 @@ import MasterDashboard from "./pages/MasterDashboard";
 import LeadsManagement from "./pages/LeadsManagement";
 import ResetPassword from "./pages/ResetPassword";
 import AffiliatesManagement from "./pages/AffiliatesManagement";
+import AffiliateProfile from "./pages/AffiliateProfile";
 import NotificationsPage from "./pages/NotificationsPage";
 import MasterNotifications from "./pages/MasterNotifications";
 
@@ -122,6 +123,7 @@ const AnimatedRoutes = () => {
       <Route path="/master" element={<PageTransition><MasterDashboard /></PageTransition>} />
       <Route path="/master/dashboard" element={<PageTransition><MasterDashboard /></PageTransition>} />
       <Route path="/master/affiliates" element={<PageTransition><AffiliatesManagement /></PageTransition>} />
+      <Route path="/master/affiliates/:id" element={<PageTransition><AffiliateProfile /></PageTransition>} />
       <Route path="/master/notifications" element={<PageTransition><MasterNotifications /></PageTransition>} />
       
       {/* User notifications */}
