@@ -98,6 +98,12 @@ const MasterDashboard = () => {
             <p className="text-sm text-muted-foreground">Bem-vindo, {master?.name}</p>
           </div>
           <div className="flex gap-2">
+            <Button onClick={() => navigate('/master/affiliates')} variant="outline" size="sm">
+              Afiliados
+            </Button>
+            <Button onClick={() => navigate('/master/notifications')} variant="outline" size="sm">
+              Notificações
+            </Button>
             <Button onClick={loadDashboardData} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Atualizar

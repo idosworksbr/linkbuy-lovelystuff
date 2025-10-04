@@ -7,15 +7,22 @@ interface User {
   id: string;
   name: string;
   email: string;
-  phone: string | null;
+  phone?: string | null;
   store_name: string;
   store_url: string;
   subscription_plan: string;
-  created_at: string;
-  product_count: number;
+  subscription_expires_at: string | null;
   is_verified: boolean;
-  last_login_at: string | null;
-  traffic_source: string | null;
+  product_count: number;
+  category_count?: number;
+  lead_count: number;
+  created_at: string;
+  catalog_url: string;
+  whatsapp_number?: number | null;
+  instagram_url?: string | null;
+  first_login_at?: string | null;
+  last_login_at?: string | null;
+  traffic_source?: string | null;
 }
 
 interface MasterUserCardsProps {

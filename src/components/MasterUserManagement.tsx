@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { UserDetailsModal } from '@/components/UserDetailsModal';
+import { MasterUserCards } from '@/components/MasterUserCards';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface User {
   id: string;
@@ -49,6 +52,7 @@ interface MasterUserManagementProps {
 
 export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementProps) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState<string>('all');
   const [verifiedFilter, setVerifiedFilter] = useState<string>('all');
@@ -58,6 +62,8 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // Filtrar e ordenar usuários
   const filteredUsers = users
@@ -256,9 +262,20 @@ URL: ${user.catalog_url}
         Mostrando {paginatedUsers.length} de {filteredUsers.length} usuários
       </div>
 
-      {/* Tabela */}
-      <div className="rounded-md border">
-        <Table>
+      {/* Render Condicional: Cards para Mobile, Tabela para Desktop */}
+      {isMobile ? (
+        <MasterUserCards
+          users={paginatedUsers}
+          onViewDetails={(user) => {
+            setSelectedUser(user);
+            setShowDetailsModal(true);
+          }}
+          onDelete={(user) => setUserToDelete(user)}
+        />
+      ) : (
+        /* Tabela para Desktop */
+        <div className="rounded-md border">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Usuário</TableHead>
@@ -319,29 +336,40 @@ URL: ${user.catalog_url}
                 <TableCell className="text-xs">{formatDate(user.created_at)}</TableCell>
                 <TableCell className="text-xs">{formatDate(user.first_login_at)}</TableCell>
                 <TableCell className="text-xs">{formatDate(user.last_login_at)}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopyContact(user)}
-                      title="Copiar contato"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.open(user.catalog_url, '_blank')}
-                      title="Ver catálogo"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setUserToDelete(user)}
-                      className="text-destructive hover:text-destructive"
+                 <TableCell>
+                   <div className="flex gap-1">
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => {
+                         setSelectedUser(user);
+                         setShowDetailsModal(true);
+                       }}
+                       title="Ver detalhes"
+                     >
+                       <Eye className="h-4 w-4" />
+                     </Button>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => handleCopyContact(user)}
+                       title="Copiar contato"
+                     >
+                       <Copy className="h-4 w-4" />
+                     </Button>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => window.open(user.catalog_url, '_blank')}
+                       title="Ver catálogo"
+                     >
+                       <ExternalLink className="h-4 w-4" />
+                     </Button>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => setUserToDelete(user)}
+                       className="text-destructive hover:text-destructive"
                       title="Deletar usuário"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -353,6 +381,7 @@ URL: ${user.catalog_url}
           </TableBody>
         </Table>
       </div>
+      )}
 
       {/* Paginação */}
       {totalPages > 1 && (

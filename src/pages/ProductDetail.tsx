@@ -148,20 +148,6 @@ const ProductDetail = () => {
                     <span className="text-gray-400">Sem imagem</span>
                   </div>
                 )}
-                
-                {/* Buy Button - Logo abaixo da imagem */}
-                {isWhatsAppAvailable() && (
-                  <div className="absolute bottom-4 left-4 right-4 z-20">
-                    <Button 
-                      className="w-full bg-whatsapp hover:bg-whatsapp/90 text-whatsapp-foreground font-semibold py-3 rounded-xl transition-all hover:scale-105 shadow-lg"
-                      onClick={handleWhatsAppOrder}
-                      size="lg"
-                    >
-                      <MessageCircle className="h-5 w-5 mr-2" />
-                      Comprar Agora
-                    </Button>
-                  </div>
-                )}
               </div>
               
               {product.images && product.images.length > 1 && (

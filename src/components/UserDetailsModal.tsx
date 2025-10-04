@@ -10,21 +10,22 @@ interface User {
   id: string;
   name: string;
   email: string;
-  phone: string | null;
+  phone?: string | null;
   store_name: string;
   store_url: string;
   subscription_plan: string;
-  created_at: string;
-  whatsapp_number: string | null;
-  product_count: number;
-  category_count: number;
-  lead_count: number;
   subscription_expires_at: string | null;
   is_verified: boolean;
-  instagram_url: string | null;
-  first_login_at: string | null;
-  last_login_at: string | null;
-  traffic_source: string | null;
+  product_count: number;
+  category_count?: number;
+  lead_count: number;
+  created_at: string;
+  catalog_url: string;
+  whatsapp_number?: number | null;
+  instagram_url?: string | null;
+  first_login_at?: string | null;
+  last_login_at?: string | null;
+  traffic_source?: string | null;
 }
 
 interface UserDetailsModalProps {
@@ -138,11 +139,11 @@ export const UserDetailsModal = ({ user, open, onClose }: UserDetailsModalProps)
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">WhatsApp</p>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium">{user.whatsapp_number}</p>
+                    <p className="font-medium">{String(user.whatsapp_number)}</p>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => copyToClipboard(user.whatsapp_number!, "WhatsApp")}
+                      onClick={() => copyToClipboard(String(user.whatsapp_number!), "WhatsApp")}
                     >
                       {copied === "WhatsApp" ? <CheckCircle2 className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                     </Button>

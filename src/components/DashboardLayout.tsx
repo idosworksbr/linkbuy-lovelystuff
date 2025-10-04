@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Home, Package, Settings, User, LogOut, ExternalLink, BarChart3, Link2, Crown, FolderOpen, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -160,8 +161,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               ))}
             </nav>
 
-            {/* User Menu */}
+            {/* User Menu & Actions */}
             <div className="flex items-center space-x-3">
+              {/* Notification Bell */}
+              <NotificationBell />
+              
+              {/* View Catalog Button */}
               <Button
                 variant="outline"
                 size="sm"

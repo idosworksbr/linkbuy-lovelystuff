@@ -31,6 +31,9 @@ import MasterLogin from "./pages/MasterLogin";
 import MasterDashboard from "./pages/MasterDashboard";
 import LeadsManagement from "./pages/LeadsManagement";
 import ResetPassword from "./pages/ResetPassword";
+import AffiliatesManagement from "./pages/AffiliatesManagement";
+import NotificationsPage from "./pages/NotificationsPage";
+import MasterNotifications from "./pages/MasterNotifications";
 
 // Demo pages
 import DemoRestaurante from "./pages/demos/DemoRestaurante";
@@ -116,7 +119,17 @@ const AnimatedRoutes = () => {
       
       {/* Master routes */}
       <Route path="/loginmaster" element={<MasterLogin />} />
+      <Route path="/master" element={<PageTransition><MasterDashboard /></PageTransition>} />
       <Route path="/master/dashboard" element={<PageTransition><MasterDashboard /></PageTransition>} />
+      <Route path="/master/affiliates" element={<PageTransition><AffiliatesManagement /></PageTransition>} />
+      <Route path="/master/notifications" element={<PageTransition><MasterNotifications /></PageTransition>} />
+      
+      {/* User notifications */}
+      <Route path="/dashboard/notifications" element={
+        <ProtectedRoute>
+          <PageTransition><NotificationsPage /></PageTransition>
+        </ProtectedRoute>
+      } />
       
       {/* Rotas do catálogo em inglês */}
       <Route path="/catalog/:storeUrl" element={<PageTransition><Catalog /></PageTransition>} />
