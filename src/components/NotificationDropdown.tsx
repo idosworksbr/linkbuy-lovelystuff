@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckCheck, ExternalLink } from 'lucide-react';
+import { CheckCheck, ExternalLink, X } from 'lucide-react';
 import { NotificationItem } from '@/components/NotificationItem';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,12 +27,25 @@ interface NotificationDropdownProps {
 export const NotificationDropdown = ({ onClose, onMarkAllAsRead }: NotificationDropdownProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchNotifications();
   }, [user]);
+
+  // Click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose]);
 
   const fetchNotifications = async () => {
     if (!user) return;
@@ -81,23 +94,32 @@ export const NotificationDropdown = ({ onClose, onMarkAllAsRead }: NotificationD
   };
 
   return (
-    <Card className="absolute right-0 top-12 w-96 max-w-[calc(100vw-2rem)] shadow-lg z-50">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Notificações</CardTitle>
+    <Card ref={dropdownRef} className="absolute right-0 top-12 w-[calc(100vw-2rem)] sm:w-96 max-h-[70vh] shadow-lg z-50">
+      <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-lg">Notificações</CardTitle>
+        <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant="ghost"
             onClick={handleMarkAllAsRead}
             disabled={notifications.every(n => n.read)}
+            className="hidden sm:flex"
           >
             <CheckCheck className="h-4 w-4 mr-1" />
             Marcar todas
           </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onClose}
+            className="h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="h-[calc(70vh-8rem)] sm:h-[400px]">
           {loading ? (
             <div className="p-4 text-center text-muted-foreground">
               Carregando...
@@ -119,7 +141,17 @@ export const NotificationDropdown = ({ onClose, onMarkAllAsRead }: NotificationD
             </div>
           )}
         </ScrollArea>
-        <div className="p-3 border-t">
+        <div className="p-3 border-t space-y-2">
+          <Button
+            variant="outline"
+            className="w-full sm:hidden"
+            size="sm"
+            onClick={handleMarkAllAsRead}
+            disabled={notifications.every(n => n.read)}
+          >
+            <CheckCheck className="h-4 w-4 mr-1" />
+            Marcar todas como lidas
+          </Button>
           <Button
             variant="outline"
             className="w-full"

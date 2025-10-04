@@ -555,7 +555,7 @@ const Catalog = () => {
     const longPressProps = useLongPress({
       onLongPress: () => handleProductLongPress(product),
       onClick: () => handleProductClick(product),
-      delay: 500
+      delay: 1500
     });
 
     if (gridLayout === 'instagram') {

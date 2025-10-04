@@ -59,12 +59,14 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ storeUrl, storeName })
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       size="sm"
       onClick={handleShare}
-      className="p-2 hover:bg-black/10 rounded-full transition-colors"
+      className="gap-2"
     >
-      <Share2 className="h-5 w-5" />
+      <Share2 className="h-4 w-4" />
+      <span className="hidden sm:inline">Compartilhar Catálogo</span>
+      <span className="sm:hidden">Compartilhar</span>
     </Button>
   );
 };

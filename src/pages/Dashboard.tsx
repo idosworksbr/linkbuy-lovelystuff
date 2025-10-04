@@ -207,21 +207,21 @@ const Dashboard = () => {
         )}
 
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">
               Gerencie seus produtos e acompanhe o desempenho da sua loja
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap w-full sm:w-auto">
             {profile?.store_url && (
               <ShareButton 
                 storeUrl={profile.store_url} 
                 storeName={profile.store_name || 'Meu Catálogo'} 
               />
             )}
-            <Button onClick={() => navigate("/dashboard/add-product")}>
+            <Button onClick={() => navigate("/dashboard/add-product")} className="flex-1 sm:flex-initial">
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Produto
             </Button>
