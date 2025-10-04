@@ -30,6 +30,7 @@ import Categories from "./pages/Categories";
 import MasterLogin from "./pages/MasterLogin";
 import MasterDashboard from "./pages/MasterDashboard";
 import LeadsManagement from "./pages/LeadsManagement";
+import ResetPassword from "./pages/ResetPassword";
 
 // Demo pages
 import DemoRestaurante from "./pages/demos/DemoRestaurante";
@@ -53,6 +54,7 @@ const AnimatedRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Demo Routes */}
       <Route path="/demo/restaurante-elegante" element={<DemoRestaurante />} />

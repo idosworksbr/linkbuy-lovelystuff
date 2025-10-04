@@ -16,6 +16,9 @@ import { useCategories } from "@/hooks/useCategories";
 import { useProfile } from "@/hooks/useProfile";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { LeadCaptureModal } from "@/components/LeadCaptureModal";
+import { supabase } from "@/integrations/supabase/client";
+import { ShareButton } from "@/components/ShareButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProductPrices } from '@/lib/priceUtils';
 import { useStoreUrlGeneration } from "@/hooks/useStoreUrlGeneration";
@@ -212,6 +215,12 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            {profile?.store_url && (
+              <ShareButton 
+                storeUrl={profile.store_url} 
+                storeName={profile.store_name || 'Meu Catálogo'} 
+              />
+            )}
             <Button onClick={() => navigate("/dashboard/add-product")}>
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Produto

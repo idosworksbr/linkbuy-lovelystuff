@@ -403,13 +403,16 @@ export type Database = {
           custom_background_enabled: boolean | null
           custom_whatsapp_message: string | null
           email_confirmed_at: string | null
+          first_login_at: string | null
           hide_footer: boolean | null
           id: string
           instagram_url: string | null
           is_verified: boolean | null
+          last_login_at: string | null
           name: string
           niche: string | null
           onboarding_completed: boolean | null
+          phone: string | null
           product_grid_layout: string | null
           product_name_text_color: string | null
           product_price_text_color: string | null
@@ -439,13 +442,16 @@ export type Database = {
           custom_background_enabled?: boolean | null
           custom_whatsapp_message?: string | null
           email_confirmed_at?: string | null
+          first_login_at?: string | null
           hide_footer?: boolean | null
           id: string
           instagram_url?: string | null
           is_verified?: boolean | null
+          last_login_at?: string | null
           name: string
           niche?: string | null
           onboarding_completed?: boolean | null
+          phone?: string | null
           product_grid_layout?: string | null
           product_name_text_color?: string | null
           product_price_text_color?: string | null
@@ -475,13 +481,16 @@ export type Database = {
           custom_background_enabled?: boolean | null
           custom_whatsapp_message?: string | null
           email_confirmed_at?: string | null
+          first_login_at?: string | null
           hide_footer?: boolean | null
           id?: string
           instagram_url?: string | null
           is_verified?: boolean | null
+          last_login_at?: string | null
           name?: string
           niche?: string | null
           onboarding_completed?: boolean | null
+          phone?: string | null
           product_grid_layout?: string | null
           product_name_text_color?: string | null
           product_price_text_color?: string | null

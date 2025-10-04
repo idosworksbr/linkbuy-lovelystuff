@@ -136,16 +136,30 @@ const ProductDetail = () => {
           const hasAnim = (product.discount && product.discount > 0 && product.discount_animation_enabled) || false;
           const content = (
             <div className="relative rounded-xl mx-4 mt-4 overflow-hidden shadow-lg">
-              <div className="aspect-square bg-muted overflow-hidden">
+              <div className="aspect-square bg-muted overflow-hidden relative">
                 {product.images && product.images.length > 0 ? (
                   <img 
                     src={product.images[currentImageIndex]} 
                     alt={product.name}
-                    className="w-full h-full object-cover transition-opacity duration-300"
+                    className="w-full h-full object-contain transition-opacity duration-300"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-100">
                     <span className="text-gray-400">Sem imagem</span>
+                  </div>
+                )}
+                
+                {/* Buy Button - Logo abaixo da imagem */}
+                {isWhatsAppAvailable() && (
+                  <div className="absolute bottom-4 left-4 right-4 z-20">
+                    <Button 
+                      className="w-full bg-whatsapp hover:bg-whatsapp/90 text-whatsapp-foreground font-semibold py-3 rounded-xl transition-all hover:scale-105 shadow-lg"
+                      onClick={handleWhatsAppOrder}
+                      size="lg"
+                    >
+                      <MessageCircle className="h-5 w-5 mr-2" />
+                      Comprar Agora
+                    </Button>
                   </div>
                 )}
               </div>
@@ -220,19 +234,6 @@ const ProductDetail = () => {
                   {product.description}
                 </p>
               </div>
-            </div>
-          )}
-
-          {/* WhatsApp Button */}
-          {isWhatsAppAvailable() && (
-            <div className="pt-2">
-              <Button 
-                className={`whatsapp-btn w-full text-lg py-6 rounded-full hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl`}
-                onClick={handleWhatsAppOrder}
-              >
-                <MessageCircle className="h-6 w-6 mr-2" />
-                Fazer Pedido pelo WhatsApp
-              </Button>
             </div>
           )}
         </div>

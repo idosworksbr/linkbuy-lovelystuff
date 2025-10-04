@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, Filter, ChevronLeft, ChevronRight, ExternalLink, 
-  Trash2, AlertTriangle, X, CheckCircle, Clock 
+  Trash2, AlertTriangle, X, CheckCircle, Clock, Copy, Eye, History
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -34,6 +34,12 @@ interface User {
   lead_count: number;
   created_at: string;
   catalog_url: string;
+  phone?: string | null;
+  whatsapp_number?: number | null;
+  instagram_url?: string | null;
+  last_login_at?: string | null;
+  first_login_at?: string | null;
+  traffic_source?: string;
 }
 
 interface MasterUserManagementProps {
@@ -128,6 +134,29 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleCopyContact = (user: User) => {
+    const contactInfo = `
+Nome: ${user.name}
+Email: ${user.email}
+Telefone: ${user.phone || 'Não informado'}
+WhatsApp: ${user.whatsapp_number || 'Não configurado'}
+Instagram: ${user.instagram_url || 'Não configurado'}
+Loja: ${user.store_name}
+URL: ${user.catalog_url}
+    `.trim();
+    
+    navigator.clipboard.writeText(contactInfo);
+    toast({
+      title: 'Copiado!',
+      description: 'Informações de contato copiadas',
+    });
+  };
+
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Nunca';
+    return new Date(dateString).toLocaleString('pt-BR');
   };
 
   const getAccountStatus = (user: User) => {
@@ -234,13 +263,17 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
             <TableRow>
               <TableHead>Usuário</TableHead>
               <TableHead>Loja</TableHead>
+              <TableHead>Fonte</TableHead>
               <TableHead>Plano</TableHead>
-              <TableHead>Status Conta</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Verificação</TableHead>
-              <TableHead className="text-right">Produtos</TableHead>
-              <TableHead className="text-right">Leads</TableHead>
-              <TableHead>Criado em</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead>Produtos</TableHead>
+              <TableHead>Leads</TableHead>
+              <TableHead>Telefone</TableHead>
+              <TableHead>Criado</TableHead>
+              <TableHead>Primeiro Acesso</TableHead>
+              <TableHead>Último Acesso</TableHead>
+              <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -255,6 +288,11 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
                 <TableCell>
                   <div className="font-medium">{user.store_name}</div>
                   <div className="text-xs text-muted-foreground">{user.store_url}</div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="text-xs">
+                    {user.traffic_source || 'Direct'}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge className={getPlanBadgeColor(user.subscription_plan)}>
@@ -275,17 +313,27 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-right">{user.product_count}</TableCell>
-                <TableCell className="text-right">{user.lead_count}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                <TableCell>{user.product_count}</TableCell>
+                <TableCell>{user.lead_count}</TableCell>
+                <TableCell className="text-sm">{user.phone || '-'}</TableCell>
+                <TableCell className="text-xs">{formatDate(user.created_at)}</TableCell>
+                <TableCell className="text-xs">{formatDate(user.first_login_at)}</TableCell>
+                <TableCell className="text-xs">{formatDate(user.last_login_at)}</TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopyContact(user)}
+                      title="Copiar contato"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => window.open(user.catalog_url, '_blank')}
+                      title="Ver catálogo"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
@@ -294,6 +342,7 @@ export const MasterUserManagement = ({ users, onRefresh }: MasterUserManagementP
                       size="sm"
                       onClick={() => setUserToDelete(user)}
                       className="text-destructive hover:text-destructive"
+                      title="Deletar usuário"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

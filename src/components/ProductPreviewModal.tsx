@@ -53,7 +53,7 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
                 <img
                   src={product.images[0]}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   style={{ userSelect: 'none' }}
                 />
               ) : (
@@ -74,10 +74,21 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
                   </div>
                 </DiscountAnimation>
               )}
+              
+              {/* Buy Button - Logo abaixo da imagem */}
+              <div className="absolute bottom-4 left-4 right-4 z-20">
+                <Button
+                  onClick={() => onBuyNow(product)}
+                  className="w-full bg-whatsapp hover:bg-whatsapp/90 text-whatsapp-foreground font-semibold py-3 rounded-xl transition-all hover:scale-105 shadow-lg"
+                  size="lg"
+                >
+                  Comprar Agora
+                </Button>
+              </div>
             </div>
 
             {/* Product Info */}
-            <div className="p-6">
+            <div className="p-6 pt-20">
               <h3 className={`text-xl font-bold mb-2 ${themeClasses.text}`}>
                 {product.name}
               </h3>
@@ -105,19 +116,10 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
 
               {/* Description */}
               {product.description && (
-                <p className={`mb-6 leading-relaxed ${themeClasses.textMuted}`}>
+                <p className={`leading-relaxed ${themeClasses.textMuted}`}>
                   {product.description}
                 </p>
               )}
-
-              {/* Buy Button */}
-              <Button
-                onClick={() => onBuyNow(product)}
-                className="w-full bg-whatsapp hover:bg-whatsapp/90 text-whatsapp-foreground font-semibold py-3 rounded-xl transition-all hover:scale-105"
-                size="lg"
-              >
-                Comprar Agora
-              </Button>
             </div>
           </div>
         </ScrollArea>

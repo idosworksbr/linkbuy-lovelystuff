@@ -84,7 +84,7 @@ serve(async (req) => {
     // Get users with detailed information
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, name, store_name, store_url, subscription_plan, subscription_expires_at, created_at, updated_at, whatsapp_number, instagram_url')
+      .select('id, name, store_name, store_url, subscription_plan, subscription_expires_at, is_verified, created_at, updated_at, whatsapp_number, instagram_url, phone, last_login_at, first_login_at')
       .order('created_at', { ascending: false });
 
     if (profilesError) {
@@ -128,6 +128,25 @@ serve(async (req) => {
         return { data: counts };
       });
 
+    // Get traffic source from website_sessions
+    const { data: trafficSources } = await supabase
+      .from('website_sessions')
+      .select('user_id, utm_source, referrer')
+      .then(({ data }) => {
+        const sources = new Map();
+        data?.forEach(session => {
+          if (session.user_id && !sources.has(session.user_id)) {
+            const source = session.utm_source || 
+                           (session.referrer?.includes('google') ? 'Google' :
+                            session.referrer?.includes('facebook') ? 'Facebook' :
+                            session.referrer?.includes('instagram') ? 'Instagram' :
+                            session.referrer ? 'Referral' : 'Direct');
+            sources.set(session.user_id, source);
+          }
+        });
+        return { data: sources };
+      });
+
     // Combine all data
     const users = profiles?.map(profile => ({
       id: profile.id,
@@ -137,12 +156,17 @@ serve(async (req) => {
       store_url: profile.store_url,
       subscription_plan: profile.subscription_plan,
       subscription_expires_at: profile.subscription_expires_at,
+      is_verified: profile.is_verified || false,
       created_at: profile.created_at,
       updated_at: profile.updated_at,
       product_count: productCounts?.get(profile.id) || 0,
       lead_count: leadCounts?.get(profile.id) || 0,
       whatsapp_number: profile.whatsapp_number,
       instagram_url: profile.instagram_url,
+      phone: profile.phone,
+      last_login_at: profile.last_login_at,
+      first_login_at: profile.first_login_at,
+      traffic_source: trafficSources?.get(profile.id) || 'Direct',
       catalog_url: `https://2c91a137-7c80-438f-b79a-b9efe537f989.lovableproject.com/catalog/${profile.store_url}`
     })) || [];
 
