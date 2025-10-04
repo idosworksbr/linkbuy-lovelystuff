@@ -383,6 +383,16 @@ URL: ${user.catalog_url}
       </div>
       )}
 
+      {/* Modal de Detalhes do Usuário */}
+      <UserDetailsModal
+        open={showDetailsModal}
+        user={selectedUser}
+        onClose={() => {
+          setShowDetailsModal(false);
+          setSelectedUser(null);
+        }}
+      />
+
       {/* Paginação */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">

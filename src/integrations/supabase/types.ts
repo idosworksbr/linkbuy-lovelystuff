@@ -1128,6 +1128,10 @@ export type Database = {
           unique_visitors: number
         }[]
       }
+      is_master_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       subscription_plan:

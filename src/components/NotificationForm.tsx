@@ -32,35 +32,18 @@ export const NotificationForm = ({ onClose }: NotificationFormProps) => {
     setLoading(true);
 
     try {
+      let user_ids: string[] = [];
+
       if (broadcast) {
-        // Send to all users
+        // Get all user IDs
         const { data: users, error: usersError } = await supabase
           .from('profiles')
           .select('id');
 
         if (usersError) throw usersError;
-
-        const notifications = users.map(user => ({
-          user_id: user.id,
-          title: formData.title,
-          message: formData.message,
-          type: formData.type,
-          action_url: formData.action_url || null,
-          action_label: formData.action_label || null
-        }));
-
-        const { error: insertError } = await supabase
-          .from('notifications')
-          .insert(notifications);
-
-        if (insertError) throw insertError;
-
-        toast({
-          title: 'Sucesso',
-          description: `Notificação enviada para ${users.length} usuários`
-        });
+        user_ids = users.map(u => u.id);
       } else {
-        // Send to specific user
+        // Get specific user ID
         const { data: profiles, error: userError } = await supabase
           .from('profiles')
           .select('id')
@@ -71,26 +54,27 @@ export const NotificationForm = ({ onClose }: NotificationFormProps) => {
           throw new Error('Usuário não encontrado');
         }
 
-        const userId = profiles[0].id;
-
-        const { error: insertError } = await supabase
-          .from('notifications')
-          .insert({
-            user_id: userId,
-            title: formData.title,
-            message: formData.message,
-            type: formData.type,
-            action_url: formData.action_url || null,
-            action_label: formData.action_label || null
-          });
-
-        if (insertError) throw insertError;
-
-        toast({
-          title: 'Sucesso',
-          description: 'Notificação enviada com sucesso'
-        });
+        user_ids = [profiles[0].id];
       }
+
+      // Call the edge function to send notifications
+      const { error: sendError } = await supabase.functions.invoke('send-notification', {
+        body: {
+          user_ids,
+          title: formData.title,
+          message: formData.message,
+          type: formData.type,
+          action_url: formData.action_url || null,
+          action_label: formData.action_label || null
+        }
+      });
+
+      if (sendError) throw sendError;
+
+      toast({
+        title: 'Sucesso',
+        description: `Notificação enviada para ${user_ids.length} usuário(s)`
+      });
 
       onClose();
     } catch (error: any) {
