@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { NotificationSheet } from '@/components/NotificationSheet';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -59,12 +59,12 @@ export const NotificationBell = () => {
   if (!user) return null;
 
   return (
-    <div className="relative">
+    <>
       <Button
         variant="ghost"
         size="icon"
         className="relative"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen(true)}
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -77,12 +77,11 @@ export const NotificationBell = () => {
         )}
       </Button>
 
-      {isOpen && (
-        <NotificationDropdown
-          onClose={() => setIsOpen(false)}
-          onMarkAllAsRead={handleMarkAllAsRead}
-        />
-      )}
-    </div>
+      <NotificationSheet
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        onMarkAllAsRead={handleMarkAllAsRead}
+      />
+    </>
   );
 };
