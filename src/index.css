@@ -135,6 +135,16 @@
     min-height: 100vh;
   }
 
+  /* Disable selection in catalog */
+  .catalog-content,
+  .catalog-content * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+
   /* WhatsApp Button */
   .whatsapp-btn {
     @apply bg-whatsapp hover:bg-whatsapp/90 text-whatsapp-foreground font-medium py-3 px-6 rounded-full transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center;

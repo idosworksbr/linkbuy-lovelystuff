@@ -74,27 +74,25 @@ export const ProductPreviewModal: React.FC<ProductPreviewModalProps> = ({
                   </div>
                 </DiscountAnimation>
               )}
-              
-              {/* Buy Button - Logo abaixo da imagem */}
-              <div className="absolute bottom-4 left-4 right-4 z-20">
-                <Button
-                  onClick={() => onBuyNow(product)}
-                  className="w-full bg-whatsapp hover:bg-whatsapp/90 text-whatsapp-foreground font-semibold py-3 rounded-xl transition-all hover:scale-105 shadow-lg"
-                  size="lg"
-                >
-                  Comprar Agora
-                </Button>
-              </div>
             </div>
 
             {/* Product Info */}
-            <div className="p-6 pt-20">
-              <h3 className={`text-xl font-bold mb-2 ${themeClasses.text}`}>
+            <div className="p-6 space-y-4">
+              {/* Buy Button - Abaixo da imagem */}
+              <Button
+                onClick={() => onBuyNow(product)}
+                className="w-full bg-whatsapp hover:bg-whatsapp/90 text-whatsapp-foreground font-semibold py-3 rounded-xl transition-all hover:scale-105 shadow-lg"
+                size="lg"
+              >
+                Comprar Agora
+              </Button>
+
+              <h3 className={`text-xl font-bold ${themeClasses.text}`}>
                 {product.name}
               </h3>
               
               {/* Price */}
-              <div className="mb-4">
+              <div>
                 {prices.hasDiscount ? (
                   <div className="flex items-center gap-2">
                     <span className={`text-lg line-through ${themeClasses.textMuted}`}>

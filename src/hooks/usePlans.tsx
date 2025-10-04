@@ -60,6 +60,18 @@ export const defaultPlans: PlanPricing[] = [
       "Escolher URL da loja",
       "Acesso ao analytics"
     ]
+  },
+  {
+    name: "Pro+ Verificado",
+    stripeId: "price_1S2k54FhG2EqaMMa5PNk8gfV",
+    price: "Carregando...",
+    verified: true,
+    features: [
+      "Tudo do Pro+",
+      "Selo de Verificado ✓",
+      "Prioridade no suporte",
+      "Destaque no marketplace"
+    ]
   }
 ];
 

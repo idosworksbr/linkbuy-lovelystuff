@@ -62,8 +62,12 @@ export const InstagramStyleProductGrid: React.FC<InstagramStyleProductGridProps>
         return (
           <div
             key={product.id}
-            className={`${themeClasses.card} rounded-2xl border ${themeClasses.border} overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in`}
-            style={{ userSelect: 'none' }}
+            className={`${themeClasses.card} rounded-2xl border ${themeClasses.border} overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in catalog-content`}
+            style={{ 
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none'
+            }}
           >
             {/* Image Container with Carousel */}
             <div className="relative aspect-square bg-muted">
