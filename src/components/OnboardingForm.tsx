@@ -17,7 +17,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { usePlans } from '@/hooks/usePlans';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft, ArrowRight, CheckCircle, Upload, X, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
-import { STRIPE_CONFIG } from '@/lib/stripe';
+import { getPriceIdByPlan } from '@/lib/stripe';
 
 const onboardingSchema = z.object({
   // Informações da loja
@@ -154,35 +154,8 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const skipToFinish = async () => {
     if (isCompletingOnboarding) return;
     
-    setIsCompletingOnboarding(true);
-    const data = form.getValues();
-    const onboardingData = {
-      storeName: data.store_name,
-      storeDescription: '',
-      niche: data.niche,
-      whatsappNumber: data.whatsapp_number || '',
-      instagramUrl: data.instagram_url || '',
-      categoryName: 'Geral',
-      categoryDescription: '',
-      productName: '',
-      productDescription: '',
-      productPrice: 0,
-    };
-    
-    const files = {
-      profileImage: profilePhoto || undefined,
-      categoryImage: categoryImageFile || undefined,
-      productImages: undefined,
-    };
-    
-    try {
-      const success = await completeOnboarding(onboardingData, files);
-      if (success) {
-        navigate('/dashboard');
-      }
-    } finally {
-      setIsCompletingOnboarding(false);
-    }
+    console.log('[OnboardingForm] Skip pressionado - finalizando sem plano...');
+    await handleFinishWithoutPlan();
   };
 
   const prevStep = () => {
@@ -227,8 +200,18 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const handleFinishWithoutPlan = async () => {
     if (isCompletingOnboarding) return;
     
+    console.log('[OnboardingForm] Iniciando finalização sem plano...');
     setIsCompletingOnboarding(true);
     const data = form.getValues();
+    
+    console.log('[OnboardingForm] Dados do formulário:', {
+      storeName: data.store_name,
+      niche: data.niche,
+      whatsapp: data.whatsapp_number,
+      category: data.category_name,
+      product: data.product_name
+    });
+    
     const onboardingData = {
       storeName: data.store_name,
       storeDescription: '',
@@ -249,16 +232,36 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
     };
     
     try {
+      console.log('[OnboardingForm] Chamando completeOnboarding...');
       const success = await completeOnboarding(onboardingData, files);
+      console.log('[OnboardingForm] Resultado do completeOnboarding:', success);
+      
       if (success) {
+        console.log('[OnboardingForm] Sucesso! Navegando para dashboard...');
         navigate('/dashboard');
+      } else {
+        console.error('[OnboardingForm] completeOnboarding retornou false');
+        toast({
+          title: "Erro",
+          description: "Não foi possível salvar os dados. Tente novamente.",
+          variant: "destructive"
+        });
       }
+    } catch (error) {
+      console.error('[OnboardingForm] Erro ao finalizar:', error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar sua solicitação.",
+        variant: "destructive"
+      });
     } finally {
       setIsCompletingOnboarding(false);
     }
   };
 
   const handleSelectPlan = async (planName: string) => {
+    if (isCompletingOnboarding) return;
+    
     if (planName === "Free") {
       await handleFinishWithoutPlan();
       return;
@@ -289,19 +292,33 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
     try {
       const success = await completeOnboarding(onboardingData, files);
       if (success) {
-        // After saving, redirect to checkout
-        const priceId = STRIPE_CONFIG.priceIds[planName.toLowerCase().replace(/\+/g, '_plus')];
+        // After saving, redirect to checkout using centralized helper
+        const priceId = getPriceIdByPlan(planName);
         if (priceId) {
-          await createCheckout(priceId);
+          console.log(`[OnboardingForm] Iniciando checkout para ${planName} com priceId: ${priceId}`);
+          createCheckout(priceId);
         } else {
           toast({
-            title: "Erro",
-            description: "Plano não encontrado. Redirecionando para o dashboard...",
+            title: "Erro na configuração",
+            description: `Plano ${planName} não encontrado. Redirecionando para o dashboard...`,
             variant: "destructive"
           });
           navigate('/dashboard');
         }
+      } else {
+        toast({
+          title: "Erro",
+          description: "Não foi possível salvar os dados. Tente novamente.",
+          variant: "destructive"
+        });
       }
+    } catch (error) {
+      console.error('Error in handleSelectPlan:', error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar sua solicitação.",
+        variant: "destructive"
+      });
     } finally {
       setIsCompletingOnboarding(false);
     }
