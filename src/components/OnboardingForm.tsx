@@ -245,8 +245,13 @@ useEffect(() => {
       console.log('[OnboardingForm] Resultado do completeOnboarding:', success);
       
       if (success) {
-        console.log('[OnboardingForm] Sucesso! Navegando para dashboard...');
-        navigate('/dashboard', { replace: true });
+        console.log('[OnboardingForm] Sucesso! Disparando onComplete para encerrar onboarding...');
+        onComplete({
+          ...form.getValues(),
+          profile_photo: profilePhoto || undefined,
+          category_image: categoryImageFile || undefined,
+          product_images: productImages,
+        });
       } else {
         console.error('[OnboardingForm] completeOnboarding retornou false');
         toast({
@@ -307,9 +312,14 @@ useEffect(() => {
           createCheckout(priceId);
           toast({
             title: 'Checkout aberto',
-            description: 'Abrimos o pagamento em uma nova aba. Levando você ao Dashboard...',
+            description: 'Abrimos o pagamento em uma nova aba. Finalizando seu onboarding...',
           });
-          navigate('/dashboard', { replace: true });
+          onComplete({
+            ...form.getValues(),
+            profile_photo: profilePhoto || undefined,
+            category_image: categoryImageFile || undefined,
+            product_images: productImages,
+          });
         } else {
           toast({
             title: 'Erro na configuração',
