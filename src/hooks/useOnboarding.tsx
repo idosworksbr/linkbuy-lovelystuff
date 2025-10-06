@@ -94,45 +94,89 @@ export const useOnboarding = () => {
 
       if (profileError) throw profileError;
 
-      // 3. Create category (only if category name is provided)
+      // 3. Create category (idempotent: reuse if exists)
       let categoryData = null;
       if (data.categoryName && data.categoryName !== 'Geral') {
-        const { data: catData, error: categoryError } = await supabase
+        const { data: existingCategory, error: findCatError } = await supabase
           .from('categories')
-          .insert({
-            user_id: user.id,
-            name: data.categoryName,
-            image_url: categoryImageUrl || null,
-            display_order: 1,
-            is_active: true,
-          })
-          .select()
-          .single();
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('name', data.categoryName)
+          .maybeSingle();
 
-        if (categoryError) throw categoryError;
-        categoryData = catData;
+        if (findCatError) {
+          console.warn('Aviso ao buscar categoria existente:', findCatError);
+        }
+
+        if (existingCategory) {
+          categoryData = existingCategory;
+        } else {
+          const { data: catData, error: categoryError } = await supabase
+            .from('categories')
+            .insert({
+              user_id: user.id,
+              name: data.categoryName,
+              image_url: categoryImageUrl || null,
+              display_order: 1,
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (categoryError) throw categoryError;
+          categoryData = catData;
+        }
       }
 
-      // 4. Create product (only if product name is provided)
+      // 4. Create product (idempotent: update if exists)
       if (data.productName && categoryData) {
-        const { error: productError } = await supabase
+        const { data: existingProduct, error: findProdError } = await supabase
           .from('products')
-          .insert({
-            user_id: user.id,
-            category_id: categoryData.id,
-            name: data.productName,
-            description: data.productDescription,
-            price: data.productPrice,
-            cost: data.productCost || null,
-            weight: data.productWeight || null,
-            code: data.productCode || null,
-            discount: data.productDiscount || null,
-            images: productImageUrls,
-            display_order: 1,
-            status: 'active',
-          });
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('category_id', categoryData.id)
+          .eq('name', data.productName)
+          .maybeSingle();
 
-        if (productError) throw productError;
+        if (findProdError) {
+          console.warn('Aviso ao buscar produto existente:', findProdError);
+        }
+
+        if (existingProduct) {
+          const { error: updateProductError } = await supabase
+            .from('products')
+            .update({
+              description: data.productDescription,
+              price: data.productPrice,
+              cost: data.productCost || null,
+              weight: data.productWeight || null,
+              code: data.productCode || null,
+              discount: data.productDiscount || null,
+              images: productImageUrls,
+              status: 'active',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingProduct.id);
+          if (updateProductError) throw updateProductError;
+        } else {
+          const { error: productError } = await supabase
+            .from('products')
+            .insert({
+              user_id: user.id,
+              category_id: categoryData.id,
+              name: data.productName,
+              description: data.productDescription,
+              price: data.productPrice,
+              cost: data.productCost || null,
+              weight: data.productWeight || null,
+              code: data.productCode || null,
+              discount: data.productDiscount || null,
+              images: productImageUrls,
+              display_order: 1,
+              status: 'active',
+            });
+          if (productError) throw productError;
+        }
       }
 
       toast({

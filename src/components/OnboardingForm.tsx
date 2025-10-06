@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,6 +18,7 @@ import { usePlans } from '@/hooks/usePlans';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft, ArrowRight, CheckCircle, Upload, X, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
 import { getPriceIdByPlan } from '@/lib/stripe';
+import { useProfile } from '@/hooks/useProfile';
 
 const onboardingSchema = z.object({
   // Informações da loja
@@ -79,7 +80,14 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const navigate = useNavigate();
   const totalSteps = 5;
   const [canSkipProduct, setCanSkipProduct] = useState(false);
-  const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false);
+const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false);
+const { profile } = useProfile();
+
+useEffect(() => {
+  if (profile?.onboarding_completed) {
+    navigate('/dashboard', { replace: true });
+  }
+}, [profile, navigate]);
 
   const form = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -190,7 +198,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
     try {
       const success = await completeOnboarding(onboardingData, files);
       if (success) {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     } finally {
       setIsCompletingOnboarding(false);
@@ -238,7 +246,7 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
       
       if (success) {
         console.log('[OnboardingForm] Sucesso! Navegando para dashboard...');
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       } else {
         console.error('[OnboardingForm] completeOnboarding retornou false');
         toast({
@@ -297,13 +305,18 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
         if (priceId) {
           console.log(`[OnboardingForm] Iniciando checkout para ${planName} com priceId: ${priceId}`);
           createCheckout(priceId);
+          toast({
+            title: 'Checkout aberto',
+            description: 'Abrimos o pagamento em uma nova aba. Levando você ao Dashboard...',
+          });
+          navigate('/dashboard', { replace: true });
         } else {
           toast({
-            title: "Erro na configuração",
+            title: 'Erro na configuração',
             description: `Plano ${planName} não encontrado. Redirecionando para o dashboard...`,
-            variant: "destructive"
+            variant: 'destructive'
           });
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
         }
       } else {
         toast({
