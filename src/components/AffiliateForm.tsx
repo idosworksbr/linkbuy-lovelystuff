@@ -51,18 +51,29 @@ export const AffiliateForm = ({ affiliate, onClose }: AffiliateFormProps) => {
     setLoading(true);
 
     try {
+      const masterToken = localStorage.getItem('master_token');
+      if (!masterToken) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
       if (affiliate) {
         // Update
-        const { error } = await supabase
-          .from('affiliates')
-          .update({
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone || null,
-            commission_rate: parseFloat(formData.commission_rate),
-            status: formData.status
-          })
-          .eq('id', affiliate.id);
+        const { data, error } = await supabase.functions.invoke('manage-affiliate', {
+          headers: {
+            Authorization: `Bearer ${masterToken}`
+          },
+          body: {
+            action: 'update',
+            id: affiliate.id,
+            affiliate: {
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone || null,
+              commission_rate: parseFloat(formData.commission_rate),
+              status: formData.status
+            }
+          }
+        });
 
         if (error) throw error;
 
@@ -75,17 +86,23 @@ export const AffiliateForm = ({ affiliate, onClose }: AffiliateFormProps) => {
         const affiliateCode = await generateAffiliateCode();
         const affiliateUrl = `${window.location.origin}?ref=${affiliateCode}`;
 
-        const { error } = await supabase
-          .from('affiliates')
-          .insert({
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone || null,
-            affiliate_code: affiliateCode,
-            affiliate_url: affiliateUrl,
-            commission_rate: parseFloat(formData.commission_rate),
-            status: formData.status
-          });
+        const { data, error } = await supabase.functions.invoke('manage-affiliate', {
+          headers: {
+            Authorization: `Bearer ${masterToken}`
+          },
+          body: {
+            action: 'create',
+            affiliate: {
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone || null,
+              affiliate_code: affiliateCode,
+              affiliate_url: affiliateUrl,
+              commission_rate: parseFloat(formData.commission_rate),
+              status: formData.status
+            }
+          }
+        });
 
         if (error) throw error;
 
