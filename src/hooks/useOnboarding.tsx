@@ -88,55 +88,57 @@ export const useOnboarding = () => {
           whatsapp_number: data.whatsappNumber ? parseFloat(data.whatsappNumber) : null,
           instagram_url: data.instagramUrl || null,
           profile_photo_url: profilePhotoUrl || null,
+          onboarding_completed: true,
         })
         .eq('id', user.id);
 
       if (profileError) throw profileError;
 
-      // 3. Create category
-      const { data: categoryData, error: categoryError } = await supabase
-        .from('categories')
-        .insert({
-          user_id: user.id,
-          name: data.categoryName,
-          image_url: categoryImageUrl || null,
-          display_order: 1,
-          is_active: true,
-        })
-        .select()
-        .single();
+      // 3. Create category (only if category name is provided)
+      let categoryData = null;
+      if (data.categoryName && data.categoryName !== 'Geral') {
+        const { data: catData, error: categoryError } = await supabase
+          .from('categories')
+          .insert({
+            user_id: user.id,
+            name: data.categoryName,
+            image_url: categoryImageUrl || null,
+            display_order: 1,
+            is_active: true,
+          })
+          .select()
+          .single();
 
-      if (categoryError) throw categoryError;
+        if (categoryError) throw categoryError;
+        categoryData = catData;
+      }
 
-      // 4. Create product
-      const { error: productError } = await supabase
-        .from('products')
-        .insert({
-          user_id: user.id,
-          category_id: categoryData.id,
-          name: data.productName,
-          description: data.productDescription,
-          price: data.productPrice,
-          cost: data.productCost || null,
-          weight: data.productWeight || null,
-          code: data.productCode || null,
-          discount: data.productDiscount || null,
-          images: productImageUrls,
-          display_order: 1,
-          status: 'active',
-        });
+      // 4. Create product (only if product name is provided)
+      if (data.productName && categoryData) {
+        const { error: productError } = await supabase
+          .from('products')
+          .insert({
+            user_id: user.id,
+            category_id: categoryData.id,
+            name: data.productName,
+            description: data.productDescription,
+            price: data.productPrice,
+            cost: data.productCost || null,
+            weight: data.productWeight || null,
+            code: data.productCode || null,
+            discount: data.productDiscount || null,
+            images: productImageUrls,
+            display_order: 1,
+            status: 'active',
+          });
 
-      if (productError) throw productError;
+        if (productError) throw productError;
+      }
 
       toast({
         title: "Configuração concluída!",
-        description: "Sua loja foi configurada com sucesso. Redirecionando para o dashboard...",
+        description: "Sua loja foi configurada com sucesso.",
       });
-
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
 
       return true;
     } catch (error: any) {

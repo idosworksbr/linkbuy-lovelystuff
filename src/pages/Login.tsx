@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailConfirmed, setShowEmailConfirmed] = useState(false);
   const { signIn, signUp, user, loading } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && user) {
@@ -58,10 +60,20 @@ const Login = () => {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirm_password') as string;
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "As senhas não coincidem",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
 
     try {
       await signUp(email, password, name);
-      // Não navegar automaticamente após registro, pois precisa confirmar email
     } catch (error) {
       console.error('Register error:', error);
     } finally {
@@ -231,6 +243,24 @@ const Login = () => {
                         placeholder="Crie uma senha"
                         className="pl-10 input-focus"
                         required
+                        minLength={6}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Mínimo de 6 caracteres</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-confirm-password">Confirmar Senha</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="register-confirm-password"
+                        name="confirm_password"
+                        type="password"
+                        placeholder="Confirme sua senha"
+                        className="pl-10 input-focus"
+                        required
+                        minLength={6}
                       />
                     </div>
                   </div>

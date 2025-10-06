@@ -13,7 +13,11 @@ import { Badge } from '@/components/ui/badge';
 import { ImageUploadField } from '@/components/ImageUploadField';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, ArrowRight, CheckCircle, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useSubscription } from '@/hooks/useSubscription';
+import { usePlans } from '@/hooks/usePlans';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, ArrowLeft, ArrowRight, CheckCircle, Upload, X, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
+import { STRIPE_CONFIG } from '@/lib/stripe';
 
 const onboardingSchema = z.object({
   // Informações da loja
@@ -70,8 +74,12 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   const [productImagePreviews, setProductImagePreviews] = useState<string[]>([]);
   const { completeOnboarding, loading } = useOnboarding();
   const { toast } = useToast();
-  const totalSteps = 5; // Aumentado para incluir step de planos
+  const { createCheckout } = useSubscription();
+  const { plans } = usePlans();
+  const navigate = useNavigate();
+  const totalSteps = 5;
   const [canSkipProduct, setCanSkipProduct] = useState(false);
+  const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false);
 
   const form = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -144,11 +152,13 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   };
 
   const skipToFinish = async () => {
-    // Complete onboarding without product
+    if (isCompletingOnboarding) return;
+    
+    setIsCompletingOnboarding(true);
     const data = form.getValues();
     const onboardingData = {
       storeName: data.store_name,
-      storeDescription: '', // Premium feature
+      storeDescription: '',
       niche: data.niche,
       whatsappNumber: data.whatsapp_number || '',
       instagramUrl: data.instagram_url || '',
@@ -165,14 +175,13 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
       productImages: undefined,
     };
     
-    const success = await completeOnboarding(onboardingData, files);
-    if (success) {
-      onComplete({
-        ...data,
-        profile_photo: profilePhoto || undefined,
-        category_image: categoryImageFile || undefined,
-        product_images: undefined,
-      });
+    try {
+      const success = await completeOnboarding(onboardingData, files);
+      if (success) {
+        navigate('/dashboard');
+      }
+    } finally {
+      setIsCompletingOnboarding(false);
     }
   };
 
@@ -183,9 +192,12 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
   };
 
   const handleSubmit = async (data: OnboardingFormData) => {
+    if (isCompletingOnboarding) return;
+    
+    setIsCompletingOnboarding(true);
     const onboardingData = {
       storeName: data.store_name,
-      storeDescription: '', // Premium feature
+      storeDescription: '',
       niche: data.niche,
       whatsappNumber: data.whatsapp_number || '',
       instagramUrl: data.instagram_url || '',
@@ -202,14 +214,96 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
       productImages: productImages.length > 0 ? productImages : undefined,
     };
     
-    const success = await completeOnboarding(onboardingData, files);
-    if (success) {
-      onComplete({
-        ...data,
-        profile_photo: profilePhoto || undefined,
-        category_image: categoryImageFile || undefined,
-        product_images: productImages.length > 0 ? productImages : undefined,
-      });
+    try {
+      const success = await completeOnboarding(onboardingData, files);
+      if (success) {
+        navigate('/dashboard');
+      }
+    } finally {
+      setIsCompletingOnboarding(false);
+    }
+  };
+
+  const handleFinishWithoutPlan = async () => {
+    if (isCompletingOnboarding) return;
+    
+    setIsCompletingOnboarding(true);
+    const data = form.getValues();
+    const onboardingData = {
+      storeName: data.store_name,
+      storeDescription: '',
+      niche: data.niche,
+      whatsappNumber: data.whatsapp_number || '',
+      instagramUrl: data.instagram_url || '',
+      categoryName: data.category_name,
+      categoryDescription: '',
+      productName: data.product_name,
+      productDescription: data.product_description,
+      productPrice: parseFloat(data.product_price),
+    };
+    
+    const files = {
+      profileImage: profilePhoto || undefined,
+      categoryImage: categoryImageFile || undefined,
+      productImages: productImages.length > 0 ? productImages : undefined,
+    };
+    
+    try {
+      const success = await completeOnboarding(onboardingData, files);
+      if (success) {
+        navigate('/dashboard');
+      }
+    } finally {
+      setIsCompletingOnboarding(false);
+    }
+  };
+
+  const handleSelectPlan = async (planName: string) => {
+    if (planName === "Free") {
+      await handleFinishWithoutPlan();
+      return;
+    }
+
+    // Save data first
+    setIsCompletingOnboarding(true);
+    const data = form.getValues();
+    const onboardingData = {
+      storeName: data.store_name,
+      storeDescription: '',
+      niche: data.niche,
+      whatsappNumber: data.whatsapp_number || '',
+      instagramUrl: data.instagram_url || '',
+      categoryName: data.category_name,
+      categoryDescription: '',
+      productName: data.product_name,
+      productDescription: data.product_description,
+      productPrice: parseFloat(data.product_price),
+    };
+    
+    const files = {
+      profileImage: profilePhoto || undefined,
+      categoryImage: categoryImageFile || undefined,
+      productImages: productImages.length > 0 ? productImages : undefined,
+    };
+    
+    try {
+      const success = await completeOnboarding(onboardingData, files);
+      if (success) {
+        // After saving, redirect to checkout
+        const priceId = STRIPE_CONFIG.priceIds[planName.toLowerCase().replace(/\+/g, '_plus')];
+        if (priceId) {
+          await createCheckout(priceId);
+        } else {
+          toast({
+            title: "Erro",
+            description: "Plano não encontrado. Redirecionando para o dashboard...",
+            variant: "destructive"
+          });
+          navigate('/dashboard');
+        }
+      }
+    } finally {
+      setIsCompletingOnboarding(false);
     }
   };
 
@@ -217,26 +311,26 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
+      <CardHeader className="px-4 sm:px-6">
         <div className="space-y-2">
-          <CardTitle className="text-center">Configure sua Loja</CardTitle>
-          <p className="text-sm text-muted-foreground text-center">
+          <CardTitle className="text-center text-lg sm:text-xl">Configure sua Loja</CardTitle>
+          <p className="text-xs sm:text-sm text-muted-foreground text-center">
             Etapa {currentStep} de {totalSteps}
           </p>
           <Progress value={progress} className="w-full" />
         </div>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="px-4 sm:px-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
             
             {/* Etapa 1: Informações Básicas */}
             {currentStep === 1 && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-medium">Informações da Loja</h3>
-                  <p className="text-sm text-muted-foreground">
+              <div className="space-y-3 sm:space-y-4 animate-fade-in">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-medium">Informações da Loja</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Vamos começar com as informações básicas da sua loja
                   </p>
                 </div>
@@ -280,28 +374,28 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                   )}
                 />
 
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
+                  <p className="text-xs sm:text-sm text-blue-800">
                     💡 <strong>Dica:</strong> A descrição da loja é uma funcionalidade premium. Você poderá adicioná-la após fazer upgrade para um plano pago.
                   </p>
                 </div>
 
                 {/* Foto de Perfil */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Foto de Perfil (Opcional)</label>
-                  <div className="flex flex-col items-center gap-4">
+                  <label className="text-xs sm:text-sm font-medium">Foto de Perfil (Opcional)</label>
+                  <div className="flex flex-col items-center gap-3 sm:gap-4">
                     {profilePhotoPreview && (
                       <div className="relative">
                         <img
                           src={profilePhotoPreview}
                           alt="Preview"
-                          className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-200"
                         />
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                          className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-5 w-5 sm:h-6 sm:w-6 rounded-full"
                           onClick={() => {
                             setProfilePhoto(null);
                             setProfilePhotoPreview("");
@@ -322,10 +416,10 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                       className="hidden"
                       id="profile-upload"
                     />
-                    <label htmlFor="profile-upload">
-                      <Button type="button" variant="outline" asChild>
-                        <span className="cursor-pointer">
-                          <Upload className="h-4 w-4 mr-2" />
+                    <label htmlFor="profile-upload" className="w-full sm:w-auto">
+                      <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+                        <span className="cursor-pointer text-xs sm:text-sm">
+                          <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                           Adicionar Foto
                         </span>
                       </Button>
@@ -337,10 +431,10 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
 
             {/* Etapa 2: Contatos */}
             {currentStep === 2 && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-medium">Informações de Contato</h3>
-                  <p className="text-sm text-muted-foreground">
+              <div className="space-y-3 sm:space-y-4 animate-fade-in">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-medium">Informações de Contato</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Como seus clientes vão entrar em contato com você?
                   </p>
                 </div>
@@ -385,8 +479,8 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                   )}
                 />
 
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
+                  <p className="text-xs sm:text-sm text-blue-800">
                     💡 <strong>Dica:</strong> Pelo menos um método de contato é recomendado para que seus clientes possam entrar em contato com você.
                   </p>
                 </div>
@@ -395,10 +489,10 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
 
             {/* Etapa 3: Primeira Categoria */}
             {currentStep === 3 && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-medium">Primeira Categoria</h3>
-                  <p className="text-sm text-muted-foreground">
+              <div className="space-y-3 sm:space-y-4 animate-fade-in">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-medium">Primeira Categoria</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Organize seus produtos criando sua primeira categoria
                   </p>
                 </div>
@@ -419,20 +513,20 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
 
                 {/* Imagem da Categoria */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Imagem da Categoria (Opcional)</label>
-                  <div className="flex flex-col items-center gap-4">
+                  <label className="text-xs sm:text-sm font-medium">Imagem da Categoria (Opcional)</label>
+                  <div className="flex flex-col items-center gap-3 sm:gap-4">
                     {categoryImagePreview && (
                       <div className="relative">
                         <img
                           src={categoryImagePreview}
                           alt="Preview"
-                          className="w-24 h-24 rounded-lg object-cover border"
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover border"
                         />
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
-                          className="absolute -top-2 -right-2 h-6 w-6"
+                          className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-5 w-5 sm:h-6 sm:w-6"
                           onClick={() => {
                             setCategoryImageFile(null);
                             setCategoryImagePreview("");
@@ -453,10 +547,10 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                       className="hidden"
                       id="category-upload"
                     />
-                    <label htmlFor="category-upload">
-                      <Button type="button" variant="outline" asChild>
-                        <span className="cursor-pointer">
-                          <Upload className="h-4 w-4 mr-2" />
+                    <label htmlFor="category-upload" className="w-full sm:w-auto">
+                      <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+                        <span className="cursor-pointer text-xs sm:text-sm">
+                          <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                           Adicionar Imagem
                         </span>
                       </Button>
@@ -468,10 +562,10 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
 
             {/* Etapa 4: Primeiro Produto */}
             {currentStep === 4 && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-medium">Primeiro Produto</h3>
-                  <p className="text-sm text-muted-foreground">
+              <div className="space-y-3 sm:space-y-4 animate-fade-in">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-medium">Primeiro Produto</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Vamos adicionar seu primeiro produto ao catálogo
                   </p>
                 </div>
@@ -529,22 +623,22 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
 
                 {/* Imagens do Produto */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Imagens do Produto (Opcional)</label>
-                  <div className="flex flex-col items-center gap-4">
+                  <label className="text-xs sm:text-sm font-medium">Imagens do Produto (Opcional)</label>
+                  <div className="flex flex-col items-center gap-3 sm:gap-4">
                     {productImagePreviews.length > 0 && (
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full">
                         {productImagePreviews.map((preview, index) => (
                           <div key={index} className="relative">
                             <img
                               src={preview}
                               alt={`Preview ${index + 1}`}
-                              className="w-20 h-20 object-cover rounded-lg border"
+                              className="w-full aspect-square object-cover rounded-lg border"
                             />
                             <Button
                               type="button"
                               variant="destructive"
                               size="icon"
-                              className="absolute -top-2 -right-2 h-6 w-6"
+                              className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-5 w-5 sm:h-6 sm:w-6"
                               onClick={() => removeProductImage(index)}
                             >
                               <X className="h-3 w-3" />
@@ -565,10 +659,10 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                       className="hidden"
                       id="product-upload"
                     />
-                    <label htmlFor="product-upload">
-                      <Button type="button" variant="outline" asChild>
-                        <span className="cursor-pointer">
-                          <Upload className="h-4 w-4 mr-2" />
+                    <label htmlFor="product-upload" className="w-full sm:w-auto">
+                      <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+                        <span className="cursor-pointer text-xs sm:text-sm">
+                          <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                           Adicionar Imagens
                         </span>
                       </Button>
@@ -576,12 +670,12 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                   </div>
                 </div>
 
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <div className="p-3 sm:p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-green-800">Quase pronto!</p>
-                      <p className="text-sm text-green-700">
+                      <p className="text-xs sm:text-sm font-medium text-green-800">Quase pronto!</p>
+                      <p className="text-xs sm:text-sm text-green-700">
                         Após finalizar, você terá sua loja online completa com categoria e produto configurados.
                       </p>
                     </div>
@@ -590,89 +684,83 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
               </div>
             )}
 
-            {/* Etapa 5: Opções de Planos */}
+            {/* Etapa 5: Escolha de Plano */}
             {currentStep === 5 && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-medium">Escolha seu Plano</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Desbloqueie recursos premium para impulsionar suas vendas
+              <div className="space-y-3 sm:space-y-4 animate-fade-in">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-medium">Escolha seu Plano</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Escolha um plano ou continue com o gratuito
                   </p>
                 </div>
 
-                <div className="grid gap-4">
-                  <div className="p-4 border rounded-lg bg-muted/30">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-semibold">Plano Free</h4>
-                        <p className="text-2xl font-bold">R$ 0<span className="text-sm font-normal">/mês</span></p>
+                <div className="grid gap-3 sm:gap-4">
+                  {plans.map((plan) => (
+                    <div 
+                      key={plan.name}
+                      className={`p-3 sm:p-4 border rounded-lg ${
+                        plan.name === 'Pro' ? 'border-2 border-primary bg-primary/5' : 'bg-card'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-2 sm:mb-3">
+                        <div>
+                          <h4 className="font-semibold text-sm sm:text-base">{plan.name}</h4>
+                          <p className="text-xl sm:text-2xl font-bold">
+                            {plan.price}
+                            <span className="text-xs sm:text-sm font-normal text-muted-foreground">/mês</span>
+                          </p>
+                        </div>
+                        {plan.name === 'Pro' && (
+                          <Badge className="bg-primary text-xs">Recomendado</Badge>
+                        )}
                       </div>
-                      <Badge>Atual</Badge>
+                      <ul className="text-xs sm:text-sm space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
+                        {plan.features.map((feature, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button 
+                        onClick={() => handleSelectPlan(plan.name)}
+                        disabled={isCompletingOnboarding || loading}
+                        className="w-full text-xs sm:text-sm"
+                        variant={plan.name === 'Free' ? 'outline' : 'default'}
+                      >
+                        {isCompletingOnboarding ? (
+                          <>
+                            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
+                            Processando...
+                          </>
+                        ) : plan.name === 'Free' ? (
+                          'Continuar com Gratuito'
+                        ) : (
+                          <>
+                            <Crown className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                            Escolher {plan.name}
+                          </>
+                        )}
+                      </Button>
                     </div>
-                    <ul className="text-sm space-y-2 text-muted-foreground">
-                      <li>✓ Catálogo básico</li>
-                      <li>✓ Até 50 produtos</li>
-                      <li>✓ WhatsApp e Instagram</li>
-                      <li>✓ Analytics básico</li>
-                    </ul>
-                  </div>
-
-                  <div className="p-4 border-2 border-primary rounded-lg bg-primary/5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-semibold">Plano Pro</h4>
-                        <p className="text-2xl font-bold text-primary">R$ 29,90<span className="text-sm font-normal">/mês</span></p>
-                      </div>
-                      <Badge className="bg-primary">Recomendado</Badge>
-                    </div>
-                    <ul className="text-sm space-y-2">
-                      <li>✓ Produtos ilimitados</li>
-                      <li>✓ Descrição da loja</li>
-                      <li>✓ Background personalizado</li>
-                      <li>✓ Analytics avançado</li>
-                      <li>✓ Links personalizados</li>
-                      <li>✓ Captura de leads</li>
-                    </ul>
-                    <Button className="w-full mt-4" onClick={() => window.location.href = '/plans'}>
-                      Começar Trial Gratuito
-                    </Button>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-semibold">Plano Pro+</h4>
-                        <p className="text-2xl font-bold">R$ 49,90<span className="text-sm font-normal">/mês</span></p>
-                      </div>
-                      <Badge variant="outline">Premium</Badge>
-                    </div>
-                    <ul className="text-sm space-y-2 text-muted-foreground">
-                      <li>✓ Tudo do Pro</li>
-                      <li>✓ Selo de verificado</li>
-                      <li>✓ Suporte prioritário</li>
-                      <li>✓ Recursos exclusivos</li>
-                    </ul>
-                    <Button variant="outline" className="w-full mt-4" onClick={() => window.location.href = '/plans'}>
-                      Ver Detalhes
-                    </Button>
-                  </div>
+                  ))}
                 </div>
 
-                <div className="text-center text-sm text-muted-foreground mt-6">
+                <div className="text-center text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6">
                   Você pode atualizar ou cancelar seu plano a qualquer momento
                 </div>
               </div>
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex gap-4 pt-6">
-              {currentStep > 1 && (
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4 sm:pt-6">
+              {currentStep > 1 && currentStep < 5 && (
                 <Button
                   type="button"
                   variant="outline"
                   onClick={prevStep}
                   className="flex-1"
-                  disabled={isLoading || loading}
+                  disabled={isLoading || loading || isCompletingOnboarding}
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Anterior
@@ -680,15 +768,15 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
               )}
               
               {/* Skip button - show after step 2 for product step */}
-              {canSkipProduct && currentStep > 2 && (
+              {canSkipProduct && currentStep > 2 && currentStep < 5 && (
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={skipToFinish}
-                  disabled={isLoading || loading}
-                  className="text-muted-foreground"
+                  disabled={isLoading || loading || isCompletingOnboarding}
+                  className="text-muted-foreground text-xs sm:text-sm"
                 >
-                  Pular por agora
+                  {isCompletingOnboarding ? 'Processando...' : 'Pular por agora'}
                 </Button>
               )}
               
@@ -697,20 +785,12 @@ export const OnboardingForm = ({ onComplete, isLoading = false }: OnboardingForm
                   type="button"
                   onClick={nextStep}
                   className="flex-1"
-                  disabled={isLoading || loading}
+                  disabled={isLoading || loading || isCompletingOnboarding}
                 >
                   Próximo
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  className="flex-1 btn-hero"
-                  disabled={isLoading || loading}
-                >
-                  {(isLoading || loading) ? "Criando loja..." : "Finalizar Configuração"}
-                </Button>
-              )}
+              ) : null}
             </div>
           </form>
         </Form>
