@@ -16,7 +16,6 @@ interface AffiliatesListProps {
   affiliates: Affiliate[];
   onEdit: (affiliate: Affiliate) => void;
   onViewDetails: (affiliate: Affiliate) => void;
-  onRefresh: () => void;
   loading: boolean;
 }
 

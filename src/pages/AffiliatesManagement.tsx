@@ -176,7 +176,6 @@ const AffiliatesManagement = () => {
                 affiliates={affiliates}
                 onEdit={handleEditAffiliate}
                 onViewDetails={handleViewDetails}
-                onRefresh={loadAffiliates}
                 loading={loading}
               />
             </CardContent>

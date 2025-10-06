@@ -65,13 +65,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      // Capture affiliate referral code from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const affiliateCode = urlParams.get('ref');
+      
+      // Store in localStorage to persist during signup flow
+      if (affiliateCode) {
+        localStorage.setItem('affiliate_ref', affiliateCode);
+      }
+
       // Define redirect URL ensuring production points to the correct domain
       const redirectUrl =
         typeof window !== 'undefined' && window.location.origin.includes('mylinkbuy.com.br')
           ? 'https://www.mylinkbuy.com.br/login'
           : `${window.location.origin}/login`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -84,6 +93,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         throw error;
+      }
+
+      // Track affiliate referral after successful signup
+      if (affiliateCode && data.user) {
+        try {
+          await supabase.functions.invoke('track-affiliate-referral', {
+            body: {
+              affiliate_code: affiliateCode,
+              user_id: data.user.id
+            }
+          });
+          localStorage.removeItem('affiliate_ref'); // Clean up
+        } catch (refError) {
+          console.error('Error tracking referral:', refError);
+          // Don't throw - signup was successful even if referral tracking failed
+        }
       }
 
       toast(messages.auth.signupSuccess);

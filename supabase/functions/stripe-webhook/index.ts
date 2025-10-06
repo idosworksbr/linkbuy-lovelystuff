@@ -297,12 +297,49 @@ async function handlePaymentSucceeded(
 ) {
   logStep("Processing successful payment", { 
     invoiceId: invoice.id,
-    subscriptionId: invoice.subscription
+    subscriptionId: invoice.subscription,
+    amountPaid: invoice.amount_paid / 100
   });
 
   if (invoice.subscription) {
     const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
     await handleSubscriptionUpdate(subscription, stripe, supabase);
+    
+    // Process affiliate commission
+    const customer = await stripe.customers.retrieve(subscription.customer as string);
+    const customerEmail = (customer as Stripe.Customer).email;
+    
+    if (customerEmail && invoice.amount_paid > 0) {
+      // Find user by email
+      const { data: userData } = await supabase.auth.admin.listUsers();
+      const user = userData.users.find((u: any) => u.email === customerEmail);
+      
+      if (user) {
+        const firstItem = subscription.items?.data?.[0];
+        const priceId = firstItem?.price?.id || '';
+        const subscriptionType = mapPriceIdToSubscriptionType(priceId);
+        
+        try {
+          // Invoke commission processing function
+          await supabase.functions.invoke('process-affiliate-commission', {
+            body: {
+              user_id: user.id,
+              subscription_type: subscriptionType,
+              amount: invoice.amount_paid / 100, // Convert from cents
+              period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+              period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              subscription_id: subscription.id,
+              plan_type: subscriptionType
+            }
+          });
+          
+          logStep("Affiliate commission processed", { userId: user.id });
+        } catch (commissionError: any) {
+          logStep("Error processing commission", { error: commissionError.message });
+          // Don't fail the webhook if commission processing fails
+        }
+      }
+    }
   }
 }
 
